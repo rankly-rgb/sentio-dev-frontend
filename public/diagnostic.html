@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jacin AI - Deployment Diagnostic</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+    .pass { color: #16a34a; }
+    .fail { color: #dc2626; }
+    .info { color: #2563eb; }
+    .check { padding: 6px 0; border-bottom: 1px solid #eee; }
+    h1 { font-size: 1.3rem; }
+  </style>
+</head>
+<body>
+  <h1>Jacin AI - Deployment Diagnostic</h1>
+  <div id="results"></div>
+
+  <script>
+    const r = document.getElementById('results');
+    function log(msg, ok) {
+      const d = document.createElement('div');
+      d.className = 'check ' + (ok === true ? 'pass' : ok === false ? 'fail' : 'info');
+      d.textContent = (ok === true ? '\u2713 ' : ok === false ? '\u2717 ' : '\u2139 ') + msg;
+      r.appendChild(d);
+    }
+
+    log('HTML serves correctly', true);
+    log('JavaScript executes', true);
+    log('Root div exists: ' + !!document.getElementById('root'), !!document.getElementById('root'));
+
+    // Check main app
+    fetch('/')
+      .then(res => res.text())
+      .then(html => {
+        log('index.html loads (' + html.length + ' bytes)', true);
+        log('Contains root div: ' + html.includes('id="root"'), html.includes('id="root"'));
+        log('Contains script tag: ' + html.includes('<script'), html.includes('<script'));
+
+        // Extract JS bundle filename
+        const match = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
+        if (match) {
+          log('JS bundle path: ' + match[1], true);
+          return fetch(match[1]).then(res => {
+            log('JS bundle accessible (' + res.status + ')', res.ok);
+            return res.text();
+          }).then(js => {
+            log('JS bundle size: ' + (js.length / 1024).toFixed(0) + ' KB', true);
+            const hasUrl = js.includes('supabase.co');
+            const hasPlaceholder = js.includes('placeholder.supabase.co');
+            log('Supabase URL baked in: ' + (hasUrl && !hasPlaceholder), hasUrl && !hasPlaceholder);
+            if (hasPlaceholder) {
+              log('VITE_SUPABASE_URL is MISSING from build - env vars not set in Vercel!', false);
+            }
+          });
+        } else {
+          log('Could not find JS bundle path in HTML', false);
+        }
+      })
+      .catch(e => log('Error fetching index: ' + e.message, false));
+  </script>
+</body>
+</html>

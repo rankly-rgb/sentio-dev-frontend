@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jacin AI - Health Monitor</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 20px; background: #fafafa; }
+    h1 { font-size: 1.3rem; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 24px; }
+    .section { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .section h2 { font-size: 1rem; margin: 0 0 12px; }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.875rem; }
+    .row:last-child { border-bottom: none; }
+    .pass { color: #16a34a; font-weight: 600; }
+    .fail { color: #dc2626; font-weight: 600; }
+    .warn { color: #d97706; font-weight: 600; }
+    .info { color: #6b7280; }
+    #status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; margin-left: 8px; }
+    .badge-ok { background: #dcfce7; color: #16a34a; }
+    .badge-warn { background: #fef3c7; color: #d97706; }
+    .badge-fail { background: #fee2e2; color: #dc2626; }
+    button { padding: 8px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-top: 12px; }
+    button:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <h1>Health Monitor <span id="status-badge">Checking...</span></h1>
+  <p class="subtitle">Jacin AI - Retention OS &middot; Runtime health checks</p>
+
+  <div class="section">
+    <h2>Environment</h2>
+    <div id="env-checks"></div>
+  </div>
+
+  <div class="section">
+    <h2>API Connectivity</h2>
+    <div id="api-checks"></div>
+  </div>
+
+  <div class="section">
+    <h2>App Bundle</h2>
+    <div id="bundle-checks"></div>
+  </div>
+
+  <div class="section">
+    <h2>Browser</h2>
+    <div id="browser-checks"></div>
+  </div>
+
+  <button onclick="location.reload()">Re-run Checks</button>
+  <button onclick="location.href='/'" style="background:#6b7280;">Go to App</button>
+
+  <script>
+    let passCount = 0;
+    let failCount = 0;
+    let warnCount = 0;
+
+    function addRow(containerId, label, value, status) {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = 'row';
+      const cls = status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : status === 'warn' ? 'warn' : 'info';
+      row.innerHTML = '<span>' + label + '</span><span class="' + cls + '">' + value + '</span>';
+      container.appendChild(row);
+      if (status === 'pass') passCount++;
+      else if (status === 'fail') failCount++;
+      else if (status === 'warn') warnCount++;
+    }
+
+    function updateBadge() {
+      const badge = document.getElementById('status-badge');
+      if (failCount > 0) {
+        badge.textContent = failCount + ' Failed';
+        badge.className = 'badge-fail';
+      } else if (warnCount > 0) {
+        badge.textContent = 'Warnings';
+        badge.className = 'badge-warn';
+      } else {
+        badge.textContent = 'All OK';
+        badge.className = 'badge-ok';
+      }
+    }
+
+    // Environment checks
+    addRow('env-checks', 'Page loaded', new Date().toLocaleTimeString(), 'pass');
+    addRow('env-checks', 'Protocol', location.protocol, location.protocol === 'https:' ? 'pass' : 'warn');
+    addRow('env-checks', 'Host', location.host, 'info');
+
+    // Browser checks
+    addRow('browser-checks', 'User Agent', navigator.userAgent.substring(0, 60) + '...', 'info');
+    addRow('browser-checks', 'Cookies enabled', navigator.cookieEnabled ? 'Yes' : 'No', navigator.cookieEnabled ? 'pass' : 'fail');
+    addRow('browser-checks', 'LocalStorage', (function() { try { localStorage.setItem('_hc', '1'); localStorage.removeItem('_hc'); return true; } catch(e) { return false; } })() ? 'Available' : 'Blocked', 'pass');
+
+    // Check Supabase auth storage
+    var authKeys = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.includes('supabase')) authKeys.push(k);
+      }
+    } catch(e) {}
+    addRow('browser-checks', 'Supabase auth keys', authKeys.length > 0 ? authKeys.length + ' found' : 'None', authKeys.length > 0 ? 'pass' : 'info');
+
+    // Bundle checks
+    fetch('/')
+      .then(function(res) { return res.text(); })
+      .then(function(html) {
+        addRow('bundle-checks', 'index.html', html.length + ' bytes', 'pass');
+        var match = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
+        if (match) {
+          addRow('bundle-checks', 'JS bundle path', match[1], 'pass');
+          return fetch(match[1]).then(function(res) { return res.text(); }).then(function(js) {
+            var sizeKB = (js.length / 1024).toFixed(0);
+            addRow('bundle-checks', 'JS bundle size', sizeKB + ' KB', parseInt(sizeKB) < 2000 ? 'pass' : 'warn');
+            var hasSupabaseUrl = js.includes('supabase.co') && !js.includes('placeholder.supabase.co');
+            addRow('bundle-checks', 'Supabase URL baked in', hasSupabaseUrl ? 'Yes' : 'MISSING', hasSupabaseUrl ? 'pass' : 'fail');
+            updateBadge();
+          });
+        } else {
+          addRow('bundle-checks', 'JS bundle', 'Not found in HTML', 'fail');
+          updateBadge();
+        }
+      })
+      .catch(function(e) {
+        addRow('bundle-checks', 'Fetch error', e.message, 'fail');
+        updateBadge();
+      });
+
+    // API connectivity check
+    var supabaseUrl = 'https://beseqsqkrkimsasrpazt.supabase.co';
+    fetch(supabaseUrl + '/rest/v1/', { method: 'HEAD', headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' } })
+      .then(function(res) {
+        addRow('api-checks', 'Supabase reachable', res.status + ' ' + res.statusText, res.status < 500 ? 'pass' : 'fail');
+        updateBadge();
+      })
+      .catch(function(e) {
+        // CORS may block HEAD, try a simple GET
+        addRow('api-checks', 'Supabase reachable', 'CORS blocked (expected from static page)', 'warn');
+        updateBadge();
+      });
+
+    // Tab suspension detection
+    var lastHeartbeat = Date.now();
+    var suspensionDetected = false;
+
+    setInterval(function() {
+      var now = Date.now();
+      var elapsed = now - lastHeartbeat;
+      if (elapsed > 2000 && !document.hidden) {
+        suspensionDetected = true;
+        addRow('browser-checks', 'Tab suspension', 'Detected (' + Math.floor(elapsed / 1000) + 's gap)', 'warn');
+        updateBadge();
+      }
+      lastHeartbeat = now;
+    }, 1000);
+
+    setTimeout(function() {
+      if (!suspensionDetected) {
+        addRow('browser-checks', 'Tab suspension', 'None detected (10s test)', 'pass');
+        updateBadge();
+      }
+    }, 10000);
+
+    // Initial badge update (before async completes)
+    setTimeout(updateBadge, 100);
+  </script>
+</body>
+</html>
