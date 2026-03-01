@@ -3,17 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   BarChart3,
   Users,
-  Zap,
-  Calculator,
-  ScrollText,
+  Tag,
+  Lightbulb,
+  Play,
+  RefreshCw,
   LogOut,
   Menu,
   Target,
   Building2,
   Settings,
-  PieChart,
-  DollarSign,
-  CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr as dateFnsFr } from 'date-fns/locale';
@@ -25,11 +23,10 @@ import { supabase } from '@/lib/supabase';
 const navItems = [
   { label: fr.nav.dashboard, path: '/dashboard', icon: BarChart3 },
   { label: fr.nav.accounts, path: '/accounts', icon: Users },
-  { label: fr.nav.segments, path: '/segments', icon: PieChart },
-  { label: fr.nav.mrrDashboard, path: '/mrr', icon: DollarSign },
-  { label: fr.nav.playbooks, path: '/playbooks', icon: Zap },
-  { label: fr.nav.scoringRules, path: '/scoring-rules', icon: Calculator },
-  { label: fr.nav.activityLogs, path: '/activity-logs', icon: ScrollText },
+  { label: fr.nav.segments, path: '/segments', icon: Tag },
+  { label: fr.nav.insights, path: '/insights', icon: Lightbulb },
+  { label: fr.nav.playbooks, path: '/playbooks', icon: Play },
+  { label: fr.nav.syncs, path: '/syncs', icon: RefreshCw },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -152,12 +149,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <p className="text-sm font-medium text-foreground truncate">
               {user.organization_name || 'Organisation'}
             </p>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
           </div>
         )}
         <button
           onClick={logout}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
+          aria-label="Se déconnecter"
         >
           <LogOut className="h-[18px] w-[18px] shrink-0" />
           <span>{fr.nav.logout}</span>
@@ -186,6 +184,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <button
             className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
             onClick={() => setMobileOpen(true)}
+            aria-label="Ouvrir le menu"
           >
             <Menu className="h-5 w-5" />
           </button>

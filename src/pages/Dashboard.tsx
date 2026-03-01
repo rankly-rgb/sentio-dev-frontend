@@ -1,6 +1,8 @@
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useManualSync } from '@/hooks/useManualSync';
 import { fr } from '@/i18n/fr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScoreGauge } from '@/components/dashboard/score-gauge';
 import { KpiCards } from '@/components/dashboard/kpi-cards';
@@ -9,9 +11,21 @@ import { MrrChart } from '@/components/dashboard/mrr-chart';
 import { ChurnRiskAlert } from '@/components/dashboard/churn-risk-alert';
 import { ExpansionOpportunities } from '@/components/dashboard/expansion-opportunities';
 import { SyncProgressPanel } from '@/components/dashboard/sync-progress-panel';
+import { RefreshCw, Calculator } from 'lucide-react';
 
 export default function Dashboard() {
-  const { metrics, distribution, isLoading, error } = useDashboardData();
+  const { metrics, distribution, isLoading, error, refetch } = useDashboardData();
+  const { triggerStripeSync, calculateScores, isSyncing, isCalculating } = useManualSync();
+
+  async function handleSync() {
+    await triggerStripeSync('incremental');
+    refetch();
+  }
+
+  async function handleCalculate() {
+    await calculateScores();
+    refetch();
+  }
 
   if (isLoading) {
     return (
@@ -40,13 +54,41 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+      {/* Header + actions */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold">{fr.dashboard.title}</h1>
-        <SyncProgressPanel />
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <SyncProgressPanel />
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={isSyncing || isCalculating}
+            aria-label="Lancer sync Stripe"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? fr.dashboard.syncInProgress : 'Sync Stripe'}
+          </Button>
+
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleCalculate}
+            disabled={isSyncing || isCalculating}
+            aria-label="Recalculer les scores"
+          >
+            <Calculator className={`h-4 w-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
+            {isCalculating ? 'Calcul...' : fr.syncs.recalculateScores}
+          </Button>
+        </div>
       </div>
 
+      {/* KPI cards */}
       {metrics && <KpiCards metrics={metrics} />}
 
+      {/* Score gauge + distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {metrics && (
           <Card>
@@ -58,10 +100,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         )}
-
         {distribution && <HealthDistributionChart distribution={distribution} />}
       </div>
 
+      {/* MRR + alertes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MrrChart />
         <div className="space-y-4">
