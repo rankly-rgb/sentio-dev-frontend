@@ -11,6 +11,7 @@ import {
   Menu,
   Target,
   Building2,
+  Activity,
   Settings,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -138,6 +139,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           >
             <Building2 className="h-[18px] w-[18px] shrink-0" />
             Organisations
+          </Link>
+          <Link
+            to="/dashboard/ops"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+              location.pathname === '/dashboard/ops'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+          >
+            <Activity className="h-[18px] w-[18px] shrink-0" />
+            {fr.nav.ops}
           </Link>
         </div>
       )}

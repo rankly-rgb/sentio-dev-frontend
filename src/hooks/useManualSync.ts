@@ -1,22 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-
-const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string;
-
-async function invokeWithServiceRole(
-  fnName: string,
-  body: Record<string, unknown>,
-): Promise<void> {
-  const { error } = await supabase.functions.invoke(fnName, {
-    headers: SERVICE_ROLE_KEY
-      ? { Authorization: `Bearer ${SERVICE_ROLE_KEY}` }
-      : undefined,
-    body,
-  });
-  if (error) throw error;
-}
+import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
 
 export function useManualSync() {
   const { user } = useAuth();

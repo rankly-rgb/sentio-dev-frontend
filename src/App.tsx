@@ -23,6 +23,7 @@ import NotFound from '@/pages/NotFound';
 // Admin
 import Organizations from '@/pages/admin/Organizations';
 import NewOrganization from '@/pages/admin/NewOrganization';
+import Ops from '@/pages/admin/Ops';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +60,7 @@ export default function App() {
               {/* Routes admin */}
               <Route path="/admin/organizations" element={<AdminRoute><AppLayout><Organizations /></AppLayout></AdminRoute>} />
               <Route path="/admin/organizations/new" element={<AdminRoute><AppLayout><NewOrganization /></AppLayout></AdminRoute>} />
+              <Route path="/dashboard/ops" element={<AdminRoute><AppLayout><Ops /></AppLayout></AdminRoute>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
