@@ -19,6 +19,9 @@ import Insights from '@/pages/Insights';
 import Syncs from '@/pages/Syncs';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
+import Playbooks from '@/pages/Playbooks';
+import PlaybookNew from '@/pages/PlaybookNew';
+import PlaybookDetail from '@/pages/PlaybookDetail';
 
 // Admin
 import Organizations from '@/pages/admin/Organizations';
@@ -55,6 +58,9 @@ export default function App() {
               <Route path="/segments" element={<ProtectedRoute><AppLayout><Segments /></AppLayout></ProtectedRoute>} />
               <Route path="/insights" element={<ProtectedRoute><AppLayout><Insights /></AppLayout></ProtectedRoute>} />
               <Route path="/syncs" element={<ProtectedRoute><AppLayout><Syncs /></AppLayout></ProtectedRoute>} />
+              <Route path="/playbooks" element={<ProtectedRoute><AppLayout><Playbooks /></AppLayout></ProtectedRoute>} />
+              <Route path="/playbooks/new" element={<ProtectedRoute><AppLayout><PlaybookNew /></AppLayout></ProtectedRoute>} />
+              <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
 
               {/* Routes admin */}
