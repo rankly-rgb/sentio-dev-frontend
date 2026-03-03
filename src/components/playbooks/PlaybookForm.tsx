@@ -27,10 +27,10 @@ import type {
   UpdatePlaybookPayload,
 } from '@/lib/types/playbook';
 
-const PLAYBOOK_TYPES: PlaybookType[] = ['manual', 'automated', 'hybrid'];
+const PLAYBOOK_TYPES: PlaybookType[] = ['manual', 'automated', 'semi_automated', 'hybrid'];
 const PRIORITIES: PlaybookPriority[] = ['low', 'medium', 'high', 'critical'];
 const CATEGORIES: TemplateCategory[] = [
-  'churn_prevention', 'expansion', 'onboarding', 'renewal', 'reactivation', 'health_recovery',
+  'churn_prevention', 'expansion', 'onboarding', 'renewal', 'reactivation', 'health_recovery', 'winback',
 ];
 const FREQUENCIES: ExecutionFrequency[] = ['daily', 'weekly', 'monthly'];
 const SEGMENTS = [
@@ -229,10 +229,10 @@ export default function PlaybookForm({ mode, initialData, onSubmit, isSubmitting
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {fr.playbooks.form.saving}
+              {mode === 'create' ? fr.playbooks.creating : fr.playbooks.form.saving}
             </>
           ) : (
-            fr.playbooks.form.save
+            mode === 'create' ? fr.playbooks.createPlaybook : fr.playbooks.form.save
           )}
         </Button>
       </div>

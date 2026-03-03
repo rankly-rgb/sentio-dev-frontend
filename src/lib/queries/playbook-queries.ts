@@ -53,6 +53,14 @@ export async function listPlaybooks(
   return fetchWithUserJwt<PlaybookListResponse>(`playbook-crud?${params.toString()}`);
 }
 
+export async function listPlaybookTemplates(
+  organizationId: string,
+): Promise<PlaybookListResponse> {
+  return fetchWithUserJwt<PlaybookListResponse>(
+    `playbook-crud?organization_id=${organizationId}&is_template=true&per_page=50`,
+  );
+}
+
 export async function getPlaybook(id: string): Promise<Playbook> {
   return fetchWithUserJwt<Playbook>(`playbook-crud?id=${id}`);
 }

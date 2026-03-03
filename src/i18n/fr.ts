@@ -153,6 +153,7 @@ export const fr = {
     type: {
       manual: "Manuel",
       automated: "Automatisé",
+      semi_automated: "Semi-automatisé",
       hybrid: "Hybride",
     },
     // Priorité
@@ -170,6 +171,7 @@ export const fr = {
       renewal: "Renouvellement",
       reactivation: "Réactivation",
       health_recovery: "Récupération santé",
+      winback: "Reconquête",
     },
     // Types d'action
     actionType: {
@@ -316,6 +318,20 @@ export const fr = {
       en_churn: "En churn",
       nouveaux: "Nouveaux",
     },
+    // Template selector
+    templateSelector: {
+      title: "Choisir un point de départ",
+      subtitle: "Utilisez un template pré-configuré ou créez un playbook de zéro.",
+      useTemplate: "Utiliser ce template",
+      createFromScratch: "Créer de zéro",
+      createFromScratchDesc: "Partez d'un formulaire vide et configurez chaque détail.",
+      actionsCount: "actions",
+      conditionsCount: "conditions",
+      loadingTemplates: "Chargement des templates…",
+      noTemplates: "Aucun template disponible",
+    },
+    createPlaybook: "Créer le playbook",
+    creating: "Création en cours…",
   },
 
   // Actions

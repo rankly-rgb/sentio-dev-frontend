@@ -1,6 +1,6 @@
 // --- Union types ---
 export type PlaybookStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
-export type PlaybookType = 'manual' | 'automated' | 'hybrid';
+export type PlaybookType = 'manual' | 'automated' | 'semi_automated' | 'hybrid';
 export type PlaybookPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TemplateCategory =
   | 'churn_prevention'
@@ -8,7 +8,8 @@ export type TemplateCategory =
   | 'onboarding'
   | 'renewal'
   | 'reactivation'
-  | 'health_recovery';
+  | 'health_recovery'
+  | 'winback';
 export type ActionType =
   | 'slack_notify'
   | 'create_task'

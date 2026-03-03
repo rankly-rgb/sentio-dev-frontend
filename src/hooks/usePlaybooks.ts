@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   listPlaybooks,
+  listPlaybookTemplates,
   getPlaybook,
   createPlaybook,
   updatePlaybookViaApi,
@@ -20,6 +21,7 @@ import type {
 const KEYS = {
   all: ['playbooks'] as const,
   list: (orgId: string, filters: PlaybookFilters) => ['playbooks', 'list', orgId, filters] as const,
+  templates: (orgId: string) => ['playbooks', 'templates', orgId] as const,
   detail: (id: string) => ['playbooks', 'detail', id] as const,
   executions: (id: string) => ['playbooks', 'executions', id] as const,
 };
@@ -31,6 +33,16 @@ export function usePlaybooks(filters: PlaybookFilters = {}) {
     queryFn: () => listPlaybooks(user!.organization_id, filters),
     enabled: !!user?.organization_id,
     staleTime: 60_000,
+  });
+}
+
+export function usePlaybookTemplates() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: KEYS.templates(user?.organization_id ?? ''),
+    queryFn: () => listPlaybookTemplates(user!.organization_id),
+    enabled: !!user?.organization_id,
+    staleTime: 120_000,
   });
 }
 
