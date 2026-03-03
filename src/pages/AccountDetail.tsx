@@ -58,7 +58,7 @@ function ScoreBreakdown({ score, label, weight }: {
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">{label}</span>
         <span className="font-medium">
-          {value}/100 <span className="text-xs text-muted-foreground">×{weight}</span>
+          {Math.round(value)}/100 <span className="text-xs text-muted-foreground">×{weight}</span>
         </span>
       </div>
       <Progress value={value} className="h-2" />
@@ -208,7 +208,7 @@ export default function AccountDetail() {
                     <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                     <Tooltip
                       contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                      formatter={(v: number) => [`${v}/100`]}
+                      formatter={(v: number) => [`${Math.round(v)}/100`]}
                     />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     <Line type="monotone" dataKey="Santé" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />

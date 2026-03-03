@@ -26,7 +26,7 @@ async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
     mrr_at_risk_cents: atRisk.reduce((s, a) => s + (a.mrr_cents || 0), 0),
     expansion_opportunities: all.filter(a => (a.expansion_score ?? 0) > 75).length,
     avg_health_score: healthScores.length > 0
-      ? healthScores.reduce((s, h) => s + h, 0) / healthScores.length
+      ? Math.round(healthScores.reduce((s, h) => s + h, 0) / healthScores.length)
       : 0,
     churn_rate: all.length > 0 ? (atRisk.length / all.length) * 100 : 0,
   };

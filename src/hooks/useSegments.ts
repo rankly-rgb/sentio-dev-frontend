@@ -38,7 +38,7 @@ async function fetchSegments(): Promise<SaaSSegment[]> {
       label: seg.label,
       count: matched.length,
       mrr_cents: matched.reduce((s, a) => s + (a.mrr_cents || 0), 0),
-      avg_health_score: scores.length > 0 ? scores.reduce((s, h) => s + h, 0) / scores.length : 0,
+      avg_health_score: scores.length > 0 ? Math.round(scores.reduce((s, h) => s + h, 0) / scores.length) : 0,
     };
   });
 }

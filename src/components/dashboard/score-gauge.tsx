@@ -50,7 +50,7 @@ export function ScoreGauge({
         </PieChart>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {Icon && <Icon className="h-4 w-4 mb-1" style={{ color }} />}
-          <span className="text-2xl font-bold">{clamped}</span>
+          <span className="text-2xl font-bold">{Math.round(clamped)}</span>
         </div>
       </div>
       <div className="text-center">
