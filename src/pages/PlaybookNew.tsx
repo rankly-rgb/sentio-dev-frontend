@@ -20,7 +20,7 @@ export default function PlaybookNew() {
 
   const handleSubmit = (payload: CreatePlaybookPayload) => {
     mutate(
-      { ...payload, organization_id: user!.organization_id },
+      { ...payload, organization_id: user?.organization_id ?? '' },
       {
         onSuccess: () => {
           navigate('/playbooks');

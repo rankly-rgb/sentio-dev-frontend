@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3,
   Users,
@@ -34,36 +35,26 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [lastSyncText, setLastSyncText] = useState<string | null>(null);
-  const [syncRefresh, setSyncRefresh] = useState(0);
+  const { data: lastSyncData } = useQuery({
+    queryKey: ['sync-status', 'last-completed', user?.organization_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('data_syncs')
+        .select('completed_at')
+        .eq('organization_id', user?.organization_id ?? '')
+        .eq('sync_status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .single();
+      return data?.completed_at ?? null;
+    },
+    enabled: !!user?.organization_id,
+    staleTime: 30_000,
+  });
 
-  useEffect(() => {
-    if (!user?.organization_id) return;
-    let cancelled = false;
-
-    supabase
-      .from('data_syncs')
-      .select('completed_at')
-      .eq('organization_id', user.organization_id)
-      .eq('sync_status', 'completed')
-      .order('completed_at', { ascending: false })
-      .limit(1)
-      .single()
-      .then(({ data }) => {
-        if (cancelled || !data?.completed_at) return;
-        setLastSyncText(
-          formatDistanceToNow(new Date(data.completed_at), { addSuffix: true, locale: dateFnsFr }),
-        );
-      });
-
-    return () => { cancelled = true; };
-  }, [user?.organization_id, syncRefresh]);
-
-  useEffect(() => {
-    const handler = () => setSyncRefresh(prev => prev + 1);
-    window.addEventListener('manual-sync-complete', handler);
-    return () => window.removeEventListener('manual-sync-complete', handler);
-  }, []);
+  const lastSyncText = lastSyncData
+    ? formatDistanceToNow(new Date(lastSyncData), { addSuffix: true, locale: dateFnsFr })
+    : null;
 
   const sidebarContent = (
     <>

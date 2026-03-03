@@ -78,6 +78,12 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     supabase.from('hubspot_companies').select('*').eq('account_id', accountId).single(),
   ]);
 
+  // Vérifier les erreurs individuellement (hubspot peut légitimement ne pas exister)
+  if (subsRes.error) throw new Error(`Erreur chargement subscriptions: ${subsRes.error.message}`);
+  if (invoicesRes.error) throw new Error(`Erreur chargement invoices: ${invoicesRes.error.message}`);
+  if (usageRes.error) throw new Error(`Erreur chargement usage: ${usageRes.error.message}`);
+  if (scoreRes.error) throw new Error(`Erreur chargement score_history: ${scoreRes.error.message}`);
+
   return {
     ...account,
     subscriptions: subsRes.data || [],

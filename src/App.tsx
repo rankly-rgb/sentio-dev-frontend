@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import AdminRoute from '@/components/layout/AdminRoute';
@@ -31,9 +32,25 @@ import Ops from '@/pages/admin/Ops';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        // Ne pas retry sur les erreurs d'auth ou not found
+        if (error instanceof Error) {
+          const msg = error.message.toLowerCase();
+          if (msg.includes('401') || msg.includes('unauthorized') ||
+              msg.includes('403') || msg.includes('forbidden') ||
+              msg.includes('404') || msg.includes('session expir')) {
+            return false;
+          }
+        }
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
       staleTime: 60_000,
+      gcTime: 10 * 60_000,
       refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
     },
   },
 });
@@ -44,33 +61,35 @@ export default function App() {
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              {/* Routes publiques */}
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
+          <ErrorBoundary>
+            <AuthProvider>
+              <Routes>
+                {/* Routes publiques */}
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
-              {/* Routes protégées avec layout */}
-              <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-              <Route path="/accounts" element={<ProtectedRoute><AppLayout><Accounts /></AppLayout></ProtectedRoute>} />
-              <Route path="/accounts/:accountId" element={<ProtectedRoute><AppLayout><AccountDetail /></AppLayout></ProtectedRoute>} />
-              <Route path="/segments" element={<ProtectedRoute><AppLayout><Segments /></AppLayout></ProtectedRoute>} />
-              <Route path="/insights" element={<ProtectedRoute><AppLayout><Insights /></AppLayout></ProtectedRoute>} />
-              <Route path="/syncs" element={<ProtectedRoute><AppLayout><Syncs /></AppLayout></ProtectedRoute>} />
-              <Route path="/playbooks" element={<ProtectedRoute><AppLayout><Playbooks /></AppLayout></ProtectedRoute>} />
-              <Route path="/playbooks/new" element={<ProtectedRoute><AppLayout><PlaybookNew /></AppLayout></ProtectedRoute>} />
-              <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
+                {/* Routes protégées avec layout */}
+                <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/accounts" element={<ProtectedRoute><AppLayout><Accounts /></AppLayout></ProtectedRoute>} />
+                <Route path="/accounts/:accountId" element={<ProtectedRoute><AppLayout><AccountDetail /></AppLayout></ProtectedRoute>} />
+                <Route path="/segments" element={<ProtectedRoute><AppLayout><Segments /></AppLayout></ProtectedRoute>} />
+                <Route path="/insights" element={<ProtectedRoute><AppLayout><Insights /></AppLayout></ProtectedRoute>} />
+                <Route path="/syncs" element={<ProtectedRoute><AppLayout><Syncs /></AppLayout></ProtectedRoute>} />
+                <Route path="/playbooks" element={<ProtectedRoute><AppLayout><Playbooks /></AppLayout></ProtectedRoute>} />
+                <Route path="/playbooks/new" element={<ProtectedRoute><AppLayout><PlaybookNew /></AppLayout></ProtectedRoute>} />
+                <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
 
-              {/* Routes admin */}
-              <Route path="/admin/organizations" element={<AdminRoute><AppLayout><Organizations /></AppLayout></AdminRoute>} />
-              <Route path="/admin/organizations/new" element={<AdminRoute><AppLayout><NewOrganization /></AppLayout></AdminRoute>} />
-              <Route path="/dashboard/ops" element={<AdminRoute><AppLayout><Ops /></AppLayout></AdminRoute>} />
+                {/* Routes admin */}
+                <Route path="/admin/organizations" element={<AdminRoute><AppLayout><Organizations /></AppLayout></AdminRoute>} />
+                <Route path="/admin/organizations/new" element={<AdminRoute><AppLayout><NewOrganization /></AppLayout></AdminRoute>} />
+                <Route path="/dashboard/ops" element={<AdminRoute><AppLayout><Ops /></AppLayout></AdminRoute>} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
+          </ErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

@@ -19,6 +19,12 @@ import {
 } from 'lucide-react';
 import type { CheckStatus, HealthStatus } from '@/types/ops';
 
+const healthStatusLabel: Record<HealthStatus, string> = {
+  ok: fr.ops.healthy,
+  degraded: fr.ops.degraded,
+  unhealthy: fr.ops.unhealthy,
+};
+
 function checkBadgeVariant(
   status: CheckStatus,
 ): 'default' | 'secondary' | 'destructive' {
@@ -102,7 +108,7 @@ export default function SystemStatusTab() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               {fr.ops.healthStatus}
-              <Badge variant={overallVariant}>{fr.ops[data.status]}</Badge>
+              <Badge variant={overallVariant}>{healthStatusLabel[data.status]}</Badge>
             </CardTitle>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <RefreshCw className="h-3 w-3 animate-spin" />

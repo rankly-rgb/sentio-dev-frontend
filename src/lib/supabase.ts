@@ -25,11 +25,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
       </div>
     `;
   }
+  // Hard-fail : ne pas créer un client avec des placeholders
+  throw new Error('Variables Supabase manquantes (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)');
 }
 
 export const supabase: SupabaseClient = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key',
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
       persistSession: true,

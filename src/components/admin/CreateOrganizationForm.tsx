@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, CheckCircle, Copy, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -81,11 +81,20 @@ export default function CreateOrganizationForm() {
     }
   };
 
+  const copyTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
   function copyUrl() {
     if (!result) return;
     navigator.clipboard.writeText(result.invitation_url);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
   }
 
   function resetForm() {

@@ -71,17 +71,30 @@ export default function Insights() {
 
   const { data: insights, isLoading, error } = useQuery({
     queryKey: ['insights', user?.organization_id, filterType, filterSeverity],
-    queryFn: () => fetchInsights(user!.organization_id, filterType, filterSeverity),
+    queryFn: () => fetchInsights(user?.organization_id ?? '', filterType, filterSeverity),
     enabled: !!user?.organization_id,
     staleTime: 60_000,
   });
+
+  const insightsQueryKey = ['insights', user?.organization_id, filterType, filterSeverity];
 
   const markRead = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('ai_insights').update({ is_read: true }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['insights'] }),
+    onMutate: async (id: string) => {
+      await qc.cancelQueries({ queryKey: insightsQueryKey });
+      const previous = qc.getQueryData<AiInsight[]>(insightsQueryKey);
+      qc.setQueryData<AiInsight[]>(insightsQueryKey, (old) =>
+        old?.map(i => i.id === id ? { ...i, is_read: true } : i),
+      );
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) qc.setQueryData(insightsQueryKey, context.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: insightsQueryKey }),
   });
 
   const dismiss = useMutation({
@@ -89,7 +102,18 @@ export default function Insights() {
       const { error } = await supabase.from('ai_insights').update({ is_dismissed: true }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['insights'] }),
+    onMutate: async (id: string) => {
+      await qc.cancelQueries({ queryKey: insightsQueryKey });
+      const previous = qc.getQueryData<AiInsight[]>(insightsQueryKey);
+      qc.setQueryData<AiInsight[]>(insightsQueryKey, (old) =>
+        old?.filter(i => i.id !== id),
+      );
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) qc.setQueryData(insightsQueryKey, context.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: insightsQueryKey }),
   });
 
   const unreadCount = (insights || []).filter(i => !i.is_read).length;

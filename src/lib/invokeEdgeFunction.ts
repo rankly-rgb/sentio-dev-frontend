@@ -1,6 +1,10 @@
 import { supabase } from '@/lib/supabase';
 
-const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string;
+const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string | undefined;
+
+if (!SERVICE_ROLE_KEY) {
+  console.warn('[invokeEdgeFunction] VITE_SUPABASE_SERVICE_ROLE_KEY manquante — les appels service_role échoueront');
+}
 
 /**
  * Appelle une Edge Function Supabase avec le service_role JWT.
@@ -11,10 +15,12 @@ export async function invokeWithServiceRole<T = void>(
   body?: Record<string, unknown>,
   method?: string,
 ): Promise<T> {
+  if (!SERVICE_ROLE_KEY) {
+    throw new Error('Configuration manquante : clé service_role non disponible');
+  }
+
   const options: Record<string, unknown> = {
-    headers: SERVICE_ROLE_KEY
-      ? { Authorization: `Bearer ${SERVICE_ROLE_KEY}` }
-      : undefined,
+    headers: { Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
   };
   if (method) {
     options.method = method;
@@ -22,7 +28,8 @@ export async function invokeWithServiceRole<T = void>(
   if (body) {
     options.body = body;
   }
+
   const { data, error } = await supabase.functions.invoke(fnName, options);
-  if (error) throw error;
+  if (error) throw new Error(`Edge Function "${fnName}" : ${error.message}`);
   return data as T;
 }

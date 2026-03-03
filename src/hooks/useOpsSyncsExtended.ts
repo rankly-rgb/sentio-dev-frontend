@@ -37,7 +37,7 @@ export function useOpsSyncsExtended(filters: SyncsExtendedFilters) {
 
   const query = useQuery({
     queryKey: ['ops', 'syncs-extended', user?.organization_id, filters],
-    queryFn: () => fetchSyncsExtended(user!.organization_id, filters),
+    queryFn: () => fetchSyncsExtended(user?.organization_id ?? '', filters),
     enabled: !!user?.organization_id,
     staleTime: 60_000,
   });

@@ -6,7 +6,19 @@ import { Button } from '@/components/ui/button';
 import OrganizationsList from '@/components/admin/OrganizationsList';
 
 export default function Organizations() {
-  const [invitations, setInvitations] = useState<any[]>([]);
+  interface Invitation {
+    id: string;
+    organization_id: string;
+    email: string;
+    role: string;
+    token: string;
+    status: string;
+    shopify_domain: string | null;
+    expires_at: string;
+    created_at: string;
+    accepted_at: string | null;
+  }
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

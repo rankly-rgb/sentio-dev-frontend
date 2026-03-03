@@ -30,7 +30,7 @@ export function usePlaybooks(filters: PlaybookFilters = {}) {
   const { user } = useAuth();
   return useQuery({
     queryKey: KEYS.list(user?.organization_id ?? '', filters),
-    queryFn: () => listPlaybooks(user!.organization_id, filters),
+    queryFn: () => listPlaybooks(user?.organization_id ?? '', filters),
     enabled: !!user?.organization_id,
     staleTime: 60_000,
   });
@@ -40,7 +40,7 @@ export function usePlaybookTemplates() {
   const { user } = useAuth();
   return useQuery({
     queryKey: KEYS.templates(user?.organization_id ?? ''),
-    queryFn: () => listPlaybookTemplates(user!.organization_id),
+    queryFn: () => listPlaybookTemplates(user?.organization_id ?? ''),
     enabled: !!user?.organization_id,
     staleTime: 120_000,
   });
@@ -48,8 +48,8 @@ export function usePlaybookTemplates() {
 
 export function usePlaybook(id: string | undefined) {
   return useQuery({
-    queryKey: KEYS.detail(id!),
-    queryFn: () => getPlaybook(id!),
+    queryKey: KEYS.detail(id ?? ''),
+    queryFn: () => getPlaybook(id ?? ''),
     enabled: !!id,
     staleTime: 60_000,
   });
@@ -57,8 +57,8 @@ export function usePlaybook(id: string | undefined) {
 
 export function usePlaybookExecutions(playbookId: string | undefined) {
   return useQuery({
-    queryKey: KEYS.executions(playbookId!),
-    queryFn: () => listPlaybookExecutions(playbookId!),
+    queryKey: KEYS.executions(playbookId ?? ''),
+    queryFn: () => listPlaybookExecutions(playbookId ?? ''),
     enabled: !!playbookId,
     staleTime: 30_000,
   });
@@ -69,7 +69,9 @@ export function useCreatePlaybook() {
   return useMutation({
     mutationFn: (payload: CreatePlaybookPayload) => createPlaybook(payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
+      // Invalider seulement les listes, pas les détails/exécutions existants
+      qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'templates'] });
       toast.success('Playbook créé avec succès');
     },
     onError: (e: Error) => {
@@ -84,7 +86,7 @@ export function useUpdatePlaybook() {
     mutationFn: ({ id, payload }: { id: string; payload: UpdatePlaybookPayload }) =>
       updatePlaybookViaApi(id, payload),
     onSuccess: (_data, { id }) => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
       qc.invalidateQueries({ queryKey: KEYS.detail(id) });
       toast.success('Playbook mis à jour');
     },
@@ -99,7 +101,7 @@ export function useArchivePlaybook() {
   return useMutation({
     mutationFn: (id: string) => archivePlaybook(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.all });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
       toast.success('Playbook archivé');
     },
     onError: (e: Error) => {

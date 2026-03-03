@@ -16,5 +16,6 @@ export function useSyncStatus() {
       return data || [];
     },
     refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
   });
 }

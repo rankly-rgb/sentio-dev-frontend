@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
 
 export function useManualSync() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
@@ -17,7 +19,10 @@ export function useManualSync() {
         is_manual: true,
       });
       toast.success('Synchronisation Stripe déclenchée');
-      window.dispatchEvent(new CustomEvent('manual-sync-complete'));
+      // Invalider via React Query au lieu de CustomEvent
+      qc.invalidateQueries({ queryKey: ['syncs'] });
+      qc.invalidateQueries({ queryKey: ['sync-status'] });
+      qc.invalidateQueries({ queryKey: ['accounts'] });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Erreur inconnue';
       toast.error('Échec sync Stripe : ' + msg);
@@ -33,6 +38,8 @@ export function useManualSync() {
         organization_id: user?.organization_id,
       });
       toast.success('Scores recalculés avec succès');
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Erreur inconnue';
       toast.error('Échec recalcul scores : ' + msg);
@@ -41,7 +48,6 @@ export function useManualSync() {
     }
   };
 
-  // Compatibilité ascendante
   const triggerSync = () => triggerStripeSync('incremental');
 
   return { triggerSync, triggerStripeSync, calculateScores, isSyncing, isCalculating };

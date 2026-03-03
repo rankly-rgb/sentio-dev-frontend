@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { visibilityMonitor } from '@/utils/visibilityMonitor';
@@ -26,12 +26,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const profileLoadedRef = useRef(false);
-  const sessionRef = useRef<Session | null>(null);
-  const supabaseUserRef = useRef<User | null>(null);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  async function loadProfile(authUserId: string, email: string) {
+  const loadProfile = useCallback(async (authUserId: string, email: string) => {
     try {
       const { data: profile, error: profileError } = await supabase
         .from('profiles_')
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (profileError || !profile) {
-        if (import.meta.env.DEV) console.error('[AuthContext] Erreur chargement profil:', profileError);
+        logger.error('AuthContext', 'Erreur chargement profil', profileError);
         return null;
       }
 
@@ -70,66 +71,120 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(authUser);
       return authUser;
     } catch (error) {
-      if (import.meta.env.DEV) console.error('[AuthContext] Erreur inattendue:', error);
+      logger.error('AuthContext', 'Erreur inattendue chargement profil', error);
       return null;
     }
-  }
+  }, []);
+
+  // Redirect vers login quand la session est irrémédiablement perdue
+  const handleSessionLost = useCallback(() => {
+    profileLoadedRef.current = false;
+    setUser(null);
+    setSupabaseUser(null);
+    setSession(null);
+
+    // Éviter les redirections multiples
+    if (redirectTimeoutRef.current) return;
+    redirectTimeoutRef.current = setTimeout(() => {
+      redirectTimeoutRef.current = null;
+      if (window.location.pathname !== '/login' &&
+          window.location.pathname !== '/' &&
+          window.location.pathname !== '/auth/callback') {
+        window.location.href = '/login?reason=session_expired';
+      }
+    }, 100);
+  }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      sessionRef.current = session;
-      supabaseUserRef.current = session?.user ?? null;
+    // Souscrire AVANT getSession pour ne manquer aucun événement
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        logger.log('AuthContext', `Auth event: ${event}`);
 
-      if (session?.user && !profileLoadedRef.current) {
+        setSession(newSession);
+        setSupabaseUser(newSession?.user ?? null);
+
+        switch (event) {
+          case 'SIGNED_IN':
+          case 'USER_UPDATED':
+            if (newSession?.user) {
+              profileLoadedRef.current = true;
+              await loadProfile(newSession.user.id, newSession.user.email || '');
+            }
+            break;
+
+          case 'TOKEN_REFRESHED':
+            // Token renouvelé — session/supabaseUser déjà mis à jour via setState
+            if (newSession?.user && !profileLoadedRef.current) {
+              profileLoadedRef.current = true;
+              await loadProfile(newSession.user.id, newSession.user.email || '');
+            }
+            break;
+
+          case 'SIGNED_OUT':
+            handleSessionLost();
+            break;
+
+          default:
+            // INITIAL_SESSION, MFA_CHALLENGE_VERIFIED, PASSWORD_RECOVERY
+            if (newSession?.user && !profileLoadedRef.current) {
+              profileLoadedRef.current = true;
+              await loadProfile(newSession.user.id, newSession.user.email || '');
+            } else if (!newSession) {
+              profileLoadedRef.current = false;
+              setUser(null);
+            }
+            break;
+        }
+      }
+    );
+
+    // Ensuite, charger la session initiale
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setSupabaseUser(initialSession?.user ?? null);
+
+      if (initialSession?.user && !profileLoadedRef.current) {
         profileLoadedRef.current = true;
-        loadProfile(session.user.id, session.user.email || '').finally(() => {
+        loadProfile(initialSession.user.id, initialSession.user.email || '').finally(() => {
           setLoading(false);
         });
       } else {
         setLoading(false);
       }
+    }).catch((err) => {
+      logger.error('AuthContext', 'Échec getSession initial', err);
+      setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        sessionRef.current = session;
-        supabaseUserRef.current = session?.user ?? null;
-
-        if (session?.user) {
-          if (event === 'SIGNED_IN' || !profileLoadedRef.current) {
-            profileLoadedRef.current = true;
-            await loadProfile(session.user.id, session.user.email || '');
-          }
-        } else {
-          profileLoadedRef.current = false;
-          setUser(null);
-        }
+    return () => {
+      subscription.unsubscribe();
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
       }
-    );
+    };
+  }, [loadProfile, handleSessionLost]);
 
-    return () => subscription.unsubscribe();
-  }, []);
-
+  // Vérification session au retour d'onglet
   useEffect(() => {
     const unsubscribe = visibilityMonitor.onReturn(async () => {
       logger.log('AuthContext', 'Retour onglet après inactivité, vérification session');
 
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
           logger.error('AuthContext', 'Échec vérification session', error);
           return;
         }
 
-        if (!session) {
+        if (!currentSession) {
           logger.error('AuthContext', 'Session perdue pendant inactivité');
-          profileLoadedRef.current = false;
-          setUser(null);
+          handleSessionLost();
           return;
         }
 
-        const expiresAt = session.expires_at || 0;
+        const expiresAt = currentSession.expires_at || 0;
         const now = Math.floor(Date.now() / 1000);
         const timeUntilExpiry = expiresAt - now;
 
@@ -137,15 +192,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { data: { session: newSession }, error: refreshError } =
             await supabase.auth.refreshSession();
 
-          if (refreshError) {
-            logger.error('AuthContext', 'Échec rafraîchissement token', refreshError);
-          } else if (newSession) {
-            sessionRef.current = newSession;
-            supabaseUserRef.current = newSession.user ?? null;
+          if (refreshError || !newSession) {
+            logger.error('AuthContext', 'Échec rafraîchissement token — redirection login', refreshError);
+            handleSessionLost();
+          } else {
+            setSession(newSession);
+            setSupabaseUser(newSession.user ?? null);
           }
         } else {
-          sessionRef.current = session;
-          supabaseUserRef.current = session.user ?? null;
+          setSession(currentSession);
+          setSupabaseUser(currentSession.user ?? null);
         }
       } catch (error) {
         logger.error('AuthContext', 'Erreur gestion visibilité onglet', error);
@@ -153,9 +209,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [handleSessionLost]);
 
-  const login = async (email: string, password: string): Promise<{ error?: string }> => {
+  const login = useCallback(async (email: string, password: string): Promise<{ error?: string }> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { error: error.message };
@@ -163,23 +219,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return { error: 'Une erreur inattendue est survenue' };
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     profileLoadedRef.current = false;
     await supabase.auth.signOut();
     setUser(null);
-  };
+    setSupabaseUser(null);
+    setSession(null);
+  }, []);
+
+  const value = useMemo<AuthContextType>(() => ({
+    user,
+    supabaseUser,
+    session,
+    loading,
+    login,
+    logout,
+  }), [user, supabaseUser, session, loading, login, logout]);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      supabaseUser: supabaseUserRef.current,
-      session: sessionRef.current,
-      loading,
-      login,
-      logout,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

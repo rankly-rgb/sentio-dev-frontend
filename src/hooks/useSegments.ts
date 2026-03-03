@@ -20,7 +20,8 @@ async function fetchSegments(): Promise<SaaSSegment[]> {
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-  const segmentDefs: { name: string; label: string; filter: (a: any) => boolean }[] = [
+  type AccountRow = { health_score: number | null; churn_risk_score: number | null; expansion_score: number | null; mrr_cents: number | null; created_at: string };
+  const segmentDefs: { name: string; label: string; filter: (a: AccountRow) => boolean }[] = [
     { name: 'champions', label: 'Champions', filter: a => (a.health_score ?? 0) > 80 && (a.expansion_score ?? 0) > 70 },
     { name: 'expanding', label: 'En expansion', filter: a => (a.expansion_score ?? 0) > 75 },
     { name: 'stable', label: 'Stables', filter: a => (a.health_score ?? 0) >= 60 && (a.health_score ?? 0) <= 80 && (a.churn_risk_score ?? 0) < 30 },

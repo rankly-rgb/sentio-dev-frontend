@@ -60,9 +60,10 @@ export default function Syncs() {
 
   const { data: syncs, isLoading, error } = useQuery({
     queryKey: ['syncs', user?.organization_id],
-    queryFn: () => fetchSyncs(user!.organization_id),
+    queryFn: () => fetchSyncs(user?.organization_id ?? ''),
     enabled: !!user?.organization_id,
     refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
   });
 
   const running = (syncs || []).filter(s => s.sync_status === 'running');

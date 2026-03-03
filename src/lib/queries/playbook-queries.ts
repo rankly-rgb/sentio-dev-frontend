@@ -22,16 +22,27 @@ async function fetchWithUserJwt<T>(
     throw new Error('Session expirée, veuillez vous reconnecter');
   }
 
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
-    method: options.method || 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    ...(options.body ? { body: JSON.stringify(options.body) } : {}),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
+      method: options.method || 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+    });
+  } catch {
+    throw new Error('Erreur réseau — vérifiez votre connexion');
+  }
 
-  const data = await res.json();
+  let data: T & { error?: string };
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(`Réponse invalide du serveur (${res.status})`);
+  }
+
   if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
   return data as T;
 }
