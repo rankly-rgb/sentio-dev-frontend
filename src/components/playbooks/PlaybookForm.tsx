@@ -15,9 +15,11 @@ import {
 import { fr } from '@/i18n/fr';
 import ActionEditor from './ActionEditor';
 import ConditionEditor from './ConditionEditor';
+import StepEditor from '@/components/workflows/StepEditor';
 import type {
   Playbook,
   PlaybookAction,
+  WorkflowStep,
   PlaybookType,
   PlaybookPriority,
   TemplateCategory,
@@ -31,6 +33,7 @@ const PLAYBOOK_TYPES: PlaybookType[] = ['manual', 'automated', 'semi_automated',
 const PRIORITIES: PlaybookPriority[] = ['low', 'medium', 'high', 'critical'];
 const CATEGORIES: TemplateCategory[] = [
   'churn_prevention', 'expansion', 'onboarding', 'renewal', 'reactivation', 'health_recovery', 'winback',
+  'customer_satisfaction', 'feature_adoption', 'compliance', 'training', 'engagement', 'revenue_optimization',
 ];
 const FREQUENCIES: ExecutionFrequency[] = ['daily', 'weekly', 'monthly'];
 const SEGMENTS = [
@@ -41,11 +44,12 @@ const SEGMENTS = [
 interface Props {
   mode: 'create' | 'edit';
   initialData?: Playbook;
+  isWorkflow?: boolean;
   onSubmit: (payload: CreatePlaybookPayload | UpdatePlaybookPayload) => void;
   isSubmitting: boolean;
 }
 
-export default function PlaybookForm({ mode, initialData, onSubmit, isSubmitting }: Props) {
+export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflowProp, onSubmit, isSubmitting }: Props) {
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [playbookType, setPlaybookType] = useState<PlaybookType>(initialData?.playbook_type ?? 'manual');
@@ -56,9 +60,12 @@ export default function PlaybookForm({ mode, initialData, onSubmit, isSubmitting
   const [executionFrequency, setExecutionFrequency] = useState<ExecutionFrequency | ''>(initialData?.execution_frequency ?? '');
   const [requiresApproval, setRequiresApproval] = useState(initialData?.requires_approval ?? false);
   const [actions, setActions] = useState<PlaybookAction[]>(initialData?.actions ?? []);
+  const [steps, setSteps] = useState<WorkflowStep[]>(initialData?.steps ?? []);
   const [eligibilityCriteria, setEligibilityCriteria] = useState<ConditionGroup>(
     initialData?.eligibility_criteria ?? { operator: 'AND', conditions: [] },
   );
+
+  const isWorkflow = isWorkflowProp ?? initialData?.is_workflow ?? false;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,14 +78,19 @@ export default function PlaybookForm({ mode, initialData, onSubmit, isSubmitting
       template_category: templateCategory || undefined,
       segment_id: segmentId || undefined,
       is_automated: isAutomated,
+      is_workflow: isWorkflow,
       execution_frequency: executionFrequency || undefined,
       requires_approval: requiresApproval,
-      actions: actions.length > 0 ? actions : undefined,
+      actions: !isWorkflow && actions.length > 0 ? actions : undefined,
+      steps: isWorkflow && steps.length > 0 ? steps : undefined,
       eligibility_criteria: eligibilityCriteria.conditions.length > 0 ? eligibilityCriteria : undefined,
     };
 
     onSubmit(payload);
   };
+
+  const createLabel = isWorkflow ? fr.workflows.createWorkflow : fr.playbooks.createPlaybook;
+  const creatingLabel = isWorkflow ? fr.workflows.creatingWorkflow : fr.playbooks.creating;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -166,13 +178,19 @@ export default function PlaybookForm({ mode, initialData, onSubmit, isSubmitting
         </CardContent>
       </Card>
 
-      {/* Actions */}
+      {/* Actions or Steps */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{fr.playbooks.actions}</CardTitle>
+          <CardTitle className="text-base">
+            {isWorkflow ? fr.workflows.steps : fr.playbooks.actions}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <ActionEditor actions={actions} onChange={setActions} />
+          {isWorkflow ? (
+            <StepEditor steps={steps} onChange={setSteps} />
+          ) : (
+            <ActionEditor actions={actions} onChange={setActions} />
+          )}
         </CardContent>
       </Card>
 
@@ -229,10 +247,10 @@ export default function PlaybookForm({ mode, initialData, onSubmit, isSubmitting
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {mode === 'create' ? fr.playbooks.creating : fr.playbooks.form.saving}
+              {mode === 'create' ? creatingLabel : fr.playbooks.form.saving}
             </>
           ) : (
-            mode === 'create' ? fr.playbooks.createPlaybook : fr.playbooks.form.save
+            mode === 'create' ? createLabel : fr.playbooks.form.save
           )}
         </Button>
       </div>

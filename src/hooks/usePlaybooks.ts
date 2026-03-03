@@ -36,6 +36,10 @@ export function usePlaybooks(filters: PlaybookFilters = {}) {
   });
 }
 
+export function useWorkflows(filters: PlaybookFilters = {}) {
+  return usePlaybooks({ ...filters, is_workflow: true });
+}
+
 export function usePlaybookTemplates() {
   const { user } = useAuth();
   return useQuery({

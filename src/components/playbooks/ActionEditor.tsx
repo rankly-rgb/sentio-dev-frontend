@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fr } from '@/i18n/fr';
+import EmailStepEditor from '@/components/workflows/EmailStepEditor';
 import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
 
 const ACTION_TYPES: ActionType[] = [
@@ -19,6 +20,7 @@ const ACTION_TYPES: ActionType[] = [
   'log_note',
   'schedule_review',
   'flag_for_review',
+  'send_email',
 ];
 
 function defaultConfig(type: ActionType): Record<string, unknown> {
@@ -30,11 +32,12 @@ function defaultConfig(type: ActionType): Record<string, unknown> {
     case 'log_note': return { note: '' };
     case 'schedule_review': return { review_days: 7 };
     case 'flag_for_review': return {};
+    case 'send_email': return { recipient_field: 'account_email', subject: '', body_html: '' };
     default: return {};
   }
 }
 
-function ActionConfigFields({
+export function ActionConfigFields({
   type,
   config,
   onChange,
@@ -110,6 +113,8 @@ function ActionConfigFields({
           onChange={(e) => update('review_days', Number(e.target.value))}
         />
       );
+    case 'send_email':
+      return <EmailStepEditor config={config} onChange={onChange} />;
     case 'flag_for_review':
       return null;
     default:

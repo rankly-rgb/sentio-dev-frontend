@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,14 +35,14 @@ import {
 } from '@/hooks/usePlaybooks';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
 import PriorityBadge from '@/components/playbooks/PriorityBadge';
-import ActionList from '@/components/playbooks/ActionList';
 import ConditionDisplay from '@/components/playbooks/ConditionDisplay';
 import ExecutionTimeline from '@/components/playbooks/ExecutionTimeline';
 import PlaybookForm from '@/components/playbooks/PlaybookForm';
 import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
+import StepTimeline from '@/components/workflows/StepTimeline';
 import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 
-export default function PlaybookDetail() {
+export default function WorkflowDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -53,13 +54,6 @@ export default function PlaybookDetail() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [showExecuteModal, setShowExecuteModal] = useState(false);
-
-  // Redirect workflows to their dedicated page
-  useEffect(() => {
-    if (playbook?.is_workflow) {
-      navigate(`/workflows/${id}`, { replace: true });
-    }
-  }, [playbook, id, navigate]);
 
   if (isLoading) {
     return (
@@ -84,7 +78,7 @@ export default function PlaybookDetail() {
         <Card className="border-destructive">
           <CardContent className="p-6">
             <p className="text-destructive text-sm">
-              {fr.common.error} : {(error as Error)?.message ?? 'Playbook introuvable'}
+              {fr.common.error} : {(error as Error)?.message ?? 'Workflow introuvable'}
             </p>
           </CardContent>
         </Card>
@@ -110,6 +104,7 @@ export default function PlaybookDetail() {
   };
 
   const isMutating = updateMutation.isPending || archiveMutation.isPending;
+  const stepCount = playbook.steps?.length ?? 0;
 
   return (
     <div className="space-y-6 p-6">
@@ -124,6 +119,9 @@ export default function PlaybookDetail() {
               <h1 className="text-2xl font-bold">{playbook.title}</h1>
               <PlaybookStatusBadge status={playbook.status} />
               <PriorityBadge priority={playbook.priority} />
+              <Badge variant="secondary" className="text-xs">
+                {fr.workflows.workflowBadge}
+              </Badge>
             </div>
             {playbook.description && (
               <p className="text-sm text-muted-foreground mt-1">{playbook.description}</p>
@@ -295,6 +293,7 @@ export default function PlaybookDetail() {
           <PlaybookForm
             mode="edit"
             initialData={playbook}
+            isWorkflow
             onSubmit={handleEditSubmit as (p: unknown) => void}
             isSubmitting={updateMutation.isPending}
           />
@@ -307,13 +306,45 @@ export default function PlaybookDetail() {
           </Button>
         </div>
       ) : (
-        <Tabs defaultValue="details">
+        <Tabs defaultValue="steps">
           <TabsList>
-            <TabsTrigger value="details">{fr.playbooks.details}</TabsTrigger>
-            <TabsTrigger value="actions">{fr.playbooks.actions}</TabsTrigger>
+            <TabsTrigger value="steps">
+              {fr.workflows.steps}
+              {stepCount > 0 && (
+                <span className="ml-1.5 text-xs text-muted-foreground">({stepCount})</span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="conditions">{fr.playbooks.conditions}</TabsTrigger>
             <TabsTrigger value="executions">{fr.playbooks.executions}</TabsTrigger>
+            <TabsTrigger value="details">{fr.playbooks.details}</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="steps" className="mt-4">
+            <Card>
+              <CardContent className="p-6">
+                <StepTimeline steps={playbook.steps ?? []} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="conditions" className="mt-4">
+            <Card>
+              <CardContent className="p-6">
+                <ConditionDisplay conditionGroup={playbook.eligibility_criteria} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="executions" className="mt-4">
+            <Card>
+              <CardContent className="p-6">
+                <ExecutionTimeline
+                  executions={executions ?? []}
+                  isLoading={execLoading}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="details" className="mt-4">
             <Card>
@@ -360,33 +391,6 @@ export default function PlaybookDetail() {
                     <span className="font-medium">{fr.format.dateTime(playbook.created_at)}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="actions" className="mt-4">
-            <Card>
-              <CardContent className="p-6">
-                <ActionList actions={playbook.actions ?? []} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="conditions" className="mt-4">
-            <Card>
-              <CardContent className="p-6">
-                <ConditionDisplay conditionGroup={playbook.eligibility_criteria} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="executions" className="mt-4">
-            <Card>
-              <CardContent className="p-6">
-                <ExecutionTimeline
-                  executions={executions ?? []}
-                  isLoading={execLoading}
-                />
               </CardContent>
             </Card>
           </TabsContent>

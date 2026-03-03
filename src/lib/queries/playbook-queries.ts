@@ -58,6 +58,7 @@ export async function listPlaybooks(
   if (filters.status && filters.status !== 'all') params.set('status', filters.status);
   if (filters.playbook_type && filters.playbook_type !== 'all') params.set('playbook_type', filters.playbook_type);
   if (filters.template_category && filters.template_category !== 'all') params.set('template_category', filters.template_category);
+  if (filters.is_workflow !== undefined) params.set('is_workflow', String(filters.is_workflow));
   if (filters.page) params.set('page', String(filters.page));
   if (filters.per_page) params.set('per_page', String(filters.per_page));
 

@@ -23,6 +23,7 @@ import NotFound from '@/pages/NotFound';
 import Playbooks from '@/pages/Playbooks';
 import PlaybookNew from '@/pages/PlaybookNew';
 import PlaybookDetail from '@/pages/PlaybookDetail';
+import WorkflowDetail from '@/pages/WorkflowDetail';
 
 // Admin
 import Organizations from '@/pages/admin/Organizations';
@@ -79,6 +80,7 @@ export default function App() {
                 <Route path="/playbooks" element={<ProtectedRoute><AppLayout><Playbooks /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/new" element={<ProtectedRoute><AppLayout><PlaybookNew /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
+                <Route path="/workflows/:id" element={<ProtectedRoute><AppLayout><WorkflowDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
 
                 {/* Routes admin */}

@@ -6,7 +6,12 @@ import {
   Calendar,
   Heart,
   Plus,
-  Loader2,
+  Star,
+  Puzzle,
+  ShieldCheck,
+  GraduationCap,
+  Users,
+  DollarSign,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +30,12 @@ const categoryConfig: Record<string, { icon: React.ElementType; color: string }>
   renewal: { icon: Calendar, color: 'text-indigo-500 bg-indigo-50' },
   health_recovery: { icon: Heart, color: 'text-purple-500 bg-purple-50' },
   winback: { icon: Heart, color: 'text-violet-500 bg-violet-50' },
+  customer_satisfaction: { icon: Star, color: 'text-amber-500 bg-amber-50' },
+  feature_adoption: { icon: Puzzle, color: 'text-cyan-500 bg-cyan-50' },
+  compliance: { icon: ShieldCheck, color: 'text-slate-500 bg-slate-50' },
+  training: { icon: GraduationCap, color: 'text-teal-500 bg-teal-50' },
+  engagement: { icon: Users, color: 'text-pink-500 bg-pink-50' },
+  revenue_optimization: { icon: DollarSign, color: 'text-lime-600 bg-lime-50' },
 };
 
 interface Props {
@@ -86,7 +97,8 @@ export default function TemplateSelector({
           const config = categoryConfig[cat] ?? categoryConfig.churn_prevention;
           const Icon = config.icon;
           const catLabel = fr.playbooks.category[cat as TemplateCategory] ?? cat;
-          const actionsCount = template.actions?.length ?? 0;
+          const isWorkflow = template.is_workflow;
+          const actionsCount = isWorkflow ? (template.steps?.length ?? 0) : (template.actions?.length ?? 0);
           const conditionsCount = template.eligibility_criteria?.conditions?.length ?? 0;
 
           return (
@@ -104,6 +116,11 @@ export default function TemplateSelector({
                   <Badge variant="outline" className="text-xs">
                     {catLabel}
                   </Badge>
+                  {isWorkflow && (
+                    <Badge variant="secondary" className="text-xs">
+                      {fr.workflows.workflowBadge}
+                    </Badge>
+                  )}
                 </div>
 
                 {/* Title */}
@@ -128,7 +145,7 @@ export default function TemplateSelector({
 
                 {/* Stats */}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 border-t">
-                  <span>{actionsCount} {fr.playbooks.templateSelector.actionsCount}</span>
+                  <span>{actionsCount} {isWorkflow ? fr.workflows.stepCount : fr.playbooks.templateSelector.actionsCount}</span>
                   {conditionsCount > 0 && (
                     <span>{conditionsCount} {fr.playbooks.templateSelector.conditionsCount}</span>
                   )}

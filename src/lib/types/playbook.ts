@@ -9,7 +9,13 @@ export type TemplateCategory =
   | 'renewal'
   | 'reactivation'
   | 'health_recovery'
-  | 'winback';
+  | 'winback'
+  | 'customer_satisfaction'
+  | 'feature_adoption'
+  | 'compliance'
+  | 'training'
+  | 'engagement'
+  | 'revenue_optimization';
 export type ActionType =
   | 'slack_notify'
   | 'create_task'
@@ -17,7 +23,8 @@ export type ActionType =
   | 'update_tag'
   | 'log_note'
   | 'schedule_review'
-  | 'flag_for_review';
+  | 'flag_for_review'
+  | 'send_email';
 export type ExecutionFrequency = 'daily' | 'weekly' | 'monthly';
 export type ConditionOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in';
 export type ConditionField =
@@ -60,6 +67,42 @@ export interface ExecutionStats {
   last_executed_at: string | null;
 }
 
+// --- Email config ---
+export interface EmailConfig {
+  recipient_field: string;
+  subject: string;
+  body_html: string;
+  reply_to?: string;
+}
+
+// --- Workflow step ---
+export interface WorkflowStep {
+  step_order: number;
+  delay_days: number;
+  action_type: ActionType;
+  title: string;
+  config: Record<string, unknown>;
+}
+
+// --- Email template variables ---
+export const EMAIL_VARIABLES = {
+  account: ['account_name', 'health_score', 'mrr', 'plan_tier', 'seat_count', 'contract_end_date'],
+  org: ['org_name'],
+  csm: ['csm_name', 'csm_email'],
+} as const;
+
+export const EMAIL_PREVIEW_DATA: Record<string, string> = {
+  'account.account_name': 'Acme Corp',
+  'account.health_score': '42',
+  'account.mrr': '2 490 €',
+  'account.plan_tier': 'Growth',
+  'account.seat_count': '25',
+  'account.contract_end_date': '15/04/2026',
+  'org.org_name': 'Sentio',
+  'csm.csm_name': 'Marie Dupont',
+  'csm.csm_email': 'marie@sentio.ai',
+};
+
 // --- Main Playbook interface ---
 export interface Playbook {
   id: string;
@@ -73,11 +116,13 @@ export interface Playbook {
   segment_id: string | null;
   is_template: boolean;
   is_automated: boolean;
+  is_workflow: boolean;
   execution_frequency: ExecutionFrequency | null;
   requires_approval: boolean;
   trigger_conditions: ConditionGroup | null;
   eligibility_criteria: ConditionGroup | null;
   actions: PlaybookAction[];
+  steps: WorkflowStep[];
   tags: string[];
   // KPI fields
   accounts_eligible: number;
@@ -108,9 +153,11 @@ export interface CreatePlaybookPayload {
   template_category?: TemplateCategory;
   segment_id?: string;
   is_automated?: boolean;
+  is_workflow?: boolean;
   execution_frequency?: ExecutionFrequency;
   requires_approval?: boolean;
   actions?: PlaybookAction[];
+  steps?: WorkflowStep[];
   eligibility_criteria?: ConditionGroup;
   trigger_conditions?: ConditionGroup;
 }
@@ -124,9 +171,11 @@ export interface UpdatePlaybookPayload {
   template_category?: TemplateCategory;
   segment_id?: string;
   is_automated?: boolean;
+  is_workflow?: boolean;
   execution_frequency?: ExecutionFrequency;
   requires_approval?: boolean;
   actions?: PlaybookAction[];
+  steps?: WorkflowStep[];
   eligibility_criteria?: ConditionGroup;
   trigger_conditions?: ConditionGroup;
 }
@@ -178,6 +227,7 @@ export interface PlaybookFilters {
   status?: PlaybookStatus | 'all';
   playbook_type?: PlaybookType | 'all';
   template_category?: TemplateCategory | 'all';
+  is_workflow?: boolean;
   page?: number;
   per_page?: number;
 }

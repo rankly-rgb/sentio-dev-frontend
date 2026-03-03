@@ -6,6 +6,7 @@ import {
   FileText,
   CalendarClock,
   Flag,
+  Mail,
 } from 'lucide-react';
 import { fr } from '@/i18n/fr';
 import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
@@ -18,6 +19,7 @@ const actionIcons: Record<ActionType, React.ElementType> = {
   log_note: FileText,
   schedule_review: CalendarClock,
   flag_for_review: Flag,
+  send_email: Mail,
 };
 
 function summarizeConfig(type: ActionType, config: Record<string, unknown>): string {
@@ -36,6 +38,8 @@ function summarizeConfig(type: ActionType, config: Record<string, unknown>): str
       return config.review_days ? `${config.review_days} jours` : '';
     case 'flag_for_review':
       return '';
+    case 'send_email':
+      return config.subject ? `Email: "${String(config.subject)}"` : 'Email';
     default:
       return '';
   }
