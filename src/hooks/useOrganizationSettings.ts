@@ -8,14 +8,20 @@ export function useOrganizationSettings() {
 
   const orgQuery = useQuery({
     queryKey: ['organization', orgId],
-    queryFn: () => getOrganizationDetails(orgId!),
+    queryFn: () => {
+      if (!orgId) throw new Error('Missing organization_id');
+      return getOrganizationDetails(orgId);
+    },
     enabled: !!orgId,
     staleTime: 120_000,
   });
 
   const teamQuery = useQuery({
     queryKey: ['team', orgId],
-    queryFn: () => getTeamMembers(orgId!),
+    queryFn: () => {
+      if (!orgId) throw new Error('Missing organization_id');
+      return getTeamMembers(orgId);
+    },
     enabled: !!orgId,
     staleTime: 120_000,
   });

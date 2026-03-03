@@ -39,7 +39,11 @@ export async function getCurrentProfile(userId: string): Promise<UserProfile | n
     .eq('id', userId)
     .single();
 
-  if (error || !data) return null;
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  if (!data) return null;
 
   return {
     id: data.id,
@@ -57,7 +61,11 @@ export async function getOrganizationDetails(orgId: string): Promise<Organizatio
     .eq('id', orgId)
     .single();
 
-  if (error || !data) return null;
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  if (!data) return null;
 
   return {
     id: data.id,

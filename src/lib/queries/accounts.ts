@@ -68,7 +68,12 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     .eq('id', accountId)
     .single();
 
-  if (error || !account) return null;
+  // PGRST116 = not found → legitimate null
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  if (!account) return null;
 
   const [subsRes, invoicesRes, usageRes, scoreRes, hubspotRes] = await Promise.all([
     supabase.from('subscriptions').select('*').eq('account_id', accountId).order('created_at', { ascending: false }),

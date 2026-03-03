@@ -8,6 +8,7 @@ export function useOpsHealthCheck() {
     queryFn: () =>
       invokeWithServiceRole<HealthCheckResponse>('health-check', undefined, 'GET'),
     refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
     staleTime: 25_000,
     retry: 2,
   });

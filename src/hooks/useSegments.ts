@@ -32,7 +32,9 @@ async function fetchSegments(): Promise<SaaSSegment[]> {
 
   return segmentDefs.map(seg => {
     const matched = all.filter(seg.filter);
-    const scores = matched.filter(a => a.health_score !== null).map(a => a.health_score!);
+    const scores = matched
+      .filter((a): a is AccountRow & { health_score: number } => a.health_score !== null)
+      .map(a => a.health_score);
     return {
       name: seg.name,
       label: seg.label,

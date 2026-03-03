@@ -22,7 +22,10 @@ export async function getHubspotCompanyForAccount(
     .eq('account_id', accountId)
     .single();
 
-  if (error) return null;
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
   return data;
 }
 
@@ -39,8 +42,8 @@ export async function getHubspotEngagementSummary(): Promise<{
 
   const companies = data || [];
   const npsScores = companies
-    .filter(c => c.nps_score !== null)
-    .map(c => c.nps_score!);
+    .filter((c): c is typeof c & { nps_score: number } => c.nps_score !== null)
+    .map(c => c.nps_score);
   const sixtyDaysAgo = new Date();
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 

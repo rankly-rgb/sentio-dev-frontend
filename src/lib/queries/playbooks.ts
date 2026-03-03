@@ -34,8 +34,6 @@ export async function updatePlaybook(
     .update(safeUpdates)
     .eq('id', playbookId);
 
-  if (error) {
-    return { success: false, error: error.message };
-  }
+  if (error) throw new Error(error.message);
   return { success: true };
 }

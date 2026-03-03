@@ -13,7 +13,9 @@ async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
   const active = all.filter(a => (a.mrr_cents || 0) > 0);
   const atRisk = all.filter(a => (a.churn_risk_score ?? 0) > 70);
   const totalMrr = all.reduce((s, a) => s + (a.mrr_cents || 0), 0);
-  const healthScores = all.filter(a => a.health_score !== null).map(a => a.health_score!);
+  const healthScores = all
+    .filter((a): a is typeof a & { health_score: number } => a.health_score !== null)
+    .map(a => a.health_score);
 
   return {
     mrr_cents: totalMrr,
