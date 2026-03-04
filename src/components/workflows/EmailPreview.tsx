@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { Card, CardContent } from '@/components/ui/card';
 import { fr } from '@/i18n/fr';
 import { EMAIL_PREVIEW_DATA } from '@/lib/types/playbook';
@@ -33,7 +34,7 @@ export default function EmailPreview({ subject, bodyHtml }: Props) {
         <div className="border-t pt-3">
           <div
             className="prose prose-sm max-w-none text-sm"
-            dangerouslySetInnerHTML={{ __html: previewBody }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewBody) }}
           />
         </div>
       </CardContent>

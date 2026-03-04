@@ -22,8 +22,10 @@ export default function PlaybookNew() {
   const [selectedTemplate, setSelectedTemplate] = useState<Playbook | 'scratch' | null>(null);
 
   const handleSubmit = (payload: CreatePlaybookPayload) => {
+    const orgId = user?.organization_id;
+    if (!orgId) return;
     mutate(
-      { ...payload, organization_id: user?.organization_id ?? '' },
+      { ...payload, organization_id: orgId },
       {
         onSuccess: () => {
           navigate('/playbooks');

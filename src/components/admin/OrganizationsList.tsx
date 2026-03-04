@@ -52,12 +52,16 @@ export default function OrganizationsList({ invitations }: OrganizationsListProp
     };
   }, []);
 
-  function copyInviteLink(id: string, token: string) {
+  async function copyInviteLink(id: string, token: string) {
     const url = `${window.location.origin}/onboard/${token}`;
-    navigator.clipboard.writeText(url);
-    setCopiedId(id);
-    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-    copyTimeoutRef.current = setTimeout(() => setCopiedId(null), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(id);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Clipboard API may fail in insecure contexts — silent fallback
+    }
   }
 
   if (invitations.length === 0) {

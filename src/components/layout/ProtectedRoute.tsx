@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
 
   if (loading) {
     return (
@@ -13,6 +13,28 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  // No session at all → redirect to login
+  if (!session) return <Navigate to="/login" replace />;
+
+  // Session exists but profile failed to load → show error instead of redirect loop
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center max-w-md p-6">
+          <h1 className="text-lg font-semibold text-destructive mb-2">Erreur de chargement du profil</h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Votre session est active mais le profil n&apos;a pas pu être chargé.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return <>{children}</>;
 }

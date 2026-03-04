@@ -1,41 +1,39 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import OrganizationsList from '@/components/admin/OrganizationsList';
 
+interface Invitation {
+  id: string;
+  organization_id: string;
+  email: string;
+  role: string;
+  token: string;
+  status: string;
+  shopify_domain: string | null;
+  expires_at: string;
+  created_at: string;
+  accepted_at: string | null;
+}
+
+async function fetchInvitations(): Promise<Invitation[]> {
+  const { data, error } = await supabase
+    .from('invitations')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export default function Organizations() {
-  interface Invitation {
-    id: string;
-    organization_id: string;
-    email: string;
-    role: string;
-    token: string;
-    status: string;
-    shopify_domain: string | null;
-    expires_at: string;
-    created_at: string;
-    accepted_at: string | null;
-  }
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchInvitations() {
-      const { data, error } = await supabase
-        .from('invitations')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setInvitations(data);
-      }
-      setLoading(false);
-    }
-
-    fetchInvitations();
-  }, []);
+  const { data: invitations = [], isLoading, error } = useQuery({
+    queryKey: ['admin', 'invitations'],
+    queryFn: fetchInvitations,
+    staleTime: 60_000,
+  });
 
   return (
     <div className="space-y-6">
@@ -54,9 +52,13 @@ export default function Organizations() {
         </Link>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-violet-600" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-12 text-destructive text-sm">
+          Failed to load invitations: {error instanceof Error ? error.message : 'Unknown error'}
         </div>
       ) : (
         <OrganizationsList invitations={invitations} />

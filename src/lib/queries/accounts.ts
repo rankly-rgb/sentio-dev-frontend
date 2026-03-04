@@ -88,6 +88,10 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
   if (invoicesRes.error) throw new Error(`Erreur chargement invoices: ${invoicesRes.error.message}`);
   if (usageRes.error) throw new Error(`Erreur chargement usage: ${usageRes.error.message}`);
   if (scoreRes.error) throw new Error(`Erreur chargement score_history: ${scoreRes.error.message}`);
+  // hubspot: PGRST116 (not found) is legitimate, other errors should throw
+  if (hubspotRes.error && hubspotRes.error.code !== 'PGRST116') {
+    throw new Error(`Erreur chargement hubspot: ${hubspotRes.error.message}`);
+  }
 
   return {
     ...account,
@@ -95,6 +99,6 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     recent_invoices: invoicesRes.data || [],
     recent_usage: usageRes.data || [],
     score_history: scoreRes.data || [],
-    hubspot_data: hubspotRes.data || null,
+    hubspot_data: hubspotRes.error ? null : hubspotRes.data ?? null,
   };
 }

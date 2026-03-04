@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { fr } from '@/i18n/fr';
@@ -12,8 +12,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect already-authenticated users
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authLoading, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +30,11 @@ export default function Login() {
     const result = await login(email, password);
     if (result.error) {
       setError(fr.auth.invalidCredentials);
+      setLoading(false);
     } else {
+      // Don't setLoading(false) on success — navigation will unmount
       navigate('/dashboard');
     }
-    setLoading(false);
   };
 
   return (

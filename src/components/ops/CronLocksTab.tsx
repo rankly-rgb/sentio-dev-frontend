@@ -101,7 +101,7 @@ export default function CronLocksTab() {
                           size="sm"
                           className="text-destructive hover:text-destructive"
                           onClick={() => forceRelease.mutate(lock.id)}
-                          disabled={forceRelease.isPending}
+                          disabled={forceRelease.isPending && forceRelease.variables === lock.id}
                         >
                           <Unlock className="h-3.5 w-3.5 mr-1" />
                           {fr.ops.forceRelease}

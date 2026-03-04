@@ -89,12 +89,16 @@ export default function CreateOrganizationForm() {
     };
   }, []);
 
-  function copyUrl() {
+  async function copyUrl() {
     if (!result) return;
-    navigator.clipboard.writeText(result.invitation_url);
-    setCopied(true);
-    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(result.invitation_url);
+      setCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API may fail in insecure contexts — silent fallback
+    }
   }
 
   function resetForm() {

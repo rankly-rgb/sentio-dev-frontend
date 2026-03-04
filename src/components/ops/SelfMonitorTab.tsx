@@ -20,7 +20,7 @@ import {
 import { Play, Loader2, CheckCircle } from 'lucide-react';
 
 export default function SelfMonitorTab() {
-  const { mutate, isPending, data } = useOpsSelfMonitor();
+  const { mutate, isPending, data, error } = useOpsSelfMonitor();
 
   return (
     <div className="space-y-4">
@@ -47,6 +47,11 @@ export default function SelfMonitorTab() {
               </>
             )}
           </Button>
+          {error && (
+            <p className="text-sm text-destructive mt-2">
+              {error instanceof Error ? error.message : 'Erreur inconnue'}
+            </p>
+          )}
         </CardContent>
       </Card>
 

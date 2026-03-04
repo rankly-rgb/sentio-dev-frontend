@@ -31,10 +31,13 @@ export interface Account {
   organization_id: string;
   stripe_customer_id: string;
   hubspot_company_id: string | null;
+  plan_tier: string | null;
+  billing_interval: string | null;
   mrr_cents: number;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
+  contract_start_date: string | null;
   contract_end_date: string | null;
   health_score: number | null;
   churn_risk_score: number | null;
@@ -113,11 +116,14 @@ export interface HubspotCompany {
   organization_id: string;
   account_id: string;
   hubspot_company_id: string;
+  lifecycle_stage: string | null;
   nps_score: number | null;
   open_ticket_count: number;
   open_deal_count: number;
   last_meeting_date: string | null;
+  last_email_date: string | null;
   last_hubspot_sync_at: string | null;
+  last_synced_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -203,7 +209,11 @@ export interface AiInsight {
   updated_at: string;
 }
 
-export interface Playbook {
+/**
+ * @deprecated Use Playbook from '@/lib/types/playbook' instead.
+ * Kept as DatabasePlaybook for legacy compatibility.
+ */
+export interface DatabasePlaybook {
   id: string;
   organization_id: string;
   name: string;

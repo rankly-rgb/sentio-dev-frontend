@@ -70,7 +70,7 @@ function HealthBanner({ status }: { status: HealthStatus }) {
 }
 
 export default function SystemStatusTab() {
-  const { data, isLoading, error, dataUpdatedAt } = useOpsHealthCheck();
+  const { data, isLoading, isFetching, error, dataUpdatedAt } = useOpsHealthCheck();
 
   if (isLoading) {
     return (
@@ -111,7 +111,7 @@ export default function SystemStatusTab() {
               <Badge variant={overallVariant}>{healthStatusLabel[data.status]}</Badge>
             </CardTitle>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <RefreshCw className="h-3 w-3 animate-spin" />
+              <RefreshCw className={`h-3 w-3${isFetching ? ' animate-spin' : ''}`} />
               {fr.ops.autoRefresh}
               {dataUpdatedAt > 0 && (
                 <span>

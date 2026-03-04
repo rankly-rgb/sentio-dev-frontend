@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { visibilityMonitor } from '@/utils/visibilityMonitor';
 import { logger } from '@/utils/productionLogger';
@@ -30,7 +31,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const profileLoadedRef = useRef(false);
+  const profilePromiseRef = useRef<Promise<AuthUser | null> | null>(null);
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queryClient = useQueryClient();
 
   const loadProfile = useCallback(async (authUserId: string, email: string) => {
     try {
@@ -79,9 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Redirect vers login quand la session est irrémédiablement perdue
   const handleSessionLost = useCallback(() => {
     profileLoadedRef.current = false;
+    profilePromiseRef.current = null;
     setUser(null);
     setSupabaseUser(null);
     setSession(null);
+    queryClient.clear();
 
     // Éviter les redirections multiples
     if (redirectTimeoutRef.current) return;
@@ -93,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = '/login?reason=session_expired';
       }
     }, 100);
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     // Souscrire AVANT getSession pour ne manquer aucun événement
@@ -109,7 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           case 'USER_UPDATED':
             if (newSession?.user) {
               profileLoadedRef.current = true;
-              await loadProfile(newSession.user.id, newSession.user.email || '');
+              const p = loadProfile(newSession.user.id, newSession.user.email || '');
+              profilePromiseRef.current = p;
+              await p;
             }
             break;
 
@@ -117,7 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Token renouvelé — session/supabaseUser déjà mis à jour via setState
             if (newSession?.user && !profileLoadedRef.current) {
               profileLoadedRef.current = true;
-              await loadProfile(newSession.user.id, newSession.user.email || '');
+              const p = loadProfile(newSession.user.id, newSession.user.email || '');
+              profilePromiseRef.current = p;
+              await p;
             }
             break;
 
@@ -129,7 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // INITIAL_SESSION, MFA_CHALLENGE_VERIFIED, PASSWORD_RECOVERY
             if (newSession?.user && !profileLoadedRef.current) {
               profileLoadedRef.current = true;
-              await loadProfile(newSession.user.id, newSession.user.email || '');
+              const p = loadProfile(newSession.user.id, newSession.user.email || '');
+              profilePromiseRef.current = p;
+              await p;
             } else if (!newSession) {
               profileLoadedRef.current = false;
               setUser(null);
@@ -140,18 +151,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // Ensuite, charger la session initiale
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       setSession(initialSession);
       setSupabaseUser(initialSession?.user ?? null);
 
       if (initialSession?.user && !profileLoadedRef.current) {
         profileLoadedRef.current = true;
-        loadProfile(initialSession.user.id, initialSession.user.email || '').finally(() => {
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
+        const p = loadProfile(initialSession.user.id, initialSession.user.email || '');
+        profilePromiseRef.current = p;
+        await p;
+      } else if (profilePromiseRef.current) {
+        // INITIAL_SESSION event already triggered loadProfile — wait for it
+        await profilePromiseRef.current;
       }
+      setLoading(false);
     }).catch((err) => {
       logger.error('AuthContext', 'Échec getSession initial', err);
       setLoading(false);
@@ -223,11 +236,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     profileLoadedRef.current = false;
+    profilePromiseRef.current = null;
+    queryClient.clear();
     await supabase.auth.signOut();
     setUser(null);
     setSupabaseUser(null);
     setSession(null);
-  }, []);
+  }, [queryClient]);
 
   const value = useMemo<AuthContextType>(() => ({
     user,

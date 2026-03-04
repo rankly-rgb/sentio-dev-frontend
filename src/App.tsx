@@ -62,8 +62,8 @@ export default function App() {
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <ErrorBoundary>
-            <AuthProvider>
+          <AuthProvider>
+            <ErrorBoundary>
               <Routes>
                 {/* Routes publiques */}
                 <Route path="/" element={<Index />} />
@@ -90,8 +90,8 @@ export default function App() {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </AuthProvider>
-          </ErrorBoundary>
+            </ErrorBoundary>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

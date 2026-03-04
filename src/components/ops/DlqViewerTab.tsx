@@ -163,7 +163,7 @@ export default function DlqViewerTab() {
                         variant="ghost"
                         size="sm"
                         onClick={() => markResolved.mutate(entry.id)}
-                        disabled={markResolved.isPending}
+                        disabled={markResolved.isPending && markResolved.variables === entry.id}
                       >
                         <CheckCircle className="h-3.5 w-3.5 mr-1" />
                         {fr.ops.dlqMarkResolved}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -53,10 +53,12 @@ export default function PlaybookDetail() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [showExecuteModal, setShowExecuteModal] = useState(false);
+  const hasRedirectedRef = useRef(false);
 
-  // Redirect workflows to their dedicated page
+  // Redirect workflows to their dedicated page (only once)
   useEffect(() => {
-    if (playbook?.is_workflow) {
+    if (playbook?.is_workflow && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
       navigate(`/workflows/${id}`, { replace: true });
     }
   }, [playbook, id, navigate]);
@@ -203,7 +205,7 @@ export default function PlaybookDetail() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>{fr.playbooks.form.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleArchive}>{fr.playbooks.archive}</AlertDialogAction>
+                    <AlertDialogAction onClick={handleArchive} disabled={archiveMutation.isPending}>{fr.playbooks.archive}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -293,6 +295,7 @@ export default function PlaybookDetail() {
       {isEditing ? (
         <div className="max-w-3xl">
           <PlaybookForm
+            key={playbook.updated_at}
             mode="edit"
             initialData={playbook}
             onSubmit={handleEditSubmit as (p: unknown) => void}
@@ -398,7 +401,7 @@ export default function PlaybookDetail() {
         open={showExecuteModal}
         onOpenChange={setShowExecuteModal}
         playbookId={playbook.id}
-        organizationId={user?.organization_id ?? ''}
+        organizationId={user?.organization_id || ''}
       />
     </div>
   );
