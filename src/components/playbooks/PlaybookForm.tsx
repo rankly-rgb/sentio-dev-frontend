@@ -56,7 +56,7 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
   const [playbookType, setPlaybookType] = useState<PlaybookType>(initialData?.playbook_type ?? 'manual');
   const [priority, setPriority] = useState<PlaybookPriority>(initialData?.priority ?? 'medium');
   const [templateCategory, setTemplateCategory] = useState<TemplateCategory | ''>(initialData?.template_category ?? '');
-  const [segmentId, setSegmentId] = useState(initialData?.segment_id ?? '');
+  const [segmentId, setSegmentId] = useState(initialData?.segment_id ?? '__none__');
   const [isAutomated, setIsAutomated] = useState(initialData?.is_automated ?? false);
   const [executionFrequency, setExecutionFrequency] = useState<ExecutionFrequency | ''>(initialData?.execution_frequency ?? '');
   const [requiresApproval, setRequiresApproval] = useState(initialData?.requires_approval ?? false);
@@ -77,7 +77,7 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
       playbook_type: playbookType,
       priority,
       template_category: templateCategory || undefined,
-      segment_id: segmentId || undefined,
+      segment_id: segmentId && segmentId !== '__none__' ? segmentId : undefined,
       is_automated: isAutomated,
       is_workflow: isWorkflow,
       execution_frequency: executionFrequency || undefined,
@@ -167,7 +167,7 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
                 <SelectValue placeholder={fr.playbooks.form.noSegment} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">{fr.playbooks.form.noSegment}</SelectItem>
+                <SelectItem value="__none__">{fr.playbooks.form.noSegment}</SelectItem>
                 {SEGMENTS.map((s) => (
                   <SelectItem key={s} value={s}>
                     {fr.playbooks.segments[s]}
