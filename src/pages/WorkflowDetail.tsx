@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Play,
@@ -45,6 +45,7 @@ import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 export default function WorkflowDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
 
   const { data: playbook, isLoading, error } = usePlaybook(id);
@@ -52,7 +53,7 @@ export default function WorkflowDetail() {
   const updateMutation = useUpdatePlaybook();
   const archiveMutation = useArchivePlaybook();
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true');
   const [showExecuteModal, setShowExecuteModal] = useState(false);
 
   if (isLoading) {
@@ -96,10 +97,16 @@ export default function WorkflowDetail() {
     });
   };
 
+  const exitEditMode = () => {
+    setIsEditing(false);
+    searchParams.delete('edit');
+    setSearchParams(searchParams, { replace: true });
+  };
+
   const handleEditSubmit = (payload: UpdatePlaybookPayload) => {
     updateMutation.mutate(
       { id: playbook.id, payload },
-      { onSuccess: () => setIsEditing(false) },
+      { onSuccess: exitEditMode },
     );
   };
 
@@ -181,7 +188,14 @@ export default function WorkflowDetail() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => {
+                  const next = !isEditing;
+                  setIsEditing(next);
+                  if (!next) {
+                    searchParams.delete('edit');
+                    setSearchParams(searchParams, { replace: true });
+                  }
+                }}
               >
                 <Pencil className="h-4 w-4 mr-2" />
                 {fr.playbooks.edit}
@@ -300,7 +314,7 @@ export default function WorkflowDetail() {
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => setIsEditing(false)}
+            onClick={exitEditMode}
           >
             {fr.playbooks.form.cancel}
           </Button>

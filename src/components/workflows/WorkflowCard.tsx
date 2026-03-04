@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import { Pencil } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { fr } from '@/i18n/fr';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
 import PriorityBadge from '@/components/playbooks/PriorityBadge';
@@ -66,14 +68,30 @@ export default function WorkflowCard({ playbook }: Props) {
           </span>
         )}
 
-        {/* Stats */}
+        {/* Stats + Edit button */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
-          <span>
-            {fr.playbooks.kpi.targeted} : {playbook.accounts_targeted ?? 0}
-          </span>
-          <span>
-            {fr.playbooks.kpi.converted} : {playbook.accounts_converted ?? 0}
-          </span>
+          <div className="flex items-center gap-3">
+            <span>
+              {fr.playbooks.kpi.targeted} : {playbook.accounts_targeted ?? 0}
+            </span>
+            <span>
+              {fr.playbooks.kpi.converted} : {playbook.accounts_converted ?? 0}
+            </span>
+          </div>
+          {playbook.status !== 'archived' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/workflows/${playbook.id}?edit=true`);
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5 mr-1" />
+              {fr.playbooks.edit}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
