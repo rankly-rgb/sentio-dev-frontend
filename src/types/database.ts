@@ -43,6 +43,9 @@ export interface Account {
   churn_risk_score: number | null;
   expansion_score: number | null;
   product_usage_score: number | null;
+  financial_score: number | null;
+  engagement_score: number | null;
+  contract_score: number | null;
   scores_calculated_at: string | null;
   last_stripe_sync_at: string | null;
   created_at: string;
@@ -137,6 +140,9 @@ export interface ScoreHistory {
   churn_risk_score: number | null;
   expansion_score: number | null;
   product_usage_score: number | null;
+  financial_score: number | null;
+  engagement_score: number | null;
+  contract_score: number | null;
   mrr_cents: number | null;
   created_at: string;
 }

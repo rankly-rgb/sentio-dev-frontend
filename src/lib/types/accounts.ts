@@ -1,5 +1,27 @@
 /** Types UI pour les vues comptes clients */
 
+export type SegmentType =
+  | 'champions'
+  | 'en_expansion'
+  | 'stables'
+  | 'a_risque_leger'
+  | 'en_danger_critique'
+  | 'impayes'
+  | 'en_churn'
+  | 'nouveaux';
+
+export interface SegmentMembership {
+  segment_id: string;
+  status: 'active' | 'exited' | 'paused';
+  risk_score: number | null;
+  last_evaluated_at: string;
+  account_segments: {
+    segment_name: string;
+    segment_type: SegmentType;
+    priority: 'low' | 'medium' | 'high' | 'critical';
+  };
+}
+
 export interface AccountListItem {
   id: string;
   stripe_customer_id: string;
@@ -19,6 +41,7 @@ export interface AccountListItem {
 
 export interface AccountDetail {
   id: string;
+  organization_id: string;
   stripe_customer_id: string;
   hubspot_company_id: string | null;
   plan_tier: string | null;
@@ -33,6 +56,10 @@ export interface AccountDetail {
   churn_risk_score: number | null;
   expansion_score: number | null;
   product_usage_score: number | null;
+  financial_score: number | null;
+  engagement_score: number | null;
+  contract_score: number | null;
+  scores_calculated_at: string | null;
   last_stripe_sync_at: string | null;
   last_hubspot_sync_at: string | null;
   created_at: string;
@@ -41,6 +68,7 @@ export interface AccountDetail {
   recent_usage: UsageItem[];
   score_history: ScoreHistoryItem[];
   hubspot_data: HubspotData | null;
+  segments: SegmentMembership[];
 }
 
 export interface SubscriptionItem {
@@ -61,6 +89,7 @@ export interface InvoiceItem {
   currency: string;
   status: string;
   invoice_date: string;
+  due_date: string | null;
   paid_at: string | null;
 }
 
@@ -77,6 +106,9 @@ export interface ScoreHistoryItem {
   churn_risk_score: number | null;
   expansion_score: number | null;
   product_usage_score: number | null;
+  financial_score: number | null;
+  engagement_score: number | null;
+  contract_score: number | null;
   mrr_cents: number | null;
 }
 
@@ -87,6 +119,7 @@ export interface HubspotData {
   open_ticket_count: number;
   last_meeting_date: string | null;
   last_email_date: string | null;
+  last_synced_at: string | null;
 }
 
 export interface AccountSummaryCards {
