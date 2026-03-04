@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAccountDetail } from '@/hooks/useAccountDetail';
 import { useManualSync } from '@/hooks/useManualSync';
+import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
 import { fr } from '@/i18n/fr';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import ScoreBadge from '@/components/ScoreBadge';
-import { ArrowLeft, Calculator } from 'lucide-react';
+import InsightCard from '@/components/insights/InsightCard';
+import { ArrowLeft, Calculator, BrainCircuit } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -146,6 +148,19 @@ export default function AccountDetail() {
   const { calculateScores, isCalculating } = useManualSync();
   const [historyDays, setHistoryDays] = useState<30 | 60 | 90>(30);
 
+  // Account insights
+  const { data: insightsData } = useInsights({
+    account_id: accountId,
+    per_page: 5,
+  });
+  const updateInsightStatus = useUpdateInsightStatus();
+  const handleAcknowledge = useCallback((id: string) => {
+    updateInsightStatus.mutate({ id, status: 'acknowledged' });
+  }, [updateInsightStatus]);
+  const handleDismiss = useCallback((id: string) => {
+    updateInsightStatus.mutate({ id, status: 'dismissed' });
+  }, [updateInsightStatus]);
+
   if (isLoading) {
     return (
       <div className="space-y-6 p-6">
@@ -269,6 +284,15 @@ export default function AccountDetail() {
           <TabsTrigger value="subscriptions">{fr.accountDetail.subscriptions}</TabsTrigger>
           <TabsTrigger value="invoices">{fr.accountDetail.invoices}</TabsTrigger>
           <TabsTrigger value="usage">{fr.accountDetail.usage}</TabsTrigger>
+          <TabsTrigger value="insights" className="gap-1">
+            <BrainCircuit className="h-3.5 w-3.5" />
+            {fr.insights.accountInsightsTitle}
+            {(insightsData?.data?.length ?? 0) > 0 && (
+              <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {insightsData?.data?.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="hubspot">{fr.accountDetail.hubspot}</TabsTrigger>
         </TabsList>
 
@@ -476,6 +500,30 @@ export default function AccountDetail() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Insights IA */}
+        <TabsContent value="insights" className="mt-4">
+          {!insightsData?.data || insightsData.data.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <BrainCircuit className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm">{fr.insights.noInsights}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {insightsData.data.map(insight => (
+                <InsightCard
+                  key={insight.id}
+                  insight={insight}
+                  onAcknowledge={handleAcknowledge}
+                  onDismiss={handleDismiss}
+                  isUpdating={updateInsightStatus.isPending}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         {/* HubSpot */}

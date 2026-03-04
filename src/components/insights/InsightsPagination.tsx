@@ -1,0 +1,40 @@
+import { Button } from '@/components/ui/button';
+import { fr } from '@/i18n/fr';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type { InsightsPagination as PaginationType } from '@/types/insights';
+
+interface InsightsPaginationProps {
+  pagination: PaginationType;
+  onPageChange: (page: number) => void;
+}
+
+export default function InsightsPagination({ pagination, onPageChange }: InsightsPaginationProps) {
+  const { page, total_pages, total } = pagination;
+  if (total_pages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-between pt-4">
+      <p className="text-sm text-muted-foreground">
+        Page {page} {fr.common.of} {total_pages} — {total} {fr.insights.results}
+      </p>
+      <div className="flex gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page >= total_pages}
+          onClick={() => onPageChange(page + 1)}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}

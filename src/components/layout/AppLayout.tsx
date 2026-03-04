@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -18,6 +18,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { fr as dateFnsFr } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInsightStats } from '@/hooks/useInsights';
 import { fr } from '@/i18n/fr';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
@@ -35,6 +36,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: statsData } = useInsightStats();
+  const criticalInsightsCount = statsData?.data?.by_priority?.critical ?? 0;
   const { data: lastSyncData } = useQuery({
     queryKey: ['sync-status', 'last-completed', user?.organization_id],
     queryFn: async () => {
@@ -91,7 +94,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'text-primary' : 'text-muted-foreground')} />
               <span>{label}</span>
-              {active && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+              {path === '/insights' && criticalInsightsCount > 0 ? (
+                <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                  {criticalInsightsCount}
+                </span>
+              ) : active ? (
+                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+              ) : null}
             </Link>
           );
         })}
