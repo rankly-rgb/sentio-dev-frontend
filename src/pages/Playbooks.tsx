@@ -19,10 +19,11 @@ import WorkflowCard from '@/components/workflows/WorkflowCard';
 import type { Playbook, PlaybookStatus, PlaybookType, TemplateCategory, PlaybookFilters } from '@/lib/types/playbook';
 
 const STATUSES: PlaybookStatus[] = ['draft', 'active', 'paused', 'completed', 'archived'];
-const TYPES: PlaybookType[] = ['manual', 'automated', 'semi_automated', 'hybrid'];
+const TYPES: PlaybookType[] = ['manual', 'automated', 'semi_automated', 'template'];
 const CATEGORIES: TemplateCategory[] = [
-  'churn_prevention', 'expansion', 'onboarding', 'renewal', 'reactivation', 'health_recovery', 'winback',
-  'customer_satisfaction', 'feature_adoption', 'compliance', 'training', 'engagement', 'revenue_optimization',
+  'churn_prevention', 'expansion', 'onboarding', 'reactivation', 'renewal', 'winback',
+  'payment_recovery', 'health_monitoring', 'customer_education', 'nps_detractors',
+  'champions_advocacy', 'downgrade_prevention', 'success_planning',
 ];
 
 const PER_PAGE = 12;

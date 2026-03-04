@@ -29,11 +29,12 @@ import type {
   UpdatePlaybookPayload,
 } from '@/lib/types/playbook';
 
-const PLAYBOOK_TYPES: PlaybookType[] = ['manual', 'automated', 'semi_automated', 'hybrid'];
+const PLAYBOOK_TYPES: PlaybookType[] = ['manual', 'automated', 'semi_automated', 'template'];
 const PRIORITIES: PlaybookPriority[] = ['low', 'medium', 'high', 'critical'];
 const CATEGORIES: TemplateCategory[] = [
-  'churn_prevention', 'expansion', 'onboarding', 'renewal', 'reactivation', 'health_recovery', 'winback',
-  'customer_satisfaction', 'feature_adoption', 'compliance', 'training', 'engagement', 'revenue_optimization',
+  'churn_prevention', 'expansion', 'onboarding', 'reactivation', 'renewal', 'winback',
+  'payment_recovery', 'health_monitoring', 'customer_education', 'nps_detractors',
+  'champions_advocacy', 'downgrade_prevention', 'success_planning',
 ];
 const FREQUENCIES: ExecutionFrequency[] = ['daily', 'weekly', 'monthly'];
 const SEGMENTS = [

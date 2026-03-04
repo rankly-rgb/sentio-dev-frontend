@@ -1,21 +1,21 @@
 // --- Union types ---
 export type PlaybookStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
-export type PlaybookType = 'manual' | 'automated' | 'semi_automated' | 'hybrid';
+export type PlaybookType = 'manual' | 'automated' | 'semi_automated' | 'template';
 export type PlaybookPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TemplateCategory =
   | 'churn_prevention'
   | 'expansion'
   | 'onboarding'
-  | 'renewal'
   | 'reactivation'
-  | 'health_recovery'
+  | 'renewal'
   | 'winback'
-  | 'customer_satisfaction'
-  | 'feature_adoption'
-  | 'compliance'
-  | 'training'
-  | 'engagement'
-  | 'revenue_optimization';
+  | 'payment_recovery'
+  | 'health_monitoring'
+  | 'customer_education'
+  | 'nps_detractors'
+  | 'champions_advocacy'
+  | 'downgrade_prevention'
+  | 'success_planning';
 export type ActionType =
   | 'slack_notify'
   | 'create_task'

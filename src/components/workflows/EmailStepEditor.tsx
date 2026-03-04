@@ -26,7 +26,7 @@ export default function EmailStepEditor({ config, onChange }: Props) {
 
   const update = (key: string, value: unknown) => onChange({ ...config, [key]: value });
 
-  const insertIntoField = (field: 'subject' | 'body_html', variable: string) => {
+  const insertIntoField = (field: 'email_subject' | 'email_body_html', variable: string) => {
     const current = String(config[field] ?? '');
     update(field, current + variable);
   };
@@ -57,11 +57,11 @@ export default function EmailStepEditor({ config, onChange }: Props) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="text-xs font-medium">{fr.workflows.emailSubject}</label>
-          <VariableInserter onInsert={(v) => insertIntoField('subject', v)} />
+          <VariableInserter onInsert={(v) => insertIntoField('email_subject', v)} />
         </div>
         <Input
-          value={String(config.subject ?? '')}
-          onChange={(e) => update('subject', e.target.value)}
+          value={String(config.email_subject ?? '')}
+          onChange={(e) => update('email_subject', e.target.value)}
           placeholder={fr.workflows.emailSubjectPlaceholder}
         />
       </div>
@@ -70,11 +70,11 @@ export default function EmailStepEditor({ config, onChange }: Props) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="text-xs font-medium">{fr.workflows.emailBody}</label>
-          <VariableInserter onInsert={(v) => insertIntoField('body_html', v)} />
+          <VariableInserter onInsert={(v) => insertIntoField('email_body_html', v)} />
         </div>
         <Textarea
-          value={String(config.body_html ?? '')}
-          onChange={(e) => update('body_html', e.target.value)}
+          value={String(config.email_body_html ?? '')}
+          onChange={(e) => update('email_body_html', e.target.value)}
           placeholder={fr.workflows.emailBodyPlaceholder}
           rows={6}
           className="font-mono text-xs"
@@ -106,8 +106,8 @@ export default function EmailStepEditor({ config, onChange }: Props) {
 
       {showPreview && (
         <EmailPreview
-          subject={String(config.subject ?? '')}
-          bodyHtml={String(config.body_html ?? '')}
+          subject={String(config.email_subject ?? '')}
+          bodyHtml={String(config.email_body_html ?? '')}
         />
       )}
     </div>

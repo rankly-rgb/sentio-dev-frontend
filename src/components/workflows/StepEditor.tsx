@@ -33,7 +33,7 @@ function defaultStepConfig(type: ActionType): Record<string, unknown> {
     case 'log_note': return { note: '' };
     case 'schedule_review': return { review_days: 7 };
     case 'flag_for_review': return {};
-    case 'send_email': return { recipient_field: 'account_email', subject: '', body_html: '' };
+    case 'send_email': return { recipient_field: 'account_email', email_subject: '', email_body_html: '' };
     default: return {};
   }
 }

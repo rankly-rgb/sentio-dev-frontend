@@ -181,7 +181,7 @@ export const fr = {
       manual: "Manuel",
       automated: "Automatisé",
       semi_automated: "Semi-automatisé",
-      hybrid: "Hybride",
+      template: "Template",
     },
     // Priorité
     priority: {
@@ -195,16 +195,16 @@ export const fr = {
       churn_prevention: "Prévention churn",
       expansion: "Expansion",
       onboarding: "Onboarding",
-      renewal: "Renouvellement",
       reactivation: "Réactivation",
-      health_recovery: "Récupération santé",
+      renewal: "Renouvellement",
       winback: "Reconquête",
-      customer_satisfaction: "Satisfaction client",
-      feature_adoption: "Adoption fonctionnalités",
-      compliance: "Conformité",
-      training: "Formation",
-      engagement: "Engagement",
-      revenue_optimization: "Optimisation revenus",
+      payment_recovery: "Recouvrement paiement",
+      health_monitoring: "Suivi santé",
+      customer_education: "Éducation client",
+      nps_detractors: "Détracteurs NPS",
+      champions_advocacy: "Champions & advocacy",
+      downgrade_prevention: "Prévention downgrade",
+      success_planning: "Planification succès",
     },
     // Types d'action
     actionType: {
