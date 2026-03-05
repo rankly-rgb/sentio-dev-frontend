@@ -79,6 +79,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Schedule loadProfile OUTSIDE onAuthStateChange to avoid Supabase session lock deadlock.
+  // The Supabase client holds an internal lock during onAuthStateChange callbacks.
+  // Calling supabase.from(...) inside that callback re-enters the lock → deadlock.
+  // setTimeout(fn, 0) defers the call to after the callback returns and the lock is released.
+  const scheduleProfileLoad = useCallback((userId: string, email: string) => {
+    profileLoadedRef.current = true;
+    const p = new Promise<AuthUser | null>((resolve) => {
+      setTimeout(async () => {
+        resolve(await loadProfile(userId, email));
+      }, 0);
+    });
+    profilePromiseRef.current = p;
+  }, [loadProfile]);
+
   // Redirect vers login quand la session est irrémédiablement perdue
   const handleSessionLost = useCallback(() => {
     profileLoadedRef.current = false;
@@ -103,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Souscrire AVANT getSession pour ne manquer aucun événement
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         logger.log('AuthContext', `Auth event: ${event}`);
 
         setSession(newSession);
@@ -112,21 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         switch (event) {
           case 'SIGNED_IN':
           case 'USER_UPDATED':
-            if (newSession?.user && !profileLoadedRef.current) {
-              profileLoadedRef.current = true;
-              const p = loadProfile(newSession.user.id, newSession.user.email || '');
-              profilePromiseRef.current = p;
-              await p;
-            }
-            break;
-
           case 'TOKEN_REFRESHED':
-            // Token renouvelé — session/supabaseUser déjà mis à jour via setState
             if (newSession?.user && !profileLoadedRef.current) {
-              profileLoadedRef.current = true;
-              const p = loadProfile(newSession.user.id, newSession.user.email || '');
-              profilePromiseRef.current = p;
-              await p;
+              scheduleProfileLoad(newSession.user.id, newSession.user.email || '');
             }
             break;
 
@@ -137,10 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           default:
             // INITIAL_SESSION, MFA_CHALLENGE_VERIFIED, PASSWORD_RECOVERY
             if (newSession?.user && !profileLoadedRef.current) {
-              profileLoadedRef.current = true;
-              const p = loadProfile(newSession.user.id, newSession.user.email || '');
-              profilePromiseRef.current = p;
-              await p;
+              scheduleProfileLoad(newSession.user.id, newSession.user.email || '');
             } else if (!newSession) {
               profileLoadedRef.current = false;
               setUser(null);
@@ -156,12 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSupabaseUser(initialSession?.user ?? null);
 
       if (initialSession?.user && !profileLoadedRef.current) {
-        profileLoadedRef.current = true;
-        const p = loadProfile(initialSession.user.id, initialSession.user.email || '');
-        profilePromiseRef.current = p;
-        await p;
-      } else if (profilePromiseRef.current) {
-        // INITIAL_SESSION event already triggered loadProfile — wait for it
+        scheduleProfileLoad(initialSession.user.id, initialSession.user.email || '');
+      }
+      // Wait for profile (whether triggered here or by INITIAL_SESSION event)
+      if (profilePromiseRef.current) {
         await profilePromiseRef.current;
       }
       setLoading(false);
@@ -176,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearTimeout(redirectTimeoutRef.current);
       }
     };
-  }, [loadProfile, handleSessionLost]);
+  }, [scheduleProfileLoad, handleSessionLost]);
 
   // Vérification session au retour d'onglet
   useEffect(() => {
