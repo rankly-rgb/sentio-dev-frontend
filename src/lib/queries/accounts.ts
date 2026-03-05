@@ -1,15 +1,10 @@
 import { supabase } from '@/lib/supabase';
-import { logger } from '@/utils/productionLogger';
 import type { AccountListItem, AccountDetail, AccountSummaryCards } from '@/lib/types/accounts';
 
 export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
-  // TEMP DEBUG — tracer si la requête Supabase directe bloque
-  const t0 = performance.now();
-  logger.log('Accounts', 'getAccountSummaryCards [query START]');
   const { data, error } = await supabase
     .from('accounts')
     .select('id, health_score, churn_risk_score, expansion_score, mrr_cents');
-  logger.log('Accounts', `getAccountSummaryCards [query END ${(performance.now() - t0).toFixed(0)}ms]`);
 
   if (error) throw error;
 
@@ -57,12 +52,7 @@ export async function getAccountList(params: {
 
   query = query.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
 
-  // TEMP DEBUG — tracer si la requête Supabase directe bloque
-  const t0 = performance.now();
-  logger.log('Accounts', 'getAccountList [query START]');
   const { data, error, count } = await query;
-  logger.log('Accounts', `getAccountList [query END ${(performance.now() - t0).toFixed(0)}ms]`);
-
   if (error) throw error;
 
   return {

@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         switch (event) {
           case 'SIGNED_IN':
           case 'USER_UPDATED':
-            if (newSession?.user) {
+            if (newSession?.user && !profileLoadedRef.current) {
               profileLoadedRef.current = true;
               const p = loadProfile(newSession.user.id, newSession.user.email || '');
               profilePromiseRef.current = p;
@@ -260,6 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth doit être utilisé dans un AuthProvider');

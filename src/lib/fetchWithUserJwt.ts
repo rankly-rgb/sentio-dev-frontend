@@ -12,18 +12,15 @@ export async function fetchWithUserJwt<T>(
   path: string,
   options: { method?: string; body?: unknown } = {},
 ): Promise<T> {
-  const method = options.method || 'GET';
-  const fnName = path.split('?')[0];
-  const t0 = performance.now();
-
-  // TEMP DEBUG — tracer si getSession() bloque
-  logger.log('EdgeFn', `→ ${method} ${fnName} [getSession START]`);
   const { data: { session } } = await supabase.auth.getSession();
-  logger.log('EdgeFn', `→ ${method} ${fnName} [getSession END ${(performance.now() - t0).toFixed(0)}ms]`);
-
   if (!session?.access_token) {
     throw new Error('Session expirée, veuillez vous reconnecter');
   }
+
+  const method = options.method || 'GET';
+  const fnName = path.split('?')[0];
+  const t0 = performance.now();
+  logger.log('EdgeFn', `→ ${method} ${fnName}`);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
