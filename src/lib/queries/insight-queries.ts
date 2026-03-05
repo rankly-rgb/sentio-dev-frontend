@@ -1,5 +1,4 @@
-import { supabase } from '@/lib/supabase';
-import { logger } from '@/utils/productionLogger'; // TEMP DEBUG
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import type {
   InsightsListResponse,
   InsightStatsResponse,
@@ -7,52 +6,6 @@ import type {
   InsightsFilters,
   InsightStatus,
 } from '@/types/insights';
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-
-// --- Private helper: fetch Edge Function with user JWT ---
-async function fetchWithUserJwt<T>(
-  path: string,
-  options: { method?: string; body?: unknown } = {},
-): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    throw new Error('Session expirée, veuillez vous reconnecter');
-  }
-
-  // TEMP DEBUG — timing des appels insights
-  const method = options.method || 'GET';
-  const fnName = path.split('?')[0];
-  const t0 = performance.now();
-  logger.log('Insights', `→ ${method} ${fnName}`);
-
-  let res: Response;
-  try {
-    res = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
-    });
-  } catch {
-    logger.perf('Insights', `${method} ${fnName} (network error)`, performance.now() - t0); // TEMP DEBUG
-    throw new Error('Erreur réseau — vérifiez votre connexion');
-  }
-
-  logger.perf('Insights', `${method} ${fnName} (${res.status})`, performance.now() - t0); // TEMP DEBUG
-
-  let data: T & { error?: string };
-  try {
-    data = await res.json();
-  } catch {
-    throw new Error(`Réponse invalide du serveur (${res.status})`);
-  }
-
-  if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
-  return data as T;
-}
 
 // --- List insights (paginated, filtered) ---
 export async function listInsights(
