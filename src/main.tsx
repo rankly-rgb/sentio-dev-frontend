@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import '@/utils/visibilityMonitor'; // side-effect: initialise le singleton
-import { keepalive } from '@/utils/keepalive';
 import { logger } from '@/utils/productionLogger';
 import { toast } from 'sonner';
 
@@ -36,9 +35,6 @@ window.addEventListener('online', () => {
   toast.dismiss('offline-banner');
   toast.success('Connexion rétablie', { duration: 3000 });
 });
-
-// ─── Start keepalive heartbeat ───────────────────────────────────────────
-keepalive.start();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

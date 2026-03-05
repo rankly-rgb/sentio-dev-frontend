@@ -29,7 +29,7 @@ export async function getMrrMovementSummary(period: {
   };
 }
 
-export async function getMrrTrend(months: number = 12): Promise<
+export async function getMrrTrend(_months: number = 12): Promise<
   { date: string; mrr_cents: number }[]
 > {
   const { data, error } = await supabase

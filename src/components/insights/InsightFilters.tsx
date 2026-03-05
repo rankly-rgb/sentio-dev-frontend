@@ -1,7 +1,5 @@
 import { fr } from '@/i18n/fr';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { InsightType, InsightStatus } from '@/types/insights';
 
 type SortOption = 'created_at' | 'priority' | 'confidence_score' | 'mrr_impact_cents';
 

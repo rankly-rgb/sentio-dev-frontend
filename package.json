@@ -11,7 +11,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "seed:stripe": "tsx scripts/seed-stripe-customers.ts"
+    "seed:stripe": "tsx scripts/seed-stripe-customers.ts",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -80,7 +86,9 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "husky": "^9.1.7",
     "jsdom": "^26.0.0",
+    "lint-staged": "^16.3.2",
     "postcss": "^8.4.49",
     "stripe": "^20.4.0",
     "tailwindcss": "^3.4.17",

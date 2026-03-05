@@ -1,5 +1,4 @@
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
-import { useAuth } from '@/contexts/AuthContext';
 import { fr } from '@/i18n/fr';
 import { maskEmail } from '@/lib/queries/settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle, XCircle, UserPlus } from 'lucide-react';
 
 export default function Settings() {
-  const { user } = useAuth();
   const { organization, team, isLoading } = useOrganizationSettings();
 
   if (isLoading) {

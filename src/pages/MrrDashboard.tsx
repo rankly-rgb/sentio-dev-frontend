@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getMrrMovementSummary, getMrrTrend, calculateNrr } from '@/lib/queries/mrr';
+import { getMrrMovementSummary, calculateNrr } from '@/lib/queries/mrr';
 import { fr } from '@/i18n/fr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

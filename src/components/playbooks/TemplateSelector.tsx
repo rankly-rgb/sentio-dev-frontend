@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fr } from '@/i18n/fr';
-import PlaybookStatusBadge from './PlaybookStatusBadge';
 import PriorityBadge from './PriorityBadge';
 import type { Playbook, TemplateCategory } from '@/lib/types/playbook';
 
