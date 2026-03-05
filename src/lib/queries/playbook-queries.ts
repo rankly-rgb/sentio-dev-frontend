@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/utils/productionLogger'; // TEMP DEBUG
 import type {
   Playbook,
   PlaybookFilters,
@@ -22,10 +23,16 @@ async function fetchWithUserJwt<T>(
     throw new Error('Session expirée, veuillez vous reconnecter');
   }
 
+  // TEMP DEBUG — timing des appels playbook
+  const method = options.method || 'GET';
+  const fnName = path.split('?')[0];
+  const t0 = performance.now();
+  logger.log('Playbook', `→ ${method} ${fnName}`);
+
   let res: Response;
   try {
     res = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
-      method: options.method || 'GET',
+      method,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
@@ -33,8 +40,11 @@ async function fetchWithUserJwt<T>(
       ...(options.body ? { body: JSON.stringify(options.body) } : {}),
     });
   } catch {
+    logger.perf('Playbook', `${method} ${fnName} (network error)`, performance.now() - t0); // TEMP DEBUG
     throw new Error('Erreur réseau — vérifiez votre connexion');
   }
+
+  logger.perf('Playbook', `${method} ${fnName} (${res.status})`, performance.now() - t0); // TEMP DEBUG
 
   let data: T & { error?: string };
   try {

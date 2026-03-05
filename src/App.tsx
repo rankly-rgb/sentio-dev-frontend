@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { logger } from '@/utils/productionLogger'; // TEMP DEBUG
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -52,8 +53,29 @@ const queryClient = new QueryClient({
     },
     mutations: {
       retry: false,
+      onError: (error: Error) => {
+        // TEMP DEBUG — log toutes les erreurs de mutation
+        logger.error('ReactQuery', 'Mutation failed', {
+          message: error.message,
+          stack: error.stack,
+        });
+      },
     },
   },
+});
+
+// TEMP DEBUG — log global pour chaque erreur de query
+queryClient.getQueryCache().subscribe((event) => {
+  if (event.type === 'updated' && event.action.type === 'error') {
+    const error = event.action.error;
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    logger.error('ReactQuery', `Query failed: [${event.query.queryKey}]`, {
+      message: msg,
+      stack,
+      queryKey: event.query.queryKey,
+    });
+  }
 });
 
 export default function App() {

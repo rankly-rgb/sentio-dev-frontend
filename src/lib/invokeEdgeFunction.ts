@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/utils/productionLogger'; // TEMP DEBUG
 
 const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string | undefined;
 
@@ -29,7 +30,15 @@ export async function invokeWithServiceRole<T = void>(
     options.body = body;
   }
 
+  // TEMP DEBUG — timing des appels Edge Function
+  const t0 = performance.now();
+  logger.log('EdgeFunction', `→ ${method || 'POST'} ${fnName}`, body);
+
   const { data, error } = await supabase.functions.invoke(fnName, options);
+
+  const duration = performance.now() - t0;
+  logger.perf('EdgeFunction', `${fnName}`, duration);
+
   if (error) throw new Error(`Edge Function "${fnName}" : ${error.message}`);
   return data as T;
 }

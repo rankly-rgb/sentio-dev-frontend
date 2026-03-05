@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import '@/utils/visibilityMonitor'; // side-effect: initialise le singleton
+import '@/utils/longTaskObserver'; // TEMP DEBUG — détecte les freezes UI
 import { logger } from '@/utils/productionLogger';
 import { toast } from 'sonner';
 
@@ -10,8 +11,15 @@ import { toast } from 'sonner';
 window.addEventListener('unhandledrejection', (event) => {
   const reason = event.reason;
   const msg = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : undefined;
 
-  logger.error('Global', 'Unhandled Promise Rejection', reason);
+  // TEMP DEBUG — contexte enrichi pour tracer les freezes
+  logger.error('Global', 'Unhandled Promise Rejection', {
+    message: msg,
+    stack,
+    url: window.location.href,
+    ts: new Date().toISOString(),
+  });
 
   // Toast pour les erreurs réseau non capturées
   if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
@@ -20,7 +28,16 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 window.addEventListener('error', (event) => {
-  logger.error('Global', 'Uncaught Error', event.error);
+  // TEMP DEBUG — contexte enrichi
+  logger.error('Global', 'Uncaught Error', {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    stack: event.error?.stack,
+    url: window.location.href,
+    ts: new Date().toISOString(),
+  });
 });
 
 // ─── Offline / Online detection ──────────────────────────────────────────
