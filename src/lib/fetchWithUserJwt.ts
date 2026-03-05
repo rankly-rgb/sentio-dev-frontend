@@ -2,10 +2,11 @@ import { supabase } from '@/lib/supabase';
 import { logger } from '@/utils/productionLogger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
  * Appelle une Edge Function Supabase avec le JWT utilisateur courant.
- * Lève une Error en cas de session manquante, erreur réseau ou réponse non-ok.
+ * Lève une Error en cas de session manquante, erreur réseau, timeout ou réponse non-ok.
  */
 export async function fetchWithUserJwt<T>(
   path: string,
@@ -21,6 +22,9 @@ export async function fetchWithUserJwt<T>(
   const t0 = performance.now();
   logger.log('EdgeFn', `→ ${method} ${fnName}`);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   let res: Response;
   try {
     res = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
@@ -29,12 +33,18 @@ export async function fetchWithUserJwt<T>(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`,
       },
+      signal: controller.signal,
       ...(options.body ? { body: JSON.stringify(options.body) } : {}),
     });
-  } catch {
+  } catch (err) {
+    clearTimeout(timeoutId);
     logger.perf('EdgeFn', `${method} ${fnName} (network error)`, performance.now() - t0);
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(`Timeout — le serveur n'a pas répondu en ${REQUEST_TIMEOUT_MS / 1000}s`);
+    }
     throw new Error('Erreur réseau — vérifiez votre connexion');
   }
+  clearTimeout(timeoutId);
 
   logger.perf('EdgeFn', `${method} ${fnName} (${res.status})`, performance.now() - t0);
 
