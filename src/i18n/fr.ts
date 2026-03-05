@@ -71,6 +71,7 @@ export const fr = {
     churnRisk: "Risque",
     contractEnd: "Fin contrat",
     noAccounts: "Aucun compte trouvé",
+    errorLoading: "Impossible de charger les comptes",
     exportCsv: "Exporter CSV",
     monthly: "Mensuel",
     annual: "Annuel",

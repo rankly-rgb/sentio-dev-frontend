@@ -18,7 +18,7 @@ export default function Accounts() {
   const debouncedSearch = useDebounce(search, 300);
   const navigate = useNavigate();
 
-  const { accounts, totalCount, summary, isLoading } = useAccounts({
+  const { accounts, totalCount, summary, isLoading, error, refetch } = useAccounts({
     page,
     search: debouncedSearch,
   });
@@ -73,6 +73,18 @@ export default function Accounts() {
           onChange={e => { setSearch(e.target.value); setPage(1); }}
         />
       </div>
+
+      {/* Error state */}
+      {error && !isLoading && (
+        <Card className="border-destructive">
+          <CardContent className="p-6 text-center">
+            <p className="text-destructive mb-3">{fr.accounts.errorLoading}</p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              {fr.common.retry}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Table */}
       <Card>
