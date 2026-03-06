@@ -1,6 +1,7 @@
 export const fr = {
   // Navigation
   nav: {
+    today: "Aujourd'hui",
     dashboard: "Vue d'ensemble",
     accounts: "Comptes clients",
     segments: "Segments",
@@ -619,6 +620,46 @@ export const fr = {
     syncsExtTitle: "Synchronisations (vue étendue)",
     filterStatus: "Statut",
     filterSource: "Source",
+  },
+
+  // Briefing quotidien
+  today: {
+    greeting: (name: string | null) => `Bonjour ${name ?? 'vous'}`,
+    actionCount: (n: number) => `${n} action${n > 1 ? 's' : ''} prioritaire${n > 1 ? 's' : ''} aujourd'hui`,
+    sectionP0: "Actions P0",
+    sectionP1: "Actions P1",
+    sectionExpansion: "Opportunit\u00e9s d'expansion",
+    healthScore: "Score sant\u00e9",
+    since30d: (prev: number) => `depuis ${prev} il y a 30 jours`,
+    overdueInvoice: (days: number) => `Invoice impay\u00e9e depuis ${days} jours`,
+    noLoginSince: (days: number) => `Aucune connexion depuis ${days} jours`,
+    renewalIn: (days: number) => `Renouvellement dans ${days} jours`,
+    seatUsage: (pct: number) => `Utilisation si\u00e8ges : ${pct} %`,
+    featuresMaxed: "Features plafonn\u00e9es",
+    viewAccount: "Voir le compte",
+    exportForPlaybook: "Exporter pour ce playbook",
+    exportOpportunities: "Exporter opportunit\u00e9s",
+    allClear: "Tout est sous contr\u00f4le aujourd'hui.",
+    nextRenewal: (days: number) => `Prochain renouvellement \u00e0 surveiller : dans ${days} jours.`,
+    perMonth: "/mois",
+  },
+
+  // Export playbook
+  playbookExport: {
+    sectionTitle: "Comptes concern\u00e9s",
+    totalAccounts: "Comptes concern\u00e9s",
+    mrrAtRisk: "MRR \u00e0 risque",
+    filterPriority: "Priorit\u00e9 minimum",
+    filterSegment: "Segment",
+    filterContract: "Contrat",
+    all: "Tous",
+    monthly: "Mensuel",
+    annual: "Annuel",
+    exportCsv: "Exporter CSV \u2014 HubSpot ready",
+    exportJson: "Exporter JSON",
+    exporting: "Export en cours\u2026",
+    toastSuccess: (count: number, mrr: string) =>
+      `Export t\u00e9l\u00e9charg\u00e9 \u2014 ${count} comptes, ${mrr} de MRR \u00e0 risque.`,
   },
 
   // Commun

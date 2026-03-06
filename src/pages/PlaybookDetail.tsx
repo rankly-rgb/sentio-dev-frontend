@@ -39,6 +39,7 @@ import ConditionDisplay from '@/components/playbooks/ConditionDisplay';
 import ExecutionTimeline from '@/components/playbooks/ExecutionTimeline';
 import PlaybookForm from '@/components/playbooks/PlaybookForm';
 import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
+import PlaybookExportPanel from '@/components/playbooks/PlaybookExportPanel';
 import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 
 export default function PlaybookDetail() {
@@ -290,6 +291,9 @@ export default function PlaybookDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* Export panel */}
+      <PlaybookExportPanel playbookId={playbook.id} />
 
       {/* Edit mode or tabs */}
       {isEditing ? (
