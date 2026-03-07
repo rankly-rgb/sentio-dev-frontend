@@ -2,18 +2,18 @@
 export type WebhookEventType =
   | 'churn_risk_critical'
   | 'payment_failed'
-  | 'renewal_upcoming'
+  | 'renewal_reminder'
   | 'expansion_opportunity'
-  | 'score_drop'
-  | 'onboarding_stalled';
+  | 'health_score_drop'
+  | 'onboarding_completed';
 
 export const WEBHOOK_EVENT_TYPES: WebhookEventType[] = [
   'churn_risk_critical',
   'payment_failed',
-  'renewal_upcoming',
+  'renewal_reminder',
   'expansion_opportunity',
-  'score_drop',
-  'onboarding_stalled',
+  'health_score_drop',
+  'onboarding_completed',
 ];
 
 // --- Webhook config from API ---

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { fr } from '@/i18n/fr';
 import { maskEmail } from '@/lib/queries/settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, XCircle, UserPlus, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, ExternalLink, Link2 } from 'lucide-react';
 
 export default function Settings() {
   const { organization, team, isLoading } = useOrganizationSettings();
+  const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();
 
   if (isLoading) {
     return (
@@ -20,6 +22,9 @@ export default function Settings() {
       </div>
     );
   }
+
+  const stripeConnected = integrationStatus?.stripe?.connected ?? false;
+  const hubspotConnected = integrationStatus?.hubspot?.connected ?? false;
 
   return (
     <div className="space-y-6 p-6">
@@ -38,55 +43,82 @@ export default function Settings() {
             <CardContent>
               <p className="text-lg font-medium">{organization?.name || '-'}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Créée le {organization?.created_at ? fr.format.date(organization.created_at) : '-'}
+                Creee le {organization?.created_at ? fr.format.date(organization.created_at) : '-'}
               </p>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-4 space-y-4">
+          {/* Stripe status */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{fr.settings.stripeConnect}</CardTitle>
-                {organization?.stripe_connected ? (
-                  <Badge className="bg-success"><CheckCircle className="h-3 w-3 mr-1" /> {fr.settings.stripeConnected}</Badge>
+                {integrationLoading ? (
+                  <Skeleton className="h-5 w-28" />
+                ) : stripeConnected ? (
+                  <Badge className="bg-emerald-500 hover:bg-emerald-600">
+                    <CheckCircle className="h-3 w-3 mr-1" /> {fr.settings.stripeConnected}
+                  </Badge>
                 ) : (
-                  <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> {fr.settings.stripeNotConnected}</Badge>
+                  <Badge variant="destructive">
+                    <XCircle className="h-3 w-3 mr-1" /> {fr.settings.stripeNotConnected}
+                  </Badge>
                 )}
               </div>
             </CardHeader>
             <CardContent>
-              {organization?.stripe_connected ? (
-                <p className="text-sm text-muted-foreground font-mono">{organization.stripe_account_id}</p>
-              ) : (
-                <Button>{fr.settings.connectStripe}</Button>
+              {stripeConnected && integrationStatus?.stripe.provider_account_id && (
+                <p className="text-sm text-muted-foreground font-mono">
+                  {integrationStatus.stripe.provider_account_id}
+                </p>
               )}
             </CardContent>
           </Card>
 
+          {/* HubSpot status */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{fr.settings.hubspotConnect}</CardTitle>
-                {organization?.hubspot_connected ? (
-                  <Badge className="bg-success"><CheckCircle className="h-3 w-3 mr-1" /> {fr.settings.hubspotConnected}</Badge>
+                {integrationLoading ? (
+                  <Skeleton className="h-5 w-28" />
+                ) : hubspotConnected ? (
+                  <Badge className="bg-emerald-500 hover:bg-emerald-600">
+                    <CheckCircle className="h-3 w-3 mr-1" /> {fr.settings.hubspotConnected}
+                  </Badge>
                 ) : (
-                  <Badge variant="secondary"><XCircle className="h-3 w-3 mr-1" /> {fr.settings.hubspotNotConnected}</Badge>
+                  <Badge variant="secondary">
+                    <XCircle className="h-3 w-3 mr-1" /> {fr.settings.hubspotNotConnected}
+                  </Badge>
                 )}
               </div>
             </CardHeader>
             <CardContent>
-              {!organization?.hubspot_connected && <Button variant="outline">{fr.settings.connectHubspot}</Button>}
+              {hubspotConnected && integrationStatus?.hubspot.provider_account_id && (
+                <p className="text-sm text-muted-foreground font-mono">
+                  {integrationStatus.hubspot.provider_account_id}
+                </p>
+              )}
             </CardContent>
           </Card>
 
-          <Link to="/settings/integrations">
-            <Button variant="outline" className="w-full">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              {fr.integrations.title} — Webhook, Slack, Stripe...
-            </Button>
-          </Link>
+          {/* Links to dedicated pages */}
+          <div className="flex flex-col gap-2">
+            <Link to="/settings/integrations">
+              <Button variant="outline" className="w-full justify-start">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                {fr.integrations.title} — OAuth, Stripe, HubSpot
+              </Button>
+            </Link>
+            <Link to="/settings/webhook">
+              <Button variant="outline" className="w-full justify-start">
+                <Link2 className="h-4 w-4 mr-2" />
+                {fr.integrations.webhookUniversal}
+              </Button>
+            </Link>
+          </div>
         </TabsContent>
 
         <TabsContent value="team" className="mt-4">

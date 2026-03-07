@@ -736,12 +736,12 @@ export const fr = {
     },
     // Events
     events: {
-      churn_risk_critical: "Churn critique",
+      churn_risk_critical: "Risque de churn critique",
       payment_failed: "Paiement echoue",
-      renewal_upcoming: "Renouvellement",
-      expansion_opportunity: "Opportunite expansion",
-      score_drop: "Baisse de score",
-      onboarding_stalled: "Onboarding",
+      renewal_reminder: "Rappel de renouvellement",
+      expansion_opportunity: "Opportunite d'expansion",
+      health_score_drop: "Chute du score de sante",
+      onboarding_completed: "Onboarding termine",
     },
     // Secret modal
     secretModal: {
@@ -759,6 +759,26 @@ export const fr = {
     pipedrive: "Pipedrive",
     q2_2026: "Q2 2026",
     q3_2026: "Q3 2026",
+    // OAuth
+    oauth: {
+      connectStripe: "Connecter Stripe",
+      connectHubspot: "Connecter HubSpot",
+      disconnect: "Deconnecter",
+      reconnect: "Reconnecter",
+      connecting: "Connexion en cours...",
+      disconnecting: "Deconnexion...",
+      stripeConnected: "Stripe connecte",
+      hubspotConnected: "HubSpot connecte",
+      stripeExpired: "Connexion Stripe expiree",
+      hubspotExpired: "Connexion HubSpot expiree",
+      providerAccountId: "Identifiant",
+      scopes: "Permissions",
+      confirmRevoke: "Deconnecter l'integration ?",
+      confirmRevokeDesc: "Les donnees ne seront plus synchronisees depuis ce fournisseur.",
+      callbackSuccess: "Integration connectee avec succes",
+      callbackError: "Erreur lors de la connexion",
+      hubspotInfo: "Connectez HubSpot pour activer le scoring d'engagement",
+    },
     // Sidebar indicator
     sidebar: {
       webhookActive: "Webhook actif",

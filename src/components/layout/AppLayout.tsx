@@ -127,12 +127,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           onClick={() => setMobileOpen(false)}
           className={cn(
             'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-            location.pathname === '/settings'
+            location.pathname.startsWith('/settings')
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground',
           )}
         >
-          <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname === '/settings' ? 'text-primary' : 'text-muted-foreground')} />
+          <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname.startsWith('/settings') ? 'text-primary' : 'text-muted-foreground')} />
           <span>{fr.nav.settings}</span>
         </Link>
 
