@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAccounts } from '@/hooks/useAccounts';
+import { exportAccountsCsv } from '@/lib/exportCsv';
 import { fr } from '@/i18n/fr';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,8 +17,22 @@ import { useDebounce } from '@/hooks/useDebounce';
 export default function Accounts() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
   const navigate = useNavigate();
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const { exported } = await exportAccountsCsv();
+      toast.success(`${exported} comptes exportés`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(msg);
+    } finally {
+      setExporting(false);
+    }
+  }, []);
 
   const { accounts, totalCount, summary, isLoading, error, refetch } = useAccounts({
     page,
@@ -27,9 +43,9 @@ export default function Accounts() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{fr.accounts.title}</h1>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
           <Download className="h-4 w-4 mr-2" />
-          {fr.accounts.exportCsv}
+          {exporting ? fr.segmentDetail.exporting : fr.accounts.exportCsv}
         </Button>
       </div>
 

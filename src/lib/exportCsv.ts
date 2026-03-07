@@ -1,19 +1,18 @@
 import { supabase } from '@/lib/supabase';
 
-const CSV_COLUMNS = [
-  'shopify_customer_id',
+const ACCOUNT_CSV_HEADER = [
+  'stripe_customer_id',
+  'hubspot_company_id',
+  'plan_tier',
+  'billing_interval',
+  'mrr_eur',
+  'seat_count',
+  'seat_limit',
+  'contract_end_date',
   'health_score',
-  'emotional_score',
   'churn_risk_score',
-  'lifetime_value',
-  'total_orders',
-  'rfm_recency_days',
-  'heart_smart_segment',
-  'is_subscriber',
-  'subscription_status',
-  'customer_segment',
-  'purchase_pattern',
-  'repurchase_probability',
+  'expansion_score',
+  'product_usage_score',
 ];
 
 const MAX_EXPORT_ROWS = 5000;
@@ -27,59 +26,10 @@ function escapeCsvValue(value: unknown): string {
   return str;
 }
 
-export async function exportCustomersCsv(orgId: string): Promise<{ exported: number; total: number }> {
-  // First get total count
-  const { count, error: countError } = await supabase
-    .from('customers')
-    .select('id', { count: 'exact', head: true })
-    .eq('organization_id', orgId);
-
-  if (countError) {
-    throw new Error('Failed to count customers: ' + countError.message);
-  }
-
-  const total = count || 0;
-
-  // Fetch up to MAX_EXPORT_ROWS
-  const { data, error } = await supabase
-    .from('customers')
-    .select(CSV_COLUMNS.join(', '))
-    .eq('organization_id', orgId)
-    .order('health_score', { ascending: false })
-    .limit(MAX_EXPORT_ROWS);
-
-  if (error) {
-    throw new Error('Failed to fetch customers: ' + error.message);
-  }
-
-  if (!data || data.length === 0) {
-    throw new Error('No customers to export');
-  }
-
-  // Build CSV string
-  const lines: string[] = [];
-  lines.push(CSV_COLUMNS.join(','));
-
-  for (let i = 0; i < data.length; i++) {
-    const row = data[i];
-    const values: string[] = [];
-    for (let j = 0; j < CSV_COLUMNS.length; j++) {
-      values.push(escapeCsvValue((row as unknown as Record<string, unknown>)[CSV_COLUMNS[j]]));
-    }
-    lines.push(values.join(','));
-  }
-
-  const csvContent = lines.join('\n');
-
-  // Trigger download
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+function triggerDownload(csvContent: string, filename: string): void {
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const filename = 'jacin-customers-' + yyyy + '-' + mm + '-' + dd + '.csv';
-
   const link = document.createElement('a');
   link.href = url;
   link.setAttribute('download', filename);
@@ -87,6 +37,62 @@ export async function exportCustomersCsv(orgId: string): Promise<{ exported: num
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
 
-  return { exported: data.length, total: total };
+function buildDateFilename(prefix: string): string {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${prefix}-${yyyy}-${mm}-${dd}.csv`;
+}
+
+interface AccountCsvRow {
+  stripe_customer_id: string;
+  hubspot_company_id: string | null;
+  plan_tier: string | null;
+  billing_interval: string | null;
+  mrr_cents: number;
+  seat_count: number | null;
+  seat_limit: number | null;
+  contract_end_date: string | null;
+  health_score: number | null;
+  churn_risk_score: number | null;
+  expansion_score: number | null;
+  product_usage_score: number | null;
+}
+
+export async function exportAccountsCsv(): Promise<{ exported: number }> {
+  const { data, error } = await supabase
+    .from('accounts')
+    .select('stripe_customer_id, hubspot_company_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, contract_end_date, health_score, churn_risk_score, expansion_score, product_usage_score')
+    .order('mrr_cents', { ascending: false })
+    .limit(MAX_EXPORT_ROWS);
+
+  if (error) throw new Error('Erreur export : ' + error.message);
+  if (!data || data.length === 0) throw new Error('Aucun compte à exporter');
+
+  const rows = data as unknown[] as AccountCsvRow[];
+  const lines: string[] = [];
+  lines.push(ACCOUNT_CSV_HEADER.join(','));
+
+  for (const row of rows) {
+    lines.push([
+      escapeCsvValue(row.stripe_customer_id),
+      escapeCsvValue(row.hubspot_company_id),
+      escapeCsvValue(row.plan_tier),
+      escapeCsvValue(row.billing_interval),
+      escapeCsvValue((row.mrr_cents / 100).toFixed(2)),
+      escapeCsvValue(row.seat_count),
+      escapeCsvValue(row.seat_limit),
+      escapeCsvValue(row.contract_end_date),
+      escapeCsvValue(row.health_score),
+      escapeCsvValue(row.churn_risk_score),
+      escapeCsvValue(row.expansion_score),
+      escapeCsvValue(row.product_usage_score),
+    ].join(','));
+  }
+
+  triggerDownload(lines.join('\n'), buildDateFilename('sentio-comptes'));
+  return { exported: data.length };
 }
