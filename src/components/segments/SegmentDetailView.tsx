@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import ScoreBadge from '@/components/ScoreBadge';
 import { fr } from '@/i18n/fr';
-import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
+import { supabase } from '@/lib/supabase';
 import type { SegmentType, SegmentAccount } from '@/lib/types/segments';
 import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
 
@@ -74,10 +74,22 @@ export default function SegmentDetailView({ segment, accounts, totalFetched }: S
   const handleExport = useCallback(async () => {
     setExporting(true);
     try {
-      const res = await fetchWithUserJwt<Blob>(
-        `export-segment-csv?segment=${encodeURIComponent(segment)}`,
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Session expirée, veuillez vous reconnecter');
+      }
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const res = await fetch(
+        `${baseUrl}/functions/v1/export-segment-csv?segment=${encodeURIComponent(segment)}`,
+        {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        },
       );
-      const blob = res instanceof Blob ? res : new Blob([JSON.stringify(res)], { type: 'text/csv' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: `Erreur ${res.status}` }));
+        throw new Error((body as { error?: string }).error ?? `Erreur ${res.status}`);
+      }
+      const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
