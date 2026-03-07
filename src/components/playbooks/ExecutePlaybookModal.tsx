@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Play, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -97,6 +97,40 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, o
                 </p>
               </div>
             </div>
+            {/* Actions summary (webhook, slack, hubspot, email) */}
+            {result.actions_summary && result.actions_summary.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Actions :</p>
+                <div className="space-y-1.5">
+                  {result.actions_summary.map((action, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      {action.status === 'success' ? (
+                        <CheckCircle className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                      ) : action.status === 'skipped' ? (
+                        <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5 shrink-0" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                      )}
+                      <div>
+                        <span>{action.message}</span>
+                        {action.status === 'success' && action.status_code != null && action.latency_ms != null && (
+                          <span className="text-muted-foreground ml-1">
+                            — {action.status_code} OK ({action.latency_ms}ms)
+                          </span>
+                        )}
+                        {action.type === 'webhook' && action.status === 'success' && (
+                          <p className="text-xs text-muted-foreground">
+                            stripe_customer_id transmis — votre outil fait le reste
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Per-account results */}
             {result.results && result.results.length > 0 && (
               <div className="text-xs space-y-1 max-h-40 overflow-y-auto">
                 {result.results.map((r, i) => (

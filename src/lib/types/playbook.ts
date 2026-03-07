@@ -189,6 +189,14 @@ export interface ExecutePlaybookPayload {
   cooldown_hours?: number;
 }
 
+export interface ExecutionActionDetail {
+  type: 'webhook' | 'slack' | 'hubspot' | 'email';
+  status: 'success' | 'failed' | 'skipped';
+  message: string;
+  latency_ms?: number;
+  status_code?: number;
+}
+
 export interface ExecutePlaybookResult {
   execution_id: string;
   account_id: string;
@@ -204,6 +212,7 @@ export interface ExecutePlaybookResponse {
   executions_created: number;
   has_more: boolean;
   results: ExecutePlaybookResult[];
+  actions_summary?: ExecutionActionDetail[];
 }
 
 // --- Execution row (from playbook_executions table) ---

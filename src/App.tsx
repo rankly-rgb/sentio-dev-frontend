@@ -27,6 +27,7 @@ import Playbooks from '@/pages/Playbooks';
 import PlaybookNew from '@/pages/PlaybookNew';
 import PlaybookDetail from '@/pages/PlaybookDetail';
 import WorkflowDetail from '@/pages/WorkflowDetail';
+import Integrations from '@/pages/Integrations';
 
 // Admin
 import Organizations from '@/pages/admin/Organizations';
@@ -108,6 +109,7 @@ export default function App() {
                 <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/workflows/:id" element={<ProtectedRoute><AppLayout><WorkflowDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
+                <Route path="/settings/integrations" element={<ProtectedRoute><AppLayout><Integrations /></AppLayout></ProtectedRoute>} />
 
                 {/* Routes admin */}
                 <Route path="/admin/organizations" element={<AdminRoute><AppLayout><Organizations /></AppLayout></AdminRoute>} />

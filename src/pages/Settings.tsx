@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { fr } from '@/i18n/fr';
 import { maskEmail } from '@/lib/queries/settings';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, XCircle, UserPlus } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, ExternalLink } from 'lucide-react';
 
 export default function Settings() {
   const { organization, team, isLoading } = useOrganizationSettings();
@@ -79,6 +80,13 @@ export default function Settings() {
               {!organization?.hubspot_connected && <Button variant="outline">{fr.settings.connectHubspot}</Button>}
             </CardContent>
           </Card>
+
+          <Link to="/settings/integrations">
+            <Button variant="outline" className="w-full">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              {fr.integrations.title} — Webhook, Slack, Stripe...
+            </Button>
+          </Link>
         </TabsContent>
 
         <TabsContent value="team" className="mt-4">

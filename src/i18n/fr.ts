@@ -676,6 +676,105 @@ export const fr = {
       `Export t\u00e9l\u00e9charg\u00e9 \u2014 ${count} comptes, ${mrr} de MRR \u00e0 risque.`,
   },
 
+  // Integrations
+  integrations: {
+    title: "Integrations",
+    subtitle: "Connectez vos outils pour activer les playbooks",
+    activeIntegrations: "Integrations actives",
+    webhookUniversal: "Webhook universel",
+    upcoming: "A venir",
+    // Statuts
+    connected: "Connecte",
+    notConnected: "Non connecte",
+    connect: "Connecter",
+    syncAgo: (text: string) => `Sync ${text}`,
+    // Prerequis
+    prerequisite: {
+      title: "Prerequis : connectez Stripe a votre outil email",
+      description:
+        "Sentio AI envoie les signaux via stripe_customer_id. Votre outil email doit avoir l'integration Stripe activee pour faire le lien avec vos contacts.",
+      brevo: "Brevo : Parametres > Integrations > Stripe (5 min)",
+      klaviyo: "Klaviyo : Integrations > Stripe (5 min)",
+      activeCampaign: "ActiveCampaign : Apps > Stripe (5 min)",
+      otherTool: "Vous utilisez un autre outil ?",
+      otherToolDesc: "Tout outil acceptant des webhooks fonctionne.",
+    },
+    // Webhook config
+    webhook: {
+      description:
+        "Sentio AI enverra les signaux (stripe_customer_id + scores) vers cet endpoint. Votre outil fera le reste.",
+      endpointUrl: "URL de destination",
+      endpointPlaceholder: "https://votre-endpoint.com/sentio",
+      configure: "Configurer le webhook",
+      active: "Actif",
+      secret: "Secret",
+      show: "Afficher",
+      hide: "Masquer",
+      copy: "Copier",
+      copied: "Copie !",
+      lastExecution: "Derniere execution",
+      statusOk: (code: number, ms: number) => `${code} OK (${ms}ms)`,
+      activeEvents: "Evenements actifs",
+      testConnection: "Tester la connexion",
+      regenerateSecret: "Regenerer le secret",
+      editUrl: "Modifier l'URL",
+      disable: "Desactiver",
+      testing: "Test en cours...",
+      testSuccess: (code: number, ms: number) => `Succes — ${code} (${ms}ms)`,
+      testFailed: "Echec du test",
+      recentFailures: (count: number) => `${count} echec${count > 1 ? 's' : ''} recent${count > 1 ? 's' : ''}`,
+      lastError: "Derniere erreur",
+      disableWarning: "Le webhook sera desactive apres 5 echecs consecutifs.",
+      retestNow: "Retester maintenant",
+      viewLogs: "Voir les logs",
+      confirmRegenerate: "Regenerer le secret ?",
+      confirmRegenerateDesc:
+        "L'ancien secret sera invalide immediatement. Mettez a jour votre endpoint avant de confirmer.",
+      confirmDisable: "Desactiver le webhook ?",
+      confirmDisableDesc: "Les signaux ne seront plus envoyes vers cet endpoint.",
+      notConfigured: "Non configure",
+    },
+    // Events
+    events: {
+      churn_risk_critical: "Churn critique",
+      payment_failed: "Paiement echoue",
+      renewal_upcoming: "Renouvellement",
+      expansion_opportunity: "Opportunite expansion",
+      score_drop: "Baisse de score",
+      onboarding_stalled: "Onboarding",
+    },
+    // Secret modal
+    secretModal: {
+      title: "Votre secret de signature",
+      warning: "Copiez ce secret maintenant. Il ne sera plus affiche apres fermeture de cette fenetre.",
+      verifySignature: "Verifier la signature dans votre code",
+      payloadExample: "Exemple du payload recu",
+      stripeMapping:
+        "Votre outil email utilise stripe_customer_id pour retrouver le bon contact via son integration Stripe native.",
+      closeCta: "J'ai copie mon secret — Fermer",
+    },
+    // Upcoming
+    salesforce: "Salesforce",
+    zendesk: "Zendesk",
+    pipedrive: "Pipedrive",
+    q2_2026: "Q2 2026",
+    q3_2026: "Q3 2026",
+    // Sidebar indicator
+    sidebar: {
+      webhookActive: "Webhook actif",
+      webhookNotConfigured: "Webhook non configure",
+      webhookError: "Webhook en erreur",
+    },
+    // Playbook execution actions
+    executionActions: {
+      webhookSent: "Webhook envoye",
+      webhookStripeNote: "stripe_customer_id transmis — votre outil fait le reste",
+      slackSent: (channel: string) => `Alerte Slack : ${channel}`,
+      hubspotSkipped: "HubSpot non connecte — ignore",
+      emailSent: "Email envoye",
+    },
+  },
+
   // Commun
   common: {
     loading: "Chargement...",

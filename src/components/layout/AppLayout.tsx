@@ -21,6 +21,7 @@ import { fr as dateFnsFr } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInsightStats } from '@/hooks/useInsights';
 import { useTodayP0 } from '@/hooks/useToday';
+import { useWebhookConfig } from '@/hooks/useWebhook';
 import { fr } from '@/i18n/fr';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
@@ -43,6 +44,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const criticalInsightsCount = statsData?.data?.by_priority?.critical ?? 0;
   const { data: p0Accounts } = useTodayP0();
   const p0Count = p0Accounts?.length ?? 0;
+  const { data: webhookConfig } = useWebhookConfig();
   const { data: lastSyncData } = useQuery({
     queryKey: ['sync-status', 'last-completed', user?.organization_id],
     queryFn: async () => {
@@ -132,6 +134,31 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         >
           <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname === '/settings' ? 'text-primary' : 'text-muted-foreground')} />
           <span>{fr.nav.settings}</span>
+        </Link>
+
+        {/* Webhook status indicator */}
+        <Link
+          to="/settings/integrations"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
+        >
+          <div
+            className={cn(
+              'h-2 w-2 rounded-full shrink-0',
+              webhookConfig?.is_active && !webhookConfig.failure_count
+                ? 'bg-emerald-500'
+                : webhookConfig?.is_active && webhookConfig.failure_count > 0
+                  ? 'bg-orange-500'
+                  : 'bg-muted-foreground/40',
+            )}
+          />
+          <span>
+            {webhookConfig?.is_active && !webhookConfig.failure_count
+              ? fr.integrations.sidebar.webhookActive
+              : webhookConfig?.is_active && webhookConfig.failure_count > 0
+                ? fr.integrations.sidebar.webhookError
+                : fr.integrations.sidebar.webhookNotConfigured}
+          </span>
         </Link>
       </nav>
 
