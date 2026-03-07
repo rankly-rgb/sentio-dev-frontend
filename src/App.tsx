@@ -17,6 +17,7 @@ import Dashboard from '@/pages/Dashboard';
 import Accounts from '@/pages/Accounts';
 import AccountDetail from '@/pages/AccountDetail';
 import Segments from '@/pages/Segments';
+import SegmentDetail from '@/pages/SegmentDetail';
 import Insights from '@/pages/Insights';
 import Syncs from '@/pages/Syncs';
 import Settings from '@/pages/Settings';
@@ -99,6 +100,7 @@ export default function App() {
                 <Route path="/accounts" element={<ProtectedRoute><AppLayout><Accounts /></AppLayout></ProtectedRoute>} />
                 <Route path="/accounts/:accountId" element={<ProtectedRoute><AppLayout><AccountDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/segments" element={<ProtectedRoute><AppLayout><Segments /></AppLayout></ProtectedRoute>} />
+                <Route path="/segments/:segment" element={<ProtectedRoute><AppLayout><SegmentDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/insights" element={<ProtectedRoute><AppLayout><Insights /></AppLayout></ProtectedRoute>} />
                 <Route path="/syncs" element={<ProtectedRoute><AppLayout><Syncs /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks" element={<ProtectedRoute><AppLayout><Playbooks /></AppLayout></ProtectedRoute>} />

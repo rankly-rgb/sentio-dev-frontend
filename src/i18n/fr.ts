@@ -60,6 +60,20 @@ export const fr = {
     newAccounts: "Nouveaux (< 90j)",
   },
 
+  // Détail segment
+  segmentDetail: {
+    accountCount: 'comptes',
+    avgHealth: 'Score santé moyen',
+    exportCsv: 'Exporter CSV',
+    exporting: 'Export en cours\u2026',
+    exportError: "Erreur lors de l'export",
+    zeroPiiNote: 'Export Zero-PII \u2014 identifiants techniques uniquement (stripe_customer_id, hubspot_company_id)',
+    renewal: 'Renouvellement',
+    noAccounts: 'Aucun compte dans ce segment',
+    truncatedBanner: (count: number) =>
+      `${count} comptes dans ce segment \u2014 seuls les 100 premiers sont affich\u00e9s. Utilisez l\u2019export CSV pour la liste compl\u00e8te.`,
+  },
+
   // Comptes
   accounts: {
     title: "Comptes clients",
