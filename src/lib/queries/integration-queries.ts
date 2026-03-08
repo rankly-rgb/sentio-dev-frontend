@@ -12,9 +12,13 @@ export async function getIntegrationStatus(): Promise<IntegrationStatusResponse>
 
 export async function getAuthorizeUrl(
   provider: IntegrationProvider,
+  redirectAfter?: string,
 ): Promise<AuthorizeResponse> {
+  const params = redirectAfter
+    ? `?redirect_after=${encodeURIComponent(redirectAfter)}`
+    : '';
   return fetchWithUserJwt<AuthorizeResponse>(
-    `integration-oauth/${provider}/authorize`,
+    `integration-oauth/${provider}/authorize${params}`,
   );
 }
 

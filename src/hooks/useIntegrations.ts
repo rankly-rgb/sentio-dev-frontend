@@ -29,7 +29,10 @@ export function useIntegrationStatus() {
 
 export function useAuthorize() {
   return useMutation<AuthorizeResponse, Error, IntegrationProvider>({
-    mutationFn: (provider) => getAuthorizeUrl(provider),
+    mutationFn: (provider) => {
+      const redirectAfter = `${window.location.origin}/settings/integrations`;
+      return getAuthorizeUrl(provider, redirectAfter);
+    },
     onSuccess: (data) => {
       window.location.href = data.authorization_url;
     },

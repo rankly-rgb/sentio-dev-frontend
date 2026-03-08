@@ -201,7 +201,7 @@ export default function Integrations() {
 
     if (!callbackProvider || !callbackStatus) return;
 
-    if (callbackStatus === 'success') {
+    if (callbackStatus === 'success' || callbackStatus === 'connected') {
       toast.success(fr.integrations.oauth.callbackSuccess);
       refetch();
     } else {
