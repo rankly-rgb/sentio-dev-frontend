@@ -171,16 +171,8 @@ function StripeCard({
             </>
           )}
 
-          {/* Expired state */}
-          {isExpired && (
-            <Button size="sm" onClick={handleOAuthConnect} disabled={isConnecting}>
-              {authorizeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-              {fr.integrations.oauth.reconnect}
-            </Button>
-          )}
-
-          {/* Not connected — show connection options */}
-          {!connected && !isExpired && (
+          {/* Not connected or expired — show connection options */}
+          {(!connected || isExpired) && (
             <div className="space-y-4">
               <RadioGroup
                 value={connectionMethod}
