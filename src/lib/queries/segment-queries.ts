@@ -24,15 +24,34 @@ function getSegmentFilter(segment: SegmentType): (a: AccountRow) => boolean {
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
   const filters: Record<SegmentType, (a: AccountRow) => boolean> = {
-    champions: (a) => (a.health_score ?? 0) > 80 && (a.expansion_score ?? 0) > 70,
-    en_expansion: (a) => (a.expansion_score ?? 0) > 75,
-    stables: (a) => (a.health_score ?? 0) >= 60 && (a.health_score ?? 0) <= 80 && (a.churn_risk_score ?? 0) < 30,
-    a_risque_leger: (a) =>
-      ((a.health_score ?? 0) >= 40 && (a.health_score ?? 0) < 60) ||
-      ((a.churn_risk_score ?? 0) >= 30 && (a.churn_risk_score ?? 0) <= 50),
-    en_danger_critique: (a) => (a.health_score ?? 0) < 40 || (a.churn_risk_score ?? 0) > 70,
-    impayes: (a) => (a.churn_risk_score ?? 0) > 80 && (a.health_score ?? 0) < 50,
-    en_churn: (a) => (a.churn_risk_score ?? 0) > 90,
+    // health >= 80 AND churn_risk < 50
+    champions: (a) => (a.health_score ?? 0) >= 80 && (a.churn_risk_score ?? 100) < 50,
+    // expansion >= 70 AND health 60-79 AND churn_risk < 50
+    en_expansion: (a) =>
+      (a.expansion_score ?? 0) >= 70 &&
+      (a.health_score ?? 0) >= 60 &&
+      (a.health_score ?? 0) < 80 &&
+      (a.churn_risk_score ?? 100) < 50,
+    // mrr > 0 AND churn_risk < 50 AND health < 80 AND NOT(expansion >= 70 AND health >= 60)
+    stables: (a) => {
+      const health = a.health_score ?? 0;
+      const churn = a.churn_risk_score ?? 100;
+      const expansion = a.expansion_score ?? 0;
+      return a.mrr_cents > 0 && churn < 50 && health < 80 &&
+        !(expansion >= 70 && health >= 60);
+    },
+    // churn_risk 50-69 AND mrr > 0
+    a_risque_leger: (a) => {
+      const churn = a.churn_risk_score ?? 0;
+      return churn >= 50 && churn < 70 && a.mrr_cents > 0;
+    },
+    // churn_risk >= 70 AND mrr > 0
+    en_danger_critique: (a) => (a.churn_risk_score ?? 0) >= 70 && a.mrr_cents > 0,
+    // churn_risk > 80 AND health < 50 AND mrr > 0 (proxy score)
+    impayes: (a) => (a.churn_risk_score ?? 0) > 80 && (a.health_score ?? 0) < 50 && a.mrr_cents > 0,
+    // mrr = 0
+    en_churn: (a) => a.mrr_cents === 0,
+    // created < 90 jours (non-exclusif)
     nouveaux: (a) => new Date(a.created_at) > ninetyDaysAgo,
   };
 

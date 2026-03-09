@@ -36,9 +36,10 @@ import {
   useAuthorize,
   useRevokeIntegration,
   useConnectStripeApiKey,
+  useConnectHubspotApiKey,
 } from '@/hooks/useIntegrations';
-import type { IntegrationProvider, IntegrationSummary } from '@/lib/types/integration';
-import { validateStripeKey } from '@/lib/types/integration';
+import type { IntegrationSummary } from '@/lib/types/integration';
+import { validateStripeKey, validateHubspotKey } from '@/lib/types/integration';
 import WebhookConfigSection from '@/components/settings/WebhookConfigSection';
 
 /** Stripe card with OAuth + API Key connection options */
@@ -289,21 +290,23 @@ function StripeCard({
   );
 }
 
-/** Generic provider card (HubSpot, etc.) — OAuth only */
-function ProviderCard({
-  provider,
-  label,
+/** HubSpot card with OAuth + API Key connection options */
+function HubSpotCard({
   summary,
   isLoading,
 }: {
-  provider: IntegrationProvider;
-  label: string;
   summary: IntegrationSummary | undefined;
   isLoading: boolean;
 }) {
   const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [connectionMethod, setConnectionMethod] = useState<'oauth' | 'api_key'>('oauth');
+  const [apiKey, setApiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [clientError, setClientError] = useState<string | null>(null);
+
   const authorizeMutation = useAuthorize();
   const revokeMutation = useRevokeIntegration();
+  const apiKeyMutation = useConnectHubspotApiKey();
 
   if (isLoading) {
     return (
@@ -317,28 +320,51 @@ function ProviderCard({
 
   const connected = summary?.connected ?? false;
   const isExpired = summary?.status === 'expired' || summary?.status === 'revoked';
+  const method = summary?.integration_method;
 
-  const handleConnect = () => {
-    authorizeMutation.mutate(provider);
+  const handleOAuthConnect = () => {
+    authorizeMutation.mutate('hubspot');
+  };
+
+  const handleApiKeyConnect = () => {
+    setClientError(null);
+    const validation = validateHubspotKey(apiKey);
+    if (!validation.valid) {
+      setClientError(validation.error ?? null);
+      return;
+    }
+    apiKeyMutation.mutate(apiKey.trim(), {
+      onSuccess: () => {
+        setApiKey('');
+        setShowKey(false);
+      },
+    });
   };
 
   const handleRevoke = () => {
-    revokeMutation.mutate(provider, {
+    revokeMutation.mutate('hubspot', {
       onSuccess: () => setConfirmRevoke(false),
     });
   };
+
+  const isConnecting = authorizeMutation.isPending || apiKeyMutation.isPending;
 
   return (
     <>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">{label}</CardTitle>
+            <CardTitle className="text-lg">{fr.integrations.hubspotApiKey.title}</CardTitle>
             {connected && !isExpired && (
-              <Badge className="bg-emerald-500 hover:bg-emerald-600 flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" />
-                {fr.integrations.connected}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {method === 'api_key' ? fr.integrations.oauth.methodApiKey : fr.integrations.oauth.methodOAuth}
+                </Badge>
+                <Badge className="bg-emerald-500 hover:bg-emerald-600 flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  {fr.integrations.connected}
+                </Badge>
+              </div>
             )}
             {isExpired && (
               <Badge variant="destructive" className="flex items-center gap-1">
@@ -354,12 +380,18 @@ function ProviderCard({
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
+          {/* Connected state */}
           {connected && !isExpired && summary && (
             <>
+              <p className="text-sm text-muted-foreground">
+                {method === 'api_key'
+                  ? fr.integrations.hubspotApiKey.connectedViaApiKey
+                  : fr.integrations.hubspotApiKey.connectedViaOAuth}
+              </p>
               {summary.provider_account_id && (
                 <div>
-                  <p className="text-xs text-muted-foreground">{fr.integrations.oauth.providerAccountId}</p>
+                  <p className="text-xs text-muted-foreground">{fr.integrations.hubspotApiKey.portalId}</p>
                   <p className="text-sm font-mono">{summary.provider_account_id}</p>
                 </div>
               )}
@@ -388,18 +420,98 @@ function ProviderCard({
             </>
           )}
 
-          {isExpired && (
-            <Button size="sm" onClick={handleConnect} disabled={authorizeMutation.isPending}>
-              {authorizeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-              {fr.integrations.oauth.reconnect}
-            </Button>
-          )}
+          {/* Not connected or expired — show connection options */}
+          {(!connected || isExpired) && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {fr.integrations.oauth.hubspotInfo}
+              </p>
+              <RadioGroup
+                value={connectionMethod}
+                onValueChange={(v) => {
+                  setConnectionMethod(v as 'oauth' | 'api_key');
+                  setClientError(null);
+                }}
+              >
+                {/* Option A: OAuth */}
+                <div className="flex items-start space-x-3">
+                  <RadioGroupItem value="oauth" id="hubspot-oauth" className="mt-0.5" />
+                  <div className="space-y-2 flex-1">
+                    <Label htmlFor="hubspot-oauth" className="font-medium cursor-pointer">
+                      {fr.integrations.hubspotApiKey.optionOAuth}
+                    </Label>
+                    {connectionMethod === 'oauth' && (
+                      <Button
+                        size="sm"
+                        onClick={handleOAuthConnect}
+                        disabled={isConnecting}
+                      >
+                        {authorizeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                        {fr.integrations.oauth.connectHubspot}
+                      </Button>
+                    )}
+                  </div>
+                </div>
 
-          {!connected && !isExpired && (
-            <Button onClick={handleConnect} disabled={authorizeMutation.isPending}>
-              {authorizeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-              {fr.integrations.oauth.connectHubspot}
-            </Button>
+                {/* Option B: API Key */}
+                <div className="flex items-start space-x-3">
+                  <RadioGroupItem value="api_key" id="hubspot-apikey" className="mt-0.5" />
+                  <div className="space-y-3 flex-1">
+                    <Label htmlFor="hubspot-apikey" className="font-medium cursor-pointer">
+                      {fr.integrations.hubspotApiKey.optionApiKey}
+                    </Label>
+                    {connectionMethod === 'api_key' && (
+                      <>
+                        <p className="text-xs text-muted-foreground">
+                          {fr.integrations.hubspotApiKey.apiKeyDescription}
+                        </p>
+                        <div className="relative">
+                          <Input
+                            type={showKey ? 'text' : 'password'}
+                            placeholder={fr.integrations.hubspotApiKey.apiKeyPlaceholder}
+                            value={apiKey}
+                            onChange={(e) => {
+                              setApiKey(e.target.value);
+                              setClientError(null);
+                            }}
+                            className="pr-10 font-mono text-sm"
+                            autoComplete="off"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowKey(!showKey)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        {(clientError || apiKeyMutation.error) && (
+                          <p className="text-sm text-destructive">
+                            {clientError ?? apiKeyMutation.error?.message}
+                          </p>
+                        )}
+                        <Button
+                          size="sm"
+                          onClick={handleApiKeyConnect}
+                          disabled={isConnecting || !apiKey.trim()}
+                        >
+                          {apiKeyMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                          {apiKeyMutation.isPending
+                            ? fr.integrations.hubspotApiKey.connecting
+                            : fr.integrations.hubspotApiKey.connectButton}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </RadioGroup>
+
+              {/* Security warning */}
+              <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                <ShieldAlert className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{fr.integrations.hubspotApiKey.securityWarning}</span>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -494,9 +606,7 @@ export default function Integrations() {
             summary={status?.stripe}
             isLoading={isLoading}
           />
-          <ProviderCard
-            provider="hubspot"
-            label="HubSpot"
+          <HubSpotCard
             summary={status?.hubspot}
             isLoading={isLoading}
           />

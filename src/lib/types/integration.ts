@@ -33,6 +33,14 @@ export interface ConnectApiKeyResponse {
   message: string;
 }
 
+export interface ConnectHubspotApiKeyResponse {
+  success: true;
+  provider: 'hubspot';
+  method: 'api_key';
+  portal_id: string;
+  status: 'connected';
+}
+
 // --- Stripe API key client-side validation ---
 
 export function validateStripeKey(key: string): { valid: boolean; error?: string } {
@@ -43,6 +51,20 @@ export function validateStripeKey(key: string): { valid: boolean; error?: string
   }
   if (!/^(sk_live_|sk_test_|rk_live_|rk_test_)/.test(trimmed)) {
     return { valid: false, error: 'Format invalide — la clé doit commencer par sk_live_ ou sk_test_' };
+  }
+  if (trimmed.length < 30) {
+    return { valid: false, error: 'Clé trop courte' };
+  }
+  return { valid: true };
+}
+
+// --- HubSpot API key client-side validation ---
+
+export function validateHubspotKey(key: string): { valid: boolean; error?: string } {
+  const trimmed = key.trim();
+  if (!trimmed) return { valid: false, error: 'Clé API requise' };
+  if (!trimmed.startsWith('pat-')) {
+    return { valid: false, error: 'Format invalide — la clé doit commencer par pat-' };
   }
   if (trimmed.length < 30) {
     return { valid: false, error: 'Clé trop courte' };

@@ -5,6 +5,7 @@ import type {
   AuthorizeResponse,
   RevokeResponse,
   ConnectApiKeyResponse,
+  ConnectHubspotApiKeyResponse,
 } from '@/lib/types/integration';
 
 export async function getIntegrationStatus(): Promise<IntegrationStatusResponse> {
@@ -40,6 +41,18 @@ export async function connectStripeApiKey(
     {
       method: 'POST',
       body: { stripe_api_key: stripeApiKey },
+    },
+  );
+}
+
+export async function connectHubspotApiKey(
+  apiKey: string,
+): Promise<ConnectHubspotApiKeyResponse> {
+  return fetchWithUserJwt<ConnectHubspotApiKeyResponse>(
+    'integration-oauth/hubspot/api-key',
+    {
+      method: 'POST',
+      body: { api_key: apiKey },
     },
   );
 }

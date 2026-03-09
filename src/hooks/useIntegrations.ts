@@ -6,12 +6,14 @@ import {
   getAuthorizeUrl,
   revokeIntegration,
   connectStripeApiKey,
+  connectHubspotApiKey,
 } from '@/lib/queries/integration-queries';
 import type {
   IntegrationProvider,
   AuthorizeResponse,
   RevokeResponse,
   ConnectApiKeyResponse,
+  ConnectHubspotApiKeyResponse,
 } from '@/lib/types/integration';
 
 const KEYS = {
@@ -70,6 +72,26 @@ export function useConnectStripeApiKey() {
         data.account_name
           ? `Stripe connecté (${data.account_name}) — synchronisation en cours...`
           : 'Stripe connecté via clé API — synchronisation en cours...',
+      );
+    },
+    onError: (e) => {
+      toast.error(e.message);
+    },
+    retry: false,
+  });
+}
+
+export function useConnectHubspotApiKey() {
+  const qc = useQueryClient();
+
+  return useMutation<ConnectHubspotApiKeyResponse, Error, string>({
+    mutationFn: (apiKey) => connectHubspotApiKey(apiKey),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: KEYS.status });
+      toast.success(
+        data.portal_id
+          ? `HubSpot connecté (Portal ${data.portal_id}) — synchronisation en cours...`
+          : 'HubSpot connecté via clé API — synchronisation en cours...',
       );
     },
     onError: (e) => {

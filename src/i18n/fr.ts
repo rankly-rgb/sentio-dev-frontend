@@ -795,6 +795,21 @@ export const fr = {
       securityWarning: "Ne partagez jamais votre cle publique (pk_). Seule la Secret Key (sk_) est acceptee.",
       alreadyConnected: "Stripe est deja connecte. Revoquez d'abord la connexion existante.",
     },
+    // HubSpot API Key
+    hubspotApiKey: {
+      title: "Connecter HubSpot",
+      optionOAuth: "OAuth (recommande)",
+      optionApiKey: "Cle API (Private App)",
+      apiKeyDescription: "Collez votre token Private App HubSpot depuis Parametres > Integrations > Applications privees",
+      apiKeyPlaceholder: "pat-na1-...",
+      connectButton: "Connecter avec ma cle API",
+      connecting: "Verification de la cle en cours...",
+      securityWarning: "Utilisez uniquement un token Private App (pat-). Ne partagez jamais ce token publiquement.",
+      alreadyConnected: "HubSpot est deja connecte. Revoquez d'abord la connexion existante.",
+      connectedViaOAuth: "Connecte via OAuth HubSpot",
+      connectedViaApiKey: "Connecte via cle API (Private App)",
+      portalId: "Portal ID",
+    },
     // Sidebar indicator
     sidebar: {
       webhookActive: "Webhook actif",
