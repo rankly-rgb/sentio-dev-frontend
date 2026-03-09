@@ -4,6 +4,7 @@ import type {
   IntegrationStatusResponse,
   AuthorizeResponse,
   RevokeResponse,
+  ConnectApiKeyResponse,
 } from '@/lib/types/integration';
 
 export async function getIntegrationStatus(): Promise<IntegrationStatusResponse> {
@@ -29,4 +30,16 @@ export async function revokeIntegration(
     method: 'POST',
     body: { provider },
   });
+}
+
+export async function connectStripeApiKey(
+  stripeApiKey: string,
+): Promise<ConnectApiKeyResponse> {
+  return fetchWithUserJwt<ConnectApiKeyResponse>(
+    'integration-oauth/stripe/api-key',
+    {
+      method: 'POST',
+      body: { stripe_api_key: stripeApiKey },
+    },
+  );
 }

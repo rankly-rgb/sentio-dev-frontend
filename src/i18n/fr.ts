@@ -778,6 +778,22 @@ export const fr = {
       callbackSuccess: "Integration connectee avec succes",
       callbackError: "Erreur lors de la connexion",
       hubspotInfo: "Connectez HubSpot pour activer le scoring d'engagement",
+      methodOAuth: "OAuth",
+      methodApiKey: "Cle API",
+      connectedViaOAuth: "Connecte via Stripe Connect",
+      connectedViaApiKey: "Connecte via cle API",
+    },
+    // Stripe API Key
+    stripeApiKey: {
+      title: "Connecter Stripe",
+      optionOAuth: "Stripe Connect (recommande)",
+      optionApiKey: "Cle API secrete",
+      apiKeyDescription: "Collez votre Secret Key depuis le Dashboard Stripe > Developpeurs > Cles API",
+      apiKeyPlaceholder: "sk_live_...",
+      connectButton: "Connecter avec ma cle API",
+      connecting: "Verification de la cle en cours...",
+      securityWarning: "Ne partagez jamais votre cle publique (pk_). Seule la Secret Key (sk_) est acceptee.",
+      alreadyConnected: "Stripe est deja connecte. Revoquez d'abord la connexion existante.",
     },
     // Sidebar indicator
     sidebar: {

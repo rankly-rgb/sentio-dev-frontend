@@ -5,11 +5,13 @@ import {
   getIntegrationStatus,
   getAuthorizeUrl,
   revokeIntegration,
+  connectStripeApiKey,
 } from '@/lib/queries/integration-queries';
 import type {
   IntegrationProvider,
   AuthorizeResponse,
   RevokeResponse,
+  ConnectApiKeyResponse,
 } from '@/lib/types/integration';
 
 const KEYS = {
@@ -54,5 +56,25 @@ export function useRevokeIntegration() {
     onError: (e) => {
       toast.error('Erreur deconnexion : ' + e.message);
     },
+  });
+}
+
+export function useConnectStripeApiKey() {
+  const qc = useQueryClient();
+
+  return useMutation<ConnectApiKeyResponse, Error, string>({
+    mutationFn: (apiKey) => connectStripeApiKey(apiKey),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: KEYS.status });
+      toast.success(
+        data.account_name
+          ? `Stripe connecté (${data.account_name}) — synchronisation en cours...`
+          : 'Stripe connecté via clé API — synchronisation en cours...',
+      );
+    },
+    onError: (e) => {
+      toast.error(e.message);
+    },
+    retry: false,
   });
 }
