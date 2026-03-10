@@ -220,7 +220,7 @@ export default function PlaybookDetail() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.targeted}</p>
-            <p className="text-xl font-bold">{playbook.current_eligible_count}</p>
+            <p className="text-xl font-bold">{playbook.current_eligible_count ?? 0}</p>
           </CardContent>
         </Card>
         <Card>
