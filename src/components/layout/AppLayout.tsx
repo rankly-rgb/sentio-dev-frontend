@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3,
+  CalendarCheck,
   Calendar,
   Users,
   Tag,
@@ -20,14 +21,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr as dateFnsFr } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInsightStats } from '@/hooks/useInsights';
-import { useTodayP0 } from '@/hooks/useToday';
+import { useTodayActions } from '@/hooks/useTodayActions';
 import { useWebhookConfig } from '@/hooks/useWebhook';
 import { fr } from '@/i18n/fr';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 
 const navItems = [
-  { label: fr.nav.today, path: '/today', icon: Calendar, badgeKey: 'today' as const },
+  { label: fr.todayActions.pageTitle, path: '/dashboard/today', icon: CalendarCheck, badgeKey: 'today' as const },
+  { label: fr.nav.today, path: '/today', icon: Calendar },
   { label: fr.nav.dashboard, path: '/dashboard', icon: BarChart3 },
   { label: fr.nav.accounts, path: '/accounts', icon: Users },
   { label: fr.nav.segments, path: '/segments', icon: Tag },
@@ -42,8 +44,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: statsData } = useInsightStats();
   const criticalInsightsCount = statsData?.data?.by_priority?.critical ?? 0;
-  const { data: p0Accounts } = useTodayP0();
-  const p0Count = p0Accounts?.length ?? 0;
+  const { totalCount: todayActionsCount } = useTodayActions();
   const { data: webhookConfig } = useWebhookConfig();
   const { data: lastSyncData } = useQuery({
     queryKey: ['sync-status', 'last-completed', user?.organization_id],
@@ -84,16 +85,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Nav principale */}
       <nav className="flex-1 space-y-0.5 px-3 py-4">
         {navItems.map(({ label, path, icon: Icon, badgeKey }) => {
-          const active = path === '/today'
-            ? location.pathname === '/today'
-            : path === '/dashboard'
-              ? location.pathname === '/dashboard'
-              : location.pathname.startsWith(path);
+          const active = path === '/dashboard/today'
+            ? location.pathname === '/dashboard/today'
+            : path === '/today'
+              ? location.pathname === '/today'
+              : path === '/dashboard'
+                ? location.pathname === '/dashboard'
+                : location.pathname.startsWith(path);
 
-          const badgeCount =
-            badgeKey === 'today' ? p0Count
+          const rawBadgeCount =
+            badgeKey === 'today' ? todayActionsCount
             : path === '/insights' ? criticalInsightsCount
             : 0;
+          const badgeCount = rawBadgeCount > 99 ? '99+' : rawBadgeCount;
 
           return (
             <Link
@@ -109,7 +113,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'text-primary' : 'text-muted-foreground')} />
               <span>{label}</span>
-              {badgeCount > 0 ? (
+              {(typeof badgeCount === 'string' || badgeCount > 0) ? (
                 <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
                   {badgeCount}
                 </span>

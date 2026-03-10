@@ -644,6 +644,40 @@ export const fr = {
     filterSource: "Source",
   },
 
+  // Page Aujourd'hui V2 — actions groupées par priorité
+  todayActions: {
+    pageTitle: "Aujourd'hui",
+    actionCount: (n: number) => `${n} action${n > 1 ? 's' : ''} prioritaire${n > 1 ? 's' : ''}`,
+    critiques: 'Critiques',
+    hautes: 'Hautes',
+    normales: 'Normales',
+    mrrAtRisk: 'MRR à risque',
+    showAll: 'Voir tout',
+    showMore: (n: number) => `Voir les ${n} restants`,
+    collapse: 'Replier',
+    noActions: 'Aucune action prioritaire aujourd\'hui',
+    noActionsDesc: 'Tous vos comptes sont en bonne santé. Revenez demain ou consultez la vue d\'ensemble.',
+    viewDashboard: 'Voir la vue d\'ensemble',
+    // Filters
+    allPriorities: 'Toutes les priorités',
+    allSegments: 'Tous les segments',
+    allCategories: 'Toutes les catégories',
+    mrrMinPlaceholder: 'MRR min (€)',
+    resetFilters: 'Réinitialiser',
+    // Table columns
+    colStripeId: 'ID Stripe',
+    colPlan: 'Plan',
+    colMrr: 'MRR',
+    colHealth: 'Santé',
+    colChurnRisk: 'Risque',
+    colReasons: 'Raisons',
+    colPlaybooks: 'Playbooks',
+    colRenewal: 'Renouv.',
+    // Export
+    exportCsv: 'Exporter CSV',
+    exportJson: 'Exporter JSON',
+  },
+
   // Briefing quotidien
   today: {
     greeting: (name: string | null) => `Bonjour ${name ?? 'vous'}`,
