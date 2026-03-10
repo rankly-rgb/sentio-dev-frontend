@@ -125,6 +125,7 @@ export interface Playbook {
   steps: WorkflowStep[];
   tags: string[];
   // KPI fields
+  current_eligible_count: number;
   accounts_eligible: number;
   accounts_targeted: number;
   accounts_reached: number;

@@ -219,14 +219,14 @@ export default function PlaybookDetail() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.eligible}</p>
-            <p className="text-xl font-bold">{playbook.accounts_eligible ?? 0}</p>
+            <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.targeted}</p>
+            <p className="text-xl font-bold">{playbook.current_eligible_count}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.targeted}</p>
-            <p className="text-xl font-bold">{playbook.accounts_targeted ?? 0}</p>
+            <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.eligible}</p>
+            <p className="text-xl font-bold">{playbook.accounts_eligible ?? 0}</p>
           </CardContent>
         </Card>
         <Card>

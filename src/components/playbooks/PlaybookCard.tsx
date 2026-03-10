@@ -49,7 +49,7 @@ export default function PlaybookCard({ playbook }: Props) {
         {/* Stats */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
           <span>
-            {fr.playbooks.kpi.targeted} : {playbook.accounts_targeted ?? 0}
+            {fr.playbooks.kpi.targeted} : {playbook.current_eligible_count}
           </span>
           <span>
             {fr.playbooks.kpi.converted} : {playbook.accounts_converted ?? 0}
