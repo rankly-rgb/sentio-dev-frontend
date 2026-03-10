@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { fr } from '@/i18n/fr';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { PRIORITY_OPTIONS, formatPriorityKey } from '@/lib/priority-labels';
 
 interface ExportFilters {
   priority?: string;
@@ -149,7 +150,7 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
             {summary.by_priority && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {Object.entries(summary.by_priority).map(([key, val]) => (
-                  <span key={key}>{key} : {val}</span>
+                  <span key={key}>{formatPriorityKey(key)} : {val}</span>
                 ))}
               </div>
             )}
@@ -164,9 +165,9 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{fr.playbookExport.all}</SelectItem>
-              <SelectItem value="P0">P0</SelectItem>
-              <SelectItem value="P1">P1</SelectItem>
-              <SelectItem value="P2">P2</SelectItem>
+              {PRIORITY_OPTIONS.map(({ code, label }) => (
+                <SelectItem key={code} value={code}>{label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 

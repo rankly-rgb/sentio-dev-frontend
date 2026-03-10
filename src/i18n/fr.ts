@@ -640,8 +640,8 @@ export const fr = {
   today: {
     greeting: (name: string | null) => `Bonjour ${name ?? 'vous'}`,
     actionCount: (n: number) => `${n} action${n > 1 ? 's' : ''} prioritaire${n > 1 ? 's' : ''} aujourd'hui`,
-    sectionP0: "Actions P0",
-    sectionP1: "Actions P1",
+    sectionP0: "Actions urgentes",
+    sectionP1: "Actions \u00e0 surveiller",
     sectionExpansion: "Opportunit\u00e9s d'expansion",
     healthScore: "Score sant\u00e9",
     since30d: (prev: number) => `depuis ${prev} il y a 30 jours`,
