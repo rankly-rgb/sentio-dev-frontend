@@ -161,7 +161,7 @@ function evaluateConditions(group: ConditionGroup | null, account: Record<string
 // --- Main computation ---
 
 export function computeTodayActions(accounts: Account[], playbooks: Playbook[]): TodayAction[] {
-  const activePlaybooks = playbooks.filter((pb) => pb.status === 'active');
+  const activePlaybooks = playbooks.filter((pb) => pb.status !== 'archived');
   const map = new Map<string, TodayAction>();
 
   for (const pb of activePlaybooks) {
@@ -246,7 +246,7 @@ export function buildTodayActionsSummary(actions: TodayAction[]): TodayActionsSu
 export function getUniqueCategories(playbooks: Playbook[]): TemplateCategory[] {
   const cats = new Set<TemplateCategory>();
   for (const pb of playbooks) {
-    if (pb.status === 'active' && pb.template_category) {
+    if (pb.status !== 'archived' && pb.template_category) {
       cats.add(pb.template_category);
     }
   }

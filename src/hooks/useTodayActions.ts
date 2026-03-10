@@ -37,7 +37,7 @@ export function useTodayActions(filters?: TodayActionsFilters) {
 
   const playbooksQuery = useQuery({
     queryKey: ['today-actions', 'playbooks', orgId],
-    queryFn: () => listPlaybooks(orgId, { status: 'active', per_page: 100 }),
+    queryFn: () => listPlaybooks(orgId, { per_page: 100 }),
     enabled: !!orgId,
     staleTime: 60_000,
   });

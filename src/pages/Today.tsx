@@ -1,15 +1,20 @@
-import { useRef, useState, useMemo } from 'react';
-import { CheckCircle, CalendarCheck, Loader2 } from 'lucide-react';
+import { useRef, useState, useMemo, useCallback } from 'react';
+import { CheckCircle, CalendarCheck, Loader2, Download } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { fr } from '@/i18n/fr';
+import { supabase } from '@/lib/supabase';
 import { useTodayActions } from '@/hooks/useTodayActions';
 import { getUniqueCategories } from '@/lib/types/today-actions';
 import type { TodayActionsFilters } from '@/lib/types/today-actions';
 import type { PriorityCode } from '@/lib/priority-labels';
+import { Button } from '@/components/ui/button';
 import TodaySummaryBar from '@/components/today/TodaySummaryBar';
 import TodayFilters from '@/components/today/TodayFilters';
 import TodayPriorityGroup from '@/components/today/TodayPriorityGroup';
 import EmptyState from '@/components/EmptyState';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 function formatDateHeader(): string {
   const now = new Date();
@@ -24,6 +29,7 @@ function formatDateHeader(): string {
 export default function Today() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<TodayActionsFilters>({});
+  const [exporting, setExporting] = useState(false);
   const { summary, playbooks, isLoading, error } = useTodayActions(filters);
 
   const p0Ref = useRef<HTMLDivElement>(null);
@@ -53,6 +59,40 @@ export default function Today() {
       actionsByPriority[action.priority].push(action);
     }
   }
+
+  const exportCsv = useCallback(async () => {
+    setExporting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Session expirée');
+
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/export-playbook-accounts`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ format: 'csv' }),
+        },
+      );
+
+      if (!res.ok) throw new Error(`Erreur ${res.status}`);
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `actions-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur export');
+    } finally {
+      setExporting(false);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -139,6 +179,24 @@ export default function Today() {
                 defaultExpanded={false}
               />
             </div>
+          </div>
+
+          {/* Export */}
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={exporting}
+              onClick={exportCsv}
+              className="gap-2"
+            >
+              {exporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {fr.todayActions.exportCsv}
+            </Button>
           </div>
         </>
       )}
