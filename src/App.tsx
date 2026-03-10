@@ -23,7 +23,6 @@ import Syncs from '@/pages/Syncs';
 import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
 import Today from '@/pages/Today';
-import TodayActions from '@/pages/TodayActions';
 import Playbooks from '@/pages/Playbooks';
 import PlaybookNew from '@/pages/PlaybookNew';
 import PlaybookDetail from '@/pages/PlaybookDetail';
@@ -98,7 +97,6 @@ export default function App() {
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
                 {/* Routes protégées avec layout */}
-                <Route path="/dashboard/today" element={<ProtectedRoute><AppLayout><TodayActions /></AppLayout></ProtectedRoute>} />
                 <Route path="/today" element={<ProtectedRoute><AppLayout><Today /></AppLayout></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
                 <Route path="/accounts" element={<ProtectedRoute><AppLayout><Accounts /></AppLayout></ProtectedRoute>} />

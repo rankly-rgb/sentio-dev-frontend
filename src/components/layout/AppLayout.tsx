@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3,
   CalendarCheck,
-  Calendar,
   Users,
   Tag,
   Lightbulb,
@@ -28,8 +27,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 
 const navItems = [
-  { label: fr.todayActions.pageTitle, path: '/dashboard/today', icon: CalendarCheck, badgeKey: 'today' as const },
-  { label: fr.nav.today, path: '/today', icon: Calendar },
+  { label: fr.nav.today, path: '/today', icon: CalendarCheck, badgeKey: 'today' as const },
   { label: fr.nav.dashboard, path: '/dashboard', icon: BarChart3 },
   { label: fr.nav.accounts, path: '/accounts', icon: Users },
   { label: fr.nav.segments, path: '/segments', icon: Tag },
@@ -85,13 +83,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Nav principale */}
       <nav className="flex-1 space-y-0.5 px-3 py-4">
         {navItems.map(({ label, path, icon: Icon, badgeKey }) => {
-          const active = path === '/dashboard/today'
-            ? location.pathname === '/dashboard/today'
-            : path === '/today'
-              ? location.pathname === '/today'
-              : path === '/dashboard'
-                ? location.pathname === '/dashboard'
-                : location.pathname.startsWith(path);
+          const active = path === '/today'
+            ? location.pathname === '/today'
+            : path === '/dashboard'
+              ? location.pathname === '/dashboard'
+              : location.pathname.startsWith(path);
 
           const rawBadgeCount =
             badgeKey === 'today' ? todayActionsCount
