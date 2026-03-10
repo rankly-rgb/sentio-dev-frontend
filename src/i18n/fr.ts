@@ -34,6 +34,14 @@ export const fr = {
     lastSync: "Dernière synchronisation",
     manualRefresh: "Actualisation manuelle",
     syncInProgress: "Synchronisation en cours...",
+    subtitle: "Tableau de bord de votre base client",
+    viewAll: "Voir tout",
+    topAtRisk: "Comptes à risque",
+    topExpansion: "Opportunités d'expansion",
+    segmentsQuickLinks: "Segments",
+    recentSyncs: "Synchronisations récentes",
+    noSyncs: "Aucune synchronisation effectuée",
+    noSyncsDesc: "Connectez Stripe dans les Paramètres pour lancer la première synchronisation.",
   },
 
   // Scores

@@ -23,31 +23,8 @@ import { ArrowLeft, Calculator, BrainCircuit, BarChart3 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
 } from 'recharts';
-import type { ScoreHistoryItem, SegmentType } from '@/lib/types/accounts';
-
-// ─── Segment color mapping ──────────────────────────────────────────────────
-
-const SEGMENT_COLORS: Record<SegmentType, { text: string; bg: string }> = {
-  champions: { text: 'text-green-700', bg: 'bg-green-100' },
-  en_expansion: { text: 'text-blue-700', bg: 'bg-blue-100' },
-  stables: { text: 'text-gray-700', bg: 'bg-gray-100' },
-  a_risque_leger: { text: 'text-yellow-700', bg: 'bg-yellow-100' },
-  en_danger_critique: { text: 'text-red-700', bg: 'bg-red-100' },
-  impayes: { text: 'text-orange-700', bg: 'bg-orange-100' },
-  en_churn: { text: 'text-red-900', bg: 'bg-red-200' },
-  nouveaux: { text: 'text-purple-700', bg: 'bg-purple-100' },
-};
-
-const SEGMENT_LABELS: Record<SegmentType, string> = {
-  champions: 'Champions',
-  en_expansion: 'En expansion',
-  stables: 'Stables',
-  a_risque_leger: 'À risque léger',
-  en_danger_critique: 'En danger critique',
-  impayes: 'Impayés',
-  en_churn: 'En churn',
-  nouveaux: 'Nouveaux',
-};
+import type { ScoreHistoryItem } from '@/lib/types/accounts';
+import { SEGMENT_COLORS, SEGMENT_LABELS } from '@/lib/types/segments';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

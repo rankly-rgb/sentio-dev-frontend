@@ -1,10 +1,18 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { Download, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import ScoreBadge from '@/components/ScoreBadge';
 import { fr } from '@/i18n/fr';
 import { supabase } from '@/lib/supabase';
@@ -129,10 +137,19 @@ export default function SegmentDetailView({ segment, accounts, totalFetched }: S
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="space-y-2">
-          <Link to="/segments" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-            {fr.segments.title}
-          </Link>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/segments">{fr.segments.title}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{SEGMENT_LABELS[segment]}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{SEGMENT_LABELS[segment]}</h1>
             <Badge className={`${colors.bg} ${colors.text} border-0`}>{SEGMENT_LABELS[segment]}</Badge>

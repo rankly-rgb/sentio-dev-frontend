@@ -25,15 +25,15 @@ export const SEGMENT_LABELS: Record<SegmentType, string> = {
   nouveaux: 'Nouveaux (< 90j)',
 };
 
-export const SEGMENT_COLORS: Record<SegmentType, { text: string; bg: string }> = {
-  champions: { text: 'text-green-700', bg: 'bg-green-100' },
-  en_expansion: { text: 'text-blue-700', bg: 'bg-blue-100' },
-  stables: { text: 'text-gray-700', bg: 'bg-gray-100' },
-  a_risque_leger: { text: 'text-yellow-700', bg: 'bg-yellow-100' },
-  en_danger_critique: { text: 'text-red-700', bg: 'bg-red-100' },
-  impayes: { text: 'text-orange-700', bg: 'bg-orange-100' },
-  en_churn: { text: 'text-red-900', bg: 'bg-red-200' },
-  nouveaux: { text: 'text-purple-700', bg: 'bg-purple-100' },
+export const SEGMENT_COLORS: Record<SegmentType, { text: string; bg: string; border: string }> = {
+  champions: { text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  en_expansion: { text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' },
+  stables: { text: 'text-slate-700', bg: 'bg-slate-50', border: 'border-slate-200' },
+  a_risque_leger: { text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
+  en_danger_critique: { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' },
+  impayes: { text: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200' },
+  en_churn: { text: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200' },
+  nouveaux: { text: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-200' },
 };
 
 export interface SegmentAccount {

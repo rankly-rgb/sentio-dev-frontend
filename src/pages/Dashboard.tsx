@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
+import { useSegments } from '@/hooks/useSegments';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { fr } from '@/i18n/fr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,17 +13,31 @@ import { ScoreGauge } from '@/components/dashboard/score-gauge';
 import { KpiCards } from '@/components/dashboard/kpi-cards';
 import { HealthDistributionChart } from '@/components/dashboard/health-distribution-chart';
 import { MrrChart } from '@/components/dashboard/mrr-chart';
-import { ChurnRiskAlert } from '@/components/dashboard/churn-risk-alert';
-import { ExpansionOpportunities } from '@/components/dashboard/expansion-opportunities';
 import { SyncProgressPanel } from '@/components/dashboard/sync-progress-panel';
-import { RefreshCw, Calculator, CheckCircle, XCircle, Info } from 'lucide-react';
+import ScoreBadge from '@/components/ScoreBadge';
+import {
+  RefreshCw,
+  Calculator,
+  CheckCircle,
+  XCircle,
+  Info,
+  ChevronRight,
+  AlertTriangle,
+  TrendingUp,
+} from 'lucide-react';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
+import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
+import type { TopAccount } from '@/hooks/useDashboardData';
+
+const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
 export default function Dashboard() {
-  const { metrics, distribution, isLoading, error, refetch } = useDashboardData();
+  const { metrics, distribution, topAccounts, isLoading, error, refetch } = useDashboardData();
   const { triggerStripeSync, calculateScores, isSyncing, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();
+  const { data: segments } = useSegments();
+  const { data: syncs } = useSyncStatus();
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
 
@@ -60,6 +76,12 @@ export default function Dashboard() {
     );
   }
 
+  const segmentCounts = new Map(
+    (segments || []).map(s => [s.name, s.count]),
+  );
+
+  const recentSyncs = (syncs || []).slice(0, 3);
+
   return (
     <div className="space-y-6 p-6">
       {/* Tracker banner */}
@@ -67,7 +89,10 @@ export default function Dashboard() {
 
       {/* Header + actions */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">{fr.dashboard.title}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{fr.dashboard.title}</h1>
+          <p className="text-sm text-muted-foreground">{fr.dashboard.subtitle}</p>
+        </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <SyncProgressPanel />
@@ -137,6 +162,33 @@ export default function Dashboard() {
       {/* KPI cards */}
       {metrics && <KpiCards metrics={metrics} />}
 
+      {/* Segment quick-links */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">{fr.dashboard.segmentsQuickLinks}</h2>
+          <Link to="/segments" className="text-sm text-primary hover:underline flex items-center gap-1">
+            {fr.dashboard.viewAll} <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {QUICK_SEGMENTS.map(key => {
+            const colors = SEGMENT_COLORS[key];
+            const count = segmentCounts.get(key) ?? 0;
+            return (
+              <Link key={key} to={`/segments/${key}`}>
+                <Card className={`hover:shadow-md transition-shadow cursor-pointer border ${colors.bg}`}>
+                  <CardContent className="p-4">
+                    <p className={`text-xs font-medium ${colors.text}`}>{SEGMENT_LABELS[key]}</p>
+                    <p className={`text-2xl font-bold ${colors.text}`}>{count}</p>
+                    <p className="text-xs text-muted-foreground">{fr.segmentDetail.accountCount}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Score gauge + distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {metrics && (
@@ -152,14 +204,128 @@ export default function Dashboard() {
         {distribution && <HealthDistributionChart distribution={distribution} />}
       </div>
 
-      {/* MRR + alertes */}
+      {/* Top accounts: at risk + expansion */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MrrChart />
-        <div className="space-y-4">
-          <ChurnRiskAlert count={metrics?.accounts_at_risk || 0} mrrAtRisk={metrics?.mrr_at_risk_cents || 0} />
-          <ExpansionOpportunities count={metrics?.expansion_opportunities || 0} />
-        </div>
+        <TopAccountsCard
+          title={fr.dashboard.topAtRisk}
+          icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
+          accounts={topAccounts?.atRisk || []}
+          scoreField="churn_risk_score"
+          emptyText={`0 ${fr.dashboard.accountsAtRisk.toLowerCase()}`}
+          viewAllHref="/segments/en_danger_critique"
+          borderClass="border-destructive/30"
+        />
+        <TopAccountsCard
+          title={fr.dashboard.topExpansion}
+          icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
+          accounts={topAccounts?.expansion || []}
+          scoreField="expansion_score"
+          emptyText={`0 ${fr.dashboard.expansionOpportunities.toLowerCase()}`}
+          viewAllHref="/segments/en_expansion"
+          borderClass="border-blue-200"
+        />
       </div>
+
+      {/* MRR chart */}
+      <MrrChart />
+
+      {/* Recent syncs */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">{fr.dashboard.recentSyncs}</CardTitle>
+            <Link to="/syncs" className="text-sm text-primary hover:underline flex items-center gap-1">
+              {fr.dashboard.viewAll} <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recentSyncs.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">
+              {fr.dashboard.noSyncs}{' '}
+              <Link to="/settings/integrations" className="text-primary hover:underline">
+                {fr.nav.settings}
+              </Link>
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {recentSyncs.map(sync => (
+                <div key={sync.id} className="flex items-center justify-between text-sm py-1.5 border-b last:border-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={sync.sync_status === 'completed' ? 'default' : sync.sync_status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
+                      {sync.sync_status}
+                    </Badge>
+                    <span className="text-muted-foreground">{sync.sync_source}</span>
+                    <span className="text-muted-foreground">{sync.sync_type}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {sync.records_processed != null && <span>{sync.records_processed} enr.</span>}
+                    <span>{fr.format.date(sync.created_at)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
+  );
+}
+
+function TopAccountsCard({
+  title,
+  icon,
+  accounts,
+  scoreField,
+  emptyText,
+  viewAllHref,
+  borderClass,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  accounts: TopAccount[];
+  scoreField: 'churn_risk_score' | 'expansion_score';
+  emptyText: string;
+  viewAllHref: string;
+  borderClass: string;
+}) {
+  return (
+    <Card className={borderClass}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          {icon}
+          <CardTitle className="text-base">{title}</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {accounts.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-2">{emptyText}</p>
+        ) : (
+          <div className="space-y-2">
+            {accounts.map(a => (
+              <Link
+                key={a.id}
+                to={`/accounts/${a.id}`}
+                className="flex items-center justify-between py-1.5 hover:bg-muted/50 rounded px-2 -mx-2 transition-colors"
+              >
+                <span className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">
+                  {a.stripe_customer_id}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
+                  <ScoreBadge score={a[scoreField]} inverted={scoreField === 'churn_risk_score'} />
+                </div>
+              </Link>
+            ))}
+            <Link
+              to={viewAllHref}
+              className="flex items-center justify-end gap-1 text-sm text-primary hover:underline pt-1"
+            >
+              {fr.dashboard.viewAll} <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
