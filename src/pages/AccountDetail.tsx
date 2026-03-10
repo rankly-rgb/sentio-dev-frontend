@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAccountDetail } from '@/hooks/useAccountDetail';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { fr } from '@/i18n/fr';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,11 +11,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import ScoreBadge from '@/components/ScoreBadge';
 import InsightCard from '@/components/insights/InsightCard';
-import { ArrowLeft, Calculator, BrainCircuit } from 'lucide-react';
+import { ArrowLeft, Calculator, BrainCircuit, BarChart3 } from 'lucide-react';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import type { ScoreHistoryItem, SegmentType } from '@/lib/types/accounts';
 
@@ -145,6 +152,8 @@ export default function AccountDetail() {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const { data: account, isLoading, error } = useAccountDetail(accountId);
+  const { organization } = useOrganizationSettings();
+  const trackerConnected = organization?.usage_tracker_connected ?? false;
   const { calculateScores, isCalculating } = useManualSync();
   const [historyDays, setHistoryDays] = useState<30 | 60 | 90>(30);
 
@@ -258,7 +267,20 @@ export default function AccountDetail() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">{fr.scores.productUsage}</p>
-            <ScoreBadge score={account.product_usage_score} size="lg" />
+            {!trackerConnected ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-2xl font-bold text-muted-foreground cursor-help">—</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{fr.integrations.tracker.usageScoreUnavailable}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <ScoreBadge score={account.product_usage_score} size="lg" />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -269,10 +291,33 @@ export default function AccountDetail() {
           <CardTitle className="text-sm">{fr.accountDetail.scoreBreakdown}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <ScoreBreakdown score={account.product_usage_score} label={fr.scores.productUsage} weight="35%" healthScore={account.health_score} />
-          <ScoreBreakdown score={account.financial_score} label={fr.scores.financialHealth} weight="25%" healthScore={account.health_score} />
-          <ScoreBreakdown score={account.engagement_score} label={fr.scores.engagementScore} weight="20%" healthScore={account.health_score} />
-          <ScoreBreakdown score={account.contract_score} label={fr.scores.contractScore} weight="20%" healthScore={account.health_score} />
+          {trackerConnected ? (
+            <ScoreBreakdown score={account.product_usage_score} label={fr.scores.productUsage} weight="35%" healthScore={account.health_score} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <BarChart3 className="h-4 w-4" />
+                  <span>{fr.scores.productUsage}</span>
+                </div>
+                <Badge variant="secondary" className="bg-blue-50 text-blue-600 text-xs font-medium hover:bg-blue-50">
+                  {fr.integrations.tracker.comingSoon}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-400">{fr.integrations.tracker.breakdownPlaceholder}</p>
+              <div className="flex justify-end">
+                <Link
+                  to="/settings/integrations#tracker"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  {fr.integrations.tracker.connectCta}
+                </Link>
+              </div>
+            </div>
+          )}
+          <ScoreBreakdown score={account.financial_score} label={fr.scores.financialHealth} weight={trackerConnected ? '25%' : '34%'} healthScore={account.health_score} />
+          <ScoreBreakdown score={account.engagement_score} label={fr.scores.engagementScore} weight={trackerConnected ? '20%' : '33%'} healthScore={account.health_score} />
+          <ScoreBreakdown score={account.contract_score} label={fr.scores.contractScore} weight={trackerConnected ? '20%' : '33%'} healthScore={account.health_score} />
         </CardContent>
       </Card>
 
@@ -323,9 +368,9 @@ export default function AccountDetail() {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                    <Tooltip
+                    <RechartsTooltip
                       contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                      formatter={(v) => [typeof v === 'number' ? `${Math.round(v)}/100` : '—']}
+                      formatter={(v: number | string) => [typeof v === 'number' ? `${Math.round(v)}/100` : '—']}
                     />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     <Line type="monotone" dataKey="Santé" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} connectNulls />

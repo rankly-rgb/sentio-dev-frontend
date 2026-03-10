@@ -12,6 +12,10 @@ import {
   Eye,
   EyeOff,
   ShieldAlert,
+  Plug,
+  Copy,
+  Check,
+  Clock,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,8 +42,10 @@ import {
   useConnectStripeApiKey,
   useConnectHubspotApiKey,
 } from '@/hooks/useIntegrations';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import type { IntegrationSummary } from '@/lib/types/integration';
 import { validateStripeKey, validateHubspotKey } from '@/lib/types/integration';
+import type { OrganizationDetail } from '@/lib/types/settings';
 import WebhookConfigSection from '@/components/settings/WebhookConfigSection';
 
 /** Stripe card with OAuth + API Key connection options */
@@ -541,6 +547,108 @@ function HubSpotCard({
   );
 }
 
+/** Format relative time in French */
+function formatRelativeTime(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const diffMinutes = Math.floor(diffMs / 60_000);
+  if (diffMinutes < 1) return "à l'instant";
+  if (diffMinutes < 60) return `il y a ${diffMinutes} min`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+}
+
+/** Usage tracker section for Integrations page */
+function UsageTrackerCard({ organization }: { organization: OrganizationDetail | null }) {
+  const [copied, setCopied] = useState(false);
+
+  const isConnected = organization?.usage_tracker_connected ?? false;
+  const stripeCustomerId = organization?.stripe_customer_id ?? 'cus_xxx';
+  const lastEventAt = organization?.usage_tracker_last_event_at;
+
+  const snippet = `<script
+  src="https://tracker.sentio.ai/v1/t.js"
+  data-customer-id="${stripeCustomerId}"
+  async>
+</script>`;
+
+  const handleCopy = () => {
+    try {
+      navigator.clipboard.writeText(snippet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback silencieux
+    }
+  };
+
+  return (
+    <Card id="tracker">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Plug className="h-5 w-5 text-muted-foreground" />
+            <CardTitle className="text-lg">{fr.integrations.tracker.title}</CardTitle>
+          </div>
+          {isConnected ? (
+            <Badge className="bg-emerald-500 hover:bg-emerald-600 flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              {fr.integrations.tracker.connected}
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {fr.integrations.tracker.notConnected}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isConnected ? (
+          <p className="text-sm text-muted-foreground">
+            {fr.integrations.tracker.lastEvent} : {lastEventAt ? formatRelativeTime(lastEventAt) : '—'}
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {fr.integrations.tracker.description}
+            </p>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{fr.integrations.tracker.snippetIntro}</p>
+              <div className="relative">
+                <pre className="rounded-md border bg-muted p-3 text-xs font-mono overflow-x-auto">
+                  {snippet}
+                </pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={handleCopy}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3 w-3 mr-1" />
+                      {fr.integrations.tracker.copied}
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 mr-1" />
+                      {fr.integrations.tracker.copy}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function UpcomingCard({ name, date }: { name: string; date: string }) {
   return (
     <Card>
@@ -558,6 +666,7 @@ function UpcomingCard({ name, date }: { name: string; date: string }) {
 export default function Integrations() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: status, isLoading, refetch } = useIntegrationStatus();
+  const { organization } = useOrganizationSettings();
 
   // Handle OAuth callback query params
   useEffect(() => {
@@ -625,6 +734,12 @@ export default function Integrations() {
           </Link>
         </div>
         <WebhookConfigSection />
+      </section>
+
+      {/* Tracker d'usage produit */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">{fr.integrations.tracker.title}</h2>
+        <UsageTrackerCard organization={organization} />
       </section>
 
       {/* Upcoming */}

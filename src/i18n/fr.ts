@@ -810,6 +810,23 @@ export const fr = {
       connectedViaApiKey: "Connecte via cle API (Private App)",
       portalId: "Portal ID",
     },
+    // Tracker d'usage produit
+    tracker: {
+      title: "Tracker d'usage produit",
+      connected: "Connecté",
+      notConnected: "Non connecté",
+      lastEvent: "Dernière donnée reçue",
+      description: "Trackez les connexions et l'adoption features de vos comptes pour compléter le Health Score.",
+      snippetIntro: "Ajoutez ce snippet dans votre layout principal :",
+      copy: "Copier",
+      copied: "Copié",
+      comingSoon: "À venir",
+      connectCta: "Comment l'activer",
+      usageScoreUnavailable: "Score d'usage non disponible — tracker non connecté",
+      breakdownPlaceholder: "Connectez le tracker pour activer cette dimension du Health Score.",
+      bannerMessage: "Complétez votre Health Score — Connectez le tracker d'usage produit",
+      bannerCta: "Voir comment",
+    },
     // Sidebar indicator
     sidebar: {
       webhookActive: "Webhook actif",

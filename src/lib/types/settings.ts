@@ -18,9 +18,12 @@ export interface OrganizationDetail {
   id: string;
   name: string;
   stripe_account_id: string | null;
+  stripe_customer_id: string | null;
   hubspot_api_key: string | null;
   stripe_connected: boolean;
   hubspot_connected: boolean;
+  usage_tracker_connected: boolean;
+  usage_tracker_last_event_at: string | null;
   last_stripe_sync_at: string | null;
   last_hubspot_sync_at: string | null;
   created_at: string;

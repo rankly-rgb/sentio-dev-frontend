@@ -15,11 +15,15 @@ import { ChurnRiskAlert } from '@/components/dashboard/churn-risk-alert';
 import { ExpansionOpportunities } from '@/components/dashboard/expansion-opportunities';
 import { SyncProgressPanel } from '@/components/dashboard/sync-progress-panel';
 import { RefreshCw, Calculator, CheckCircle, XCircle, Info } from 'lucide-react';
+import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { TrackerBanner } from '@/components/dashboard/tracker-banner';
 
 export default function Dashboard() {
   const { metrics, distribution, isLoading, error, refetch } = useDashboardData();
   const { triggerStripeSync, calculateScores, isSyncing, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();
+  const { organization } = useOrganizationSettings();
+  const trackerConnected = organization?.usage_tracker_connected ?? false;
 
   async function handleSync() {
     await triggerStripeSync('incremental');
@@ -58,6 +62,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Tracker banner */}
+      {!trackerConnected && <TrackerBanner />}
+
       {/* Header + actions */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold">{fr.dashboard.title}</h1>

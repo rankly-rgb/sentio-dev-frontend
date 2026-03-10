@@ -57,7 +57,7 @@ export async function getCurrentProfile(userId: string): Promise<UserProfile | n
 export async function getOrganizationDetails(orgId: string): Promise<OrganizationDetail | null> {
   const { data, error } = await supabase
     .from('organizations')
-    .select('id, name, created_at, stripe_account_id, hubspot_api_key')
+    .select('id, name, created_at, stripe_account_id, stripe_customer_id, hubspot_api_key, usage_tracker_connected, usage_tracker_last_event_at')
     .eq('id', orgId)
     .single();
 
@@ -71,9 +71,12 @@ export async function getOrganizationDetails(orgId: string): Promise<Organizatio
     id: data.id,
     name: data.name || '',
     stripe_account_id: data.stripe_account_id || null,
+    stripe_customer_id: data.stripe_customer_id || null,
     hubspot_api_key: data.hubspot_api_key || null,
     stripe_connected: !!data.stripe_account_id,
     hubspot_connected: !!data.hubspot_api_key,
+    usage_tracker_connected: !!data.usage_tracker_connected,
+    usage_tracker_last_event_at: data.usage_tracker_last_event_at || null,
     last_stripe_sync_at: null,
     last_hubspot_sync_at: null,
     created_at: data.created_at || '',

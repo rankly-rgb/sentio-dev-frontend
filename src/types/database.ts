@@ -4,10 +4,13 @@ export interface Organization {
   id: string;
   name: string;
   stripe_account_id: string | null;
+  stripe_customer_id: string | null;
   hubspot_portal_id: string | null;
   plan_type: string | null;
   is_active: boolean;
   onboarding_completed: boolean;
+  usage_tracker_connected: boolean;
+  usage_tracker_last_event_at: string | null;
   created_at: string;
   updated_at: string;
 }
