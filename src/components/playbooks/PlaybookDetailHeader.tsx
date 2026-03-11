@@ -83,7 +83,7 @@ export default function PlaybookDetailHeader({
     });
   };
 
-  const mrrFormatted = fr.format.currency(affectedSummary.mrr_at_risk_cents);
+  const mrrFormatted = fr.format.currency(affectedSummary?.mrr_at_risk_cents ?? 0);
   const isFullyAutomated =
     !playbook.requires_approval && playbook.automation_type === 'automated';
 

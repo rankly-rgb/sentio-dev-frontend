@@ -13,13 +13,16 @@ interface Props {
 }
 
 export default function PlaybookExecutionStats({ playbook, stats }: Props) {
+  const total = stats.executions_total ?? 0;
+  const completed = stats.executions_completed ?? 0;
+  const failed = stats.executions_failed ?? 0;
+  const inProgress = stats.executions_in_progress ?? 0;
+  const mrrRecovered = stats.mrr_recovered_cents ?? 0;
+  const mrrExpansion = stats.mrr_expansion_cents ?? 0;
+
   const allZero =
-    stats.executions_total === 0 &&
-    stats.executions_completed === 0 &&
-    stats.executions_failed === 0 &&
-    stats.executions_in_progress === 0 &&
-    stats.mrr_recovered_cents === 0 &&
-    stats.mrr_expansion_cents === 0;
+    total === 0 && completed === 0 && failed === 0 &&
+    inProgress === 0 && mrrRecovered === 0 && mrrExpansion === 0;
 
   const isDraft = playbook.status === ('draft' as PlaybookStatus);
 
@@ -68,29 +71,29 @@ export default function PlaybookExecutionStats({ playbook, stats }: Props) {
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{fr.playbooks.totalExecutions}</span>
-              <span className="font-medium">{stats.executions_total}</span>
+              <span className="font-medium">{total}</span>
             </div>
             <div className="flex justify-between pl-4">
               <span className="text-muted-foreground">{fr.playbooks.completedExec}</span>
-              <span className="font-medium text-emerald-600">{stats.executions_completed}</span>
+              <span className="font-medium text-emerald-600">{completed}</span>
             </div>
             <div className="flex justify-between pl-4">
               <span className="text-muted-foreground">{fr.playbooks.failedExec}</span>
-              <span className={`font-medium ${stats.executions_failed > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {stats.executions_failed}
+              <span className={`font-medium ${failed > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {failed}
               </span>
             </div>
             <div className="flex justify-between pl-4">
               <span className="text-muted-foreground">{fr.playbooks.runningExec}</span>
-              <span className="font-medium">{stats.executions_in_progress}</span>
+              <span className="font-medium">{inProgress}</span>
             </div>
             <div className="border-t pt-3 mt-3 flex justify-between">
               <span className="text-muted-foreground">{fr.playbooks.mrrRecovered}</span>
-              <span className="font-medium">{fr.format.currency(stats.mrr_recovered_cents)}</span>
+              <span className="font-medium">{fr.format.currency(mrrRecovered)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">{fr.playbooks.mrrExpansion}</span>
-              <span className="font-medium">{fr.format.currency(stats.mrr_expansion_cents)}</span>
+              <span className="font-medium">{fr.format.currency(mrrExpansion)}</span>
             </div>
           </div>
         </div>

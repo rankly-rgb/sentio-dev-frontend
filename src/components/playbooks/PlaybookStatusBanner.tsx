@@ -43,7 +43,7 @@ export default function PlaybookStatusBanner({ status, affectedSummary }: Props)
   const config = bannerConfig[key];
   if (!config) return null;
 
-  const text = getBannerText(status, affectedSummary.total);
+  const text = getBannerText(status, affectedSummary?.total ?? 0);
   if (!text) return null;
 
   const Icon = config.icon;

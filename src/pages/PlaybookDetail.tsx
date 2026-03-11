@@ -19,8 +19,50 @@ import PlaybookConditionsSection from '@/components/playbooks/PlaybookConditions
 import PlaybookExecutionStats from '@/components/playbooks/PlaybookExecutionStats';
 import PlaybookForm from '@/components/playbooks/PlaybookForm';
 import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
-import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
+import type { UpdatePlaybookPayload, PlaybookFullDetail } from '@/lib/types/playbook';
 import { buildFullDetailFromPlaybook } from '@/lib/types/playbook';
+
+/** Validate that the RPC response has the expected nested shape */
+function isValidFullDetail(d: unknown): d is PlaybookFullDetail {
+  if (!d || typeof d !== 'object') return false;
+  const obj = d as Record<string, unknown>;
+  if (!obj.playbook || typeof obj.playbook !== 'object') return false;
+  if (!obj.stats || typeof obj.stats !== 'object') return false;
+  if (!obj.affected_accounts_summary || typeof obj.affected_accounts_summary !== 'object') return false;
+  const summary = obj.affected_accounts_summary as Record<string, unknown>;
+  if (!summary.by_urgency || typeof summary.by_urgency !== 'object') return false;
+  const pb = obj.playbook as Record<string, unknown>;
+  if (typeof pb.id !== 'string' || typeof pb.status !== 'string') return false;
+  // Must have either 'name' (RPC remapped) or fall back
+  if (typeof pb.name !== 'string' && typeof pb.title !== 'string') return false;
+  return true;
+}
+
+/** Normalize RPC response — backend may use DB column names instead of remapped ones */
+function normalizeRpcDetail(d: PlaybookFullDetail): PlaybookFullDetail {
+  const pb = d.playbook as unknown as Record<string, unknown>;
+  return {
+    ...d,
+    playbook: {
+      ...d.playbook,
+      // Handle both DB column names and remapped names
+      name: (pb.name as string) || (pb.title as string) || '',
+      automation_type: (pb.automation_type ?? pb.playbook_type ?? 'manual') as PlaybookFullDetail['playbook']['automation_type'],
+      category: (pb.category ?? pb.template_category ?? '') as string,
+      description: (pb.description ?? '') as string,
+      requires_approval: (pb.requires_approval ?? false) as boolean,
+    },
+    affected_accounts_summary: {
+      total: d.affected_accounts_summary?.total ?? 0,
+      mrr_at_risk_cents: d.affected_accounts_summary?.mrr_at_risk_cents ?? 0,
+      by_urgency: {
+        urgent: d.affected_accounts_summary?.by_urgency?.urgent ?? 0,
+        watch: d.affected_accounts_summary?.by_urgency?.watch ?? 0,
+        stable: d.affected_accounts_summary?.by_urgency?.stable ?? 0,
+      },
+    },
+  };
+}
 
 export default function PlaybookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -45,9 +87,11 @@ export default function PlaybookDetail() {
     }
   }, [playbook, id, navigate]);
 
-  // Use RPC data if available, otherwise build from legacy playbook
+  // Use RPC data if valid, otherwise build from legacy playbook
   const fullDetail = useMemo(() => {
-    if (rpcDetail) return rpcDetail;
+    if (rpcDetail && isValidFullDetail(rpcDetail)) {
+      return normalizeRpcDetail(rpcDetail);
+    }
     if (playbook) return buildFullDetailFromPlaybook(playbook);
     return null;
   }, [rpcDetail, playbook]);
