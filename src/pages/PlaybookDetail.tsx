@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,15 +20,17 @@ import PlaybookExecutionStats from '@/components/playbooks/PlaybookExecutionStat
 import PlaybookForm from '@/components/playbooks/PlaybookForm';
 import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
 import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
+import { buildFullDetailFromPlaybook } from '@/lib/types/playbook';
 
 export default function PlaybookDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Load both: legacy playbook (for edit form + workflow redirect) and full detail (for display)
-  const { data: playbook, isLoading: legacyLoading } = usePlaybook(id);
-  const { data: fullDetail, isLoading: detailLoading, error } = usePlaybookFullDetail(id);
+  // Legacy playbook (always available — for edit form, workflow redirect, and fallback)
+  const { data: playbook, isLoading: legacyLoading, error: legacyError } = usePlaybook(id);
+  // Full detail RPC (may not exist yet in backend — optional)
+  const { data: rpcDetail } = usePlaybookFullDetail(id);
   const updateMutation = useUpdatePlaybook();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -43,9 +45,14 @@ export default function PlaybookDetail() {
     }
   }, [playbook, id, navigate]);
 
-  const isLoading = legacyLoading || detailLoading;
+  // Use RPC data if available, otherwise build from legacy playbook
+  const fullDetail = useMemo(() => {
+    if (rpcDetail) return rpcDetail;
+    if (playbook) return buildFullDetailFromPlaybook(playbook);
+    return null;
+  }, [rpcDetail, playbook]);
 
-  if (isLoading) {
+  if (legacyLoading) {
     return (
       <div className="space-y-6 p-6">
         <Skeleton className="h-8 w-64" />
@@ -60,7 +67,7 @@ export default function PlaybookDetail() {
     );
   }
 
-  if (error || !fullDetail) {
+  if (legacyError || !fullDetail) {
     return (
       <div className="space-y-6 p-6">
         <Button variant="ghost" size="icon" onClick={() => navigate('/playbooks')}>
@@ -69,7 +76,7 @@ export default function PlaybookDetail() {
         <Card className="border-destructive">
           <CardContent className="p-6">
             <p className="text-destructive text-sm">
-              {fr.common.error} : {(error as Error)?.message ?? 'Playbook introuvable'}
+              {fr.common.error} : {(legacyError as Error)?.message ?? 'Playbook introuvable'}
             </p>
           </CardContent>
         </Card>

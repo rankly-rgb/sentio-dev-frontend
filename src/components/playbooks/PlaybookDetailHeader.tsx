@@ -34,7 +34,7 @@ import {
 import { fr } from '@/i18n/fr';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
 import PriorityBadge from '@/components/playbooks/PriorityBadge';
-import { useTransitionPlaybookStatus, useArchivePlaybook } from '@/hooks/usePlaybooks';
+import { useUpdatePlaybook, useArchivePlaybook } from '@/hooks/usePlaybooks';
 import type {
   PlaybookFullDetailPlaybook,
   PlaybookAffectedAccountsSummary,
@@ -55,30 +55,23 @@ export default function PlaybookDetailHeader({
   onExecute,
 }: Props) {
   const navigate = useNavigate();
-  const transitionMutation = useTransitionPlaybookStatus();
+  const updateMutation = useUpdatePlaybook();
   const archiveMutation = useArchivePlaybook();
   const [activateOpen, setActivateOpen] = useState(false);
 
-  const isMutating = transitionMutation.isPending || archiveMutation.isPending;
+  const isMutating = updateMutation.isPending || archiveMutation.isPending;
 
-  const handleActivate = () => {
-    transitionMutation.mutate(
-      { id: playbook.id, targetStatus: 'active' as PlaybookStatus },
+  const handleStatusChange = (status: PlaybookStatus) => {
+    updateMutation.mutate(
+      { id: playbook.id, payload: { status } },
       {
         onSuccess: () => {
-          setActivateOpen(false);
-          toast.success('Playbook activé avec succès');
-        },
-      },
-    );
-  };
-
-  const handleDeactivate = () => {
-    transitionMutation.mutate(
-      { id: playbook.id, targetStatus: 'draft' as PlaybookStatus },
-      {
-        onSuccess: () => {
-          toast.success('Playbook désactivé');
+          if (status === 'active') {
+            setActivateOpen(false);
+            toast.success('Playbook activé avec succès');
+          } else {
+            toast.success('Playbook désactivé');
+          }
         },
       },
     );
@@ -118,7 +111,7 @@ export default function PlaybookDetailHeader({
           {playbook.status === 'draft' && (
             <>
               <Button size="sm" onClick={() => setActivateOpen(true)} disabled={isMutating}>
-                {transitionMutation.isPending ? (
+                {updateMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Zap className="h-4 w-4 mr-2" />
@@ -159,8 +152,13 @@ export default function PlaybookDetailHeader({
           {/* Active → Désactiver + Exécuter + Modifier + Archiver */}
           {playbook.status === 'active' && (
             <>
-              <Button size="sm" variant="outline" onClick={handleDeactivate} disabled={isMutating}>
-                {transitionMutation.isPending ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleStatusChange('draft')}
+                disabled={isMutating}
+              >
+                {updateMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Pause className="h-4 w-4 mr-2" />
@@ -239,8 +237,8 @@ export default function PlaybookDetailHeader({
             <Button variant="outline" onClick={() => setActivateOpen(false)}>
               {fr.playbooks.form.cancel}
             </Button>
-            <Button onClick={handleActivate} disabled={transitionMutation.isPending}>
-              {transitionMutation.isPending && (
+            <Button onClick={() => handleStatusChange('active')} disabled={updateMutation.isPending}>
+              {updateMutation.isPending && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
               {fr.playbooks.confirmActivation}

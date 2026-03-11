@@ -296,6 +296,115 @@ export interface TransitionStatusResponse {
   error?: string;
 }
 
+// --- Fallback: build PlaybookFullDetail from legacy Playbook ---
+
+function summarizeLegacyAction(type: ActionType, config: Record<string, unknown>): string {
+  switch (type) {
+    case 'slack_notify':
+      return [config.channel, config.template].filter(Boolean).join(' — ');
+    case 'create_task':
+      return [config.title, config.due_days ? `${config.due_days}j` : ''].filter(Boolean).join(' — ');
+    case 'assign_owner':
+      return String(config.role ?? '');
+    case 'update_tag':
+      return String(config.tag ?? '');
+    case 'log_note':
+      return String(config.note ?? '');
+    case 'schedule_review':
+      return config.review_days ? `${config.review_days} jours` : '';
+    case 'flag_for_review':
+      return '';
+    case 'send_email':
+      return config.subject ? `Email : "${String(config.subject)}"` : 'Email';
+    default:
+      return '';
+  }
+}
+
+const FIELD_LABELS: Record<string, string> = {
+  health_score: 'Score de santé',
+  churn_risk_score: 'Score de risque churn',
+  expansion_score: "Score d'expansion",
+  product_usage_score: "Score d'usage produit",
+  mrr_cents: 'MRR',
+  arr_cents: 'ARR',
+  plan_tier: 'Plan',
+  seat_count: 'Nombre de sièges',
+  seat_limit: 'Limite de sièges',
+  contract_start_date: 'Début de contrat',
+  contract_end_date: 'Fin de contrat',
+};
+
+const OP_LABELS: Record<string, string> = {
+  eq: 'égal à', neq: 'différent de',
+  gt: 'supérieur à', gte: '≥',
+  lt: 'inférieur à', lte: '≤',
+  in: 'dans', not_in: 'pas dans',
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  slack_notify: 'Notification Slack',
+  create_task: 'Créer une tâche',
+  assign_owner: 'Assigner un responsable',
+  update_tag: 'Mettre à jour le tag',
+  log_note: 'Ajouter une note',
+  schedule_review: 'Planifier une revue',
+  flag_for_review: 'Signaler pour revue',
+  send_email: 'Envoyer un email',
+};
+
+export function buildFullDetailFromPlaybook(p: Playbook): PlaybookFullDetail {
+  const criteria = p.eligibility_criteria ?? p.trigger_conditions;
+  const conditions: PlaybookFullDetailCondition[] = (criteria?.conditions ?? []).map((c) => {
+    const field = FIELD_LABELS[c.field] ?? c.field;
+    const op = OP_LABELS[c.operator] ?? c.operator;
+    const val = Array.isArray(c.value) ? c.value.join(', ') : String(c.value);
+    return { field: c.field, operator: c.operator, value: c.value, label: `${field} ${op} ${val}` };
+  });
+
+  const actions: PlaybookFullDetailAction[] = [...(p.actions ?? [])]
+    .sort((a, b) => a.order - b.order)
+    .map((a, idx) => ({
+      step: idx + 1,
+      type: a.type,
+      label: ACTION_LABELS[a.type] ?? a.type,
+      detail: summarizeLegacyAction(a.type, a.config) || undefined,
+    }));
+
+  return {
+    playbook: {
+      id: p.id,
+      name: p.title,
+      description: p.description ?? '',
+      status: p.status,
+      priority: p.priority,
+      automation_type: p.playbook_type,
+      category: p.template_category ?? '',
+      requires_approval: p.requires_approval,
+      created_at: p.created_at,
+    },
+    stats: {
+      targeted_count: p.accounts_targeted ?? 0,
+      eligible_count: p.accounts_eligible ?? 0,
+      reached_count: p.accounts_reached ?? 0,
+      converted_count: p.accounts_converted ?? 0,
+      mrr_recovered_cents: p.mrr_recovered_cents ?? 0,
+      mrr_expansion_cents: p.mrr_expanded_cents ?? 0,
+      executions_total: p.execution_stats?.total ?? 0,
+      executions_completed: p.execution_stats?.completed ?? 0,
+      executions_failed: p.execution_stats?.failed ?? 0,
+      executions_in_progress: p.execution_stats?.running ?? 0,
+    },
+    affected_accounts_summary: {
+      total: p.current_eligible_count ?? 0,
+      mrr_at_risk_cents: 0,
+      by_urgency: { urgent: 0, watch: 0, stable: 0 },
+    },
+    conditions,
+    actions,
+  };
+}
+
 // --- Filter params for list view ---
 export interface PlaybookFilters {
   status?: PlaybookStatus | 'all';
