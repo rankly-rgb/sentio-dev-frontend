@@ -61,6 +61,9 @@ function normalizeRpcDetail(d: PlaybookFullDetail): PlaybookFullDetail {
         stable: d.affected_accounts_summary?.by_urgency?.stable ?? 0,
       },
     },
+    // Ensure actions and conditions are always arrays (RPC may return null/object)
+    actions: Array.isArray(d.actions) ? d.actions : [],
+    conditions: Array.isArray(d.conditions) ? d.conditions : [],
   };
 }
 

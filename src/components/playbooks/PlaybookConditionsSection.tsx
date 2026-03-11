@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function PlaybookConditionsSection({ conditions }: Props) {
-  if (!conditions || conditions.length === 0) {
+  if (!Array.isArray(conditions) || conditions.length === 0) {
     return null;
   }
 

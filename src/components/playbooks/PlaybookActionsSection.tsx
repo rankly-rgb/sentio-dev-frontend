@@ -30,7 +30,7 @@ interface Props {
 }
 
 export default function PlaybookActionsSection({ actions }: Props) {
-  if (!actions || actions.length === 0) {
+  if (!Array.isArray(actions) || actions.length === 0) {
     return null;
   }
 
