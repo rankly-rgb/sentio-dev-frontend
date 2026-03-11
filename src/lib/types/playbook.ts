@@ -232,6 +232,70 @@ export interface PlaybookExecutionRow {
   updated_at: string;
 }
 
+// --- Full detail (get_playbook_full_detail RPC) ---
+export interface PlaybookFullDetailPlaybook {
+  id: string;
+  name: string;
+  description: string;
+  status: PlaybookStatus;
+  priority: PlaybookPriority;
+  automation_type: PlaybookType;
+  category: string;
+  requires_approval: boolean;
+  created_at: string;
+}
+
+export interface PlaybookFullDetailStats {
+  targeted_count: number;
+  eligible_count: number;
+  reached_count: number;
+  converted_count: number;
+  mrr_recovered_cents: number;
+  mrr_expansion_cents: number;
+  executions_total: number;
+  executions_completed: number;
+  executions_failed: number;
+  executions_in_progress: number;
+}
+
+export interface PlaybookAffectedAccountsSummary {
+  total: number;
+  mrr_at_risk_cents: number;
+  by_urgency: {
+    urgent: number;
+    watch: number;
+    stable: number;
+  };
+}
+
+export interface PlaybookFullDetailCondition {
+  field: string;
+  operator: ConditionOperator;
+  value: string | number | boolean | string[];
+  label: string;
+}
+
+export interface PlaybookFullDetailAction {
+  step: number;
+  type: ActionType;
+  label: string;
+  detail?: string;
+}
+
+export interface PlaybookFullDetail {
+  playbook: PlaybookFullDetailPlaybook;
+  stats: PlaybookFullDetailStats;
+  affected_accounts_summary: PlaybookAffectedAccountsSummary;
+  conditions: PlaybookFullDetailCondition[];
+  actions: PlaybookFullDetailAction[];
+}
+
+export interface TransitionStatusResponse {
+  success: boolean;
+  new_status?: string;
+  error?: string;
+}
+
 // --- Filter params for list view ---
 export interface PlaybookFilters {
   status?: PlaybookStatus | 'all';

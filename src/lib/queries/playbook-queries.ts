@@ -9,6 +9,8 @@ import type {
   ExecutePlaybookPayload,
   ExecutePlaybookResponse,
   PlaybookExecutionRow,
+  PlaybookFullDetail,
+  TransitionStatusResponse,
 } from '@/lib/types/playbook';
 
 // --- CRUD ---
@@ -88,4 +90,30 @@ export async function listPlaybookExecutions(
 
   if (error) throw error;
   return data || [];
+}
+
+// --- Full detail (consolidated RPC) ---
+
+export async function getPlaybookFullDetail(
+  playbookId: string,
+): Promise<PlaybookFullDetail> {
+  const { data, error } = await supabase.rpc('get_playbook_full_detail', {
+    p_playbook_id: playbookId,
+  });
+  if (error) throw error;
+  return data as PlaybookFullDetail;
+}
+
+// --- Status transition ---
+
+export async function transitionPlaybookStatus(
+  playbookId: string,
+  targetStatus: 'active' | 'draft' | 'archived',
+): Promise<TransitionStatusResponse> {
+  const { data, error } = await supabase.rpc('transition_playbook_status', {
+    p_playbook_id: playbookId,
+    p_target_status: targetStatus,
+  });
+  if (error) throw error;
+  return data as TransitionStatusResponse;
 }

@@ -390,6 +390,40 @@ export const fr = {
     },
     createPlaybook: "Créer le playbook",
     creating: "Création en cours…",
+    // Refonte detail — bannières
+    bannerDraft: (total: number) =>
+      `Ce playbook est en brouillon. Activez-le pour qu'il surveille automatiquement les ${total} comptes éligibles.`,
+    bannerActive: (total: number) =>
+      `Ce playbook est actif et surveille ${total} comptes.`,
+    bannerArchived: "Ce playbook est archivé et ne s'exécute plus.",
+    // Refonte detail — modale activation
+    activateModalTitle: "Activer ce playbook ?",
+    activateModalBody: "Ce playbook sera actif et s'exécutera automatiquement dès que ses conditions seront remplies.",
+    activateModalImpact: (count: number, mrr: string) =>
+      `${count} comptes seront concernés, représentant ${mrr} de MRR.`,
+    activateModalAutoWarning: "Ce playbook s'exécutera entièrement sans validation manuelle.",
+    activateModalApprovalNote: (automationType: string) =>
+      `Type d'exécution : ${automationType} — une validation manuelle sera demandée avant chaque action.`,
+    confirmActivation: "Confirmer l'activation",
+    // Refonte detail — sections
+    affectedAccountsTitle: "Comptes concernés",
+    mrrAtRisk: "MRR à risque",
+    urgencyUrgent: "Urgent",
+    urgencyWatch: "À surveiller",
+    urgencyStable: "Stable",
+    actionsSequenceTitle: "Séquence d'actions",
+    conditionsTitle: "Se déclenche quand",
+    executionStatsTitle: "Statistiques d'exécution",
+    statsEmptyNote: "Les statistiques s'afficheront dès que le playbook sera activé et aura ciblé ses premiers comptes.",
+    // Refonte detail — métadonnées
+    metaType: "Type",
+    metaCategory: "Catégorie",
+    metaAutomated: "Automatisé",
+    metaApproval: "Approbation requise",
+    metaCreatedAt: "Créé le",
+    mrrRecovered: "MRR récupéré",
+    mrrExpansion: "MRR expansion",
+    deactivate: "Désactiver",
   },
 
   // Workflows

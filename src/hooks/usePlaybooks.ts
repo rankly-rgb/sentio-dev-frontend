@@ -10,9 +10,12 @@ import {
   archivePlaybook,
   executePlaybook,
   listPlaybookExecutions,
+  getPlaybookFullDetail,
+  transitionPlaybookStatus,
 } from '@/lib/queries/playbook-queries';
 import type {
   PlaybookFilters,
+  PlaybookStatus,
   CreatePlaybookPayload,
   UpdatePlaybookPayload,
   ExecutePlaybookPayload,
@@ -125,6 +128,30 @@ export function useExecutePlaybook() {
     },
     onError: (e: Error) => {
       toast.error('Erreur exécution : ' + e.message);
+    },
+  });
+}
+
+export function usePlaybookFullDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: ['playbooks', 'full-detail', id ?? ''],
+    queryFn: () => getPlaybookFullDetail(id ?? ''),
+    enabled: !!id,
+    staleTime: 60_000,
+  });
+}
+
+export function useTransitionPlaybookStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, targetStatus }: { id: string; targetStatus: PlaybookStatus }) =>
+      transitionPlaybookStatus(id, targetStatus as 'active' | 'draft' | 'archived'),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['playbooks'] });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'full-detail', id] });
+    },
+    onError: (e: Error) => {
+      toast.error('Erreur changement de statut : ' + e.message);
     },
   });
 }
