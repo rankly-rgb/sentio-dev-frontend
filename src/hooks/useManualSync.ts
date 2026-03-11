@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 
 export function useManualSync() {
   const { user } = useAuth();
@@ -33,6 +34,32 @@ export function useManualSync() {
     },
   });
 
+  const hubspotSyncMutation = useMutation({
+    mutationFn: async (syncType: 'daily' | 'initial') => {
+      const orgId = userRef.current?.organization_id;
+      if (!orgId) throw new Error('Utilisateur non connecté');
+      await fetchWithUserJwt('admin-proxy', {
+        method: 'POST',
+        body: {
+          action: 'sync-hubspot',
+          organization_id: orgId,
+          sync_type: syncType,
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success('Synchronisation HubSpot déclenchée');
+      queryClient.invalidateQueries({ queryKey: ['syncs'] });
+      queryClient.invalidateQueries({ queryKey: ['sync-status'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: (e: unknown) => {
+      const msg = e instanceof Error ? e.message : 'Erreur inconnue';
+      toast.error('Échec sync HubSpot : ' + msg);
+    },
+  });
+
   const scoresMutation = useMutation({
     mutationFn: async () => {
       const orgId = userRef.current?.organization_id;
@@ -58,6 +85,11 @@ export function useManualSync() {
     [syncMutation],
   );
 
+  const triggerHubspotSync = useCallback(
+    (syncType: 'daily' | 'initial' = 'daily') => hubspotSyncMutation.mutateAsync(syncType),
+    [hubspotSyncMutation],
+  );
+
   const calculateScores = useCallback(
     () => scoresMutation.mutateAsync(),
     [scoresMutation],
@@ -68,8 +100,10 @@ export function useManualSync() {
   return {
     triggerSync,
     triggerStripeSync,
+    triggerHubspotSync,
     calculateScores,
     isSyncing: syncMutation.isPending,
+    isSyncingHubspot: hubspotSyncMutation.isPending,
     isCalculating: scoresMutation.isPending,
   };
 }

@@ -42,6 +42,7 @@ import {
   useConnectStripeApiKey,
   useConnectHubspotApiKey,
 } from '@/hooks/useIntegrations';
+import { useManualSync } from '@/hooks/useManualSync';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import type { IntegrationSummary } from '@/lib/types/integration';
 import { validateStripeKey, validateHubspotKey } from '@/lib/types/integration';
@@ -300,9 +301,11 @@ function StripeCard({
 function HubSpotCard({
   summary,
   isLoading,
+  onConnected,
 }: {
   summary: IntegrationSummary | undefined;
   isLoading: boolean;
+  onConnected?: () => void;
 }) {
   const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [connectionMethod, setConnectionMethod] = useState<'oauth' | 'api_key'>('oauth');
@@ -343,6 +346,7 @@ function HubSpotCard({
       onSuccess: () => {
         setApiKey('');
         setShowKey(false);
+        onConnected?.();
       },
     });
   };
@@ -667,6 +671,7 @@ export default function Integrations() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: status, isLoading, refetch } = useIntegrationStatus();
   const { organization } = useOrganizationSettings();
+  const { triggerHubspotSync } = useManualSync();
 
   // Handle OAuth callback query params
   useEffect(() => {
@@ -718,6 +723,7 @@ export default function Integrations() {
           <HubSpotCard
             summary={status?.hubspot}
             isLoading={isLoading}
+            onConnected={() => triggerHubspotSync('initial')}
           />
         </div>
       </section>

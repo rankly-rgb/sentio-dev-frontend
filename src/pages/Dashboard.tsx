@@ -34,7 +34,7 @@ const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'
 
 export default function Dashboard() {
   const { metrics, distribution, topAccounts, isLoading, error, refetch } = useDashboardData();
-  const { triggerStripeSync, calculateScores, isSyncing, isCalculating } = useManualSync();
+  const { triggerStripeSync, triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();
   const { data: segments } = useSegments();
   const { data: syncs } = useSyncStatus();
@@ -43,6 +43,11 @@ export default function Dashboard() {
 
   async function handleSync() {
     await triggerStripeSync('incremental');
+    refetch();
+  }
+
+  async function handleHubspotSync() {
+    await triggerHubspotSync('daily');
     refetch();
   }
 
@@ -101,7 +106,7 @@ export default function Dashboard() {
             variant="outline"
             size="sm"
             onClick={handleSync}
-            disabled={isSyncing || isCalculating}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
             aria-label="Lancer sync Stripe"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
@@ -109,10 +114,21 @@ export default function Dashboard() {
           </Button>
 
           <Button
+            variant="outline"
+            size="sm"
+            onClick={handleHubspotSync}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
+            aria-label="Lancer sync HubSpot"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncingHubspot ? 'animate-spin' : ''}`} />
+            {isSyncingHubspot ? fr.dashboard.syncInProgress : 'Sync HubSpot'}
+          </Button>
+
+          <Button
             variant="default"
             size="sm"
             onClick={handleCalculate}
-            disabled={isSyncing || isCalculating}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
             aria-label="Recalculer les scores"
           >
             <Calculator className={`h-4 w-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />

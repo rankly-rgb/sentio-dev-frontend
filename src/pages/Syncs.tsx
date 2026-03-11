@@ -56,7 +56,7 @@ async function fetchSyncs(orgId: string): Promise<DataSync[]> {
 export default function Syncs() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { triggerStripeSync, calculateScores, isSyncing, isCalculating } = useManualSync();
+  const { triggerStripeSync, triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
 
   const { data: syncs, isLoading, error } = useQuery({
     queryKey: ['syncs', user?.organization_id],
@@ -70,6 +70,11 @@ export default function Syncs() {
 
   async function handleSync(type: 'incremental' | 'full_sync') {
     await triggerStripeSync(type);
+    qc.invalidateQueries({ queryKey: ['syncs'] });
+  }
+
+  async function handleHubspotSync() {
+    await triggerHubspotSync('daily');
     qc.invalidateQueries({ queryKey: ['syncs'] });
   }
 
@@ -89,7 +94,7 @@ export default function Syncs() {
             variant="outline"
             size="sm"
             onClick={() => handleSync('incremental')}
-            disabled={isSyncing || isCalculating}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? fr.syncs.syncRunning : fr.syncs.syncStripeIncremental}
@@ -99,17 +104,27 @@ export default function Syncs() {
             variant="outline"
             size="sm"
             onClick={() => handleSync('full_sync')}
-            disabled={isSyncing || isCalculating}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             {fr.syncs.syncStripeFull}
           </Button>
 
           <Button
+            variant="outline"
+            size="sm"
+            onClick={handleHubspotSync}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncingHubspot ? 'animate-spin' : ''}`} />
+            {isSyncingHubspot ? fr.syncs.syncRunning : 'Sync HubSpot'}
+          </Button>
+
+          <Button
             variant="default"
             size="sm"
             onClick={handleCalculate}
-            disabled={isSyncing || isCalculating}
+            disabled={isSyncing || isSyncingHubspot || isCalculating}
           >
             <Calculator className={`h-4 w-4 mr-2 ${isCalculating ? 'animate-spin' : ''}`} />
             {isCalculating ? fr.syncs.calculating : fr.syncs.recalculateScores}

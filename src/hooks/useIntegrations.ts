@@ -88,6 +88,8 @@ export function useConnectHubspotApiKey() {
     mutationFn: (apiKey) => connectHubspotApiKey(apiKey),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: KEYS.status });
+      qc.invalidateQueries({ queryKey: ['syncs'] });
+      qc.invalidateQueries({ queryKey: ['sync-status'] });
       toast.success(
         data.portal_id
           ? `HubSpot connecté (Portal ${data.portal_id}) — synchronisation en cours...`
