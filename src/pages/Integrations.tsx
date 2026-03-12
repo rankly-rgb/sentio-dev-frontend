@@ -16,6 +16,9 @@ import {
   Copy,
   Check,
   Clock,
+  MessageSquare,
+  ChevronDown as ChevronDownIcon,
+  ChevronRight as ChevronRightIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,12 +44,13 @@ import {
   useRevokeIntegration,
   useConnectStripeApiKey,
   useConnectHubspotApiKey,
+  useConnectSlackBotToken,
 } from '@/hooks/useIntegrations';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
 import type { IntegrationSummary } from '@/lib/types/integration';
-import { validateStripeKey, validateHubspotKey } from '@/lib/types/integration';
+import { validateStripeKey, validateHubspotKey, validateSlackBotToken } from '@/lib/types/integration';
 import type { OrganizationDetail } from '@/lib/types/settings';
 import WebhookConfigSection from '@/components/settings/WebhookConfigSection';
 
@@ -686,6 +690,201 @@ function UsageTrackerCard({ organization }: { organization: OrganizationDetail |
   );
 }
 
+/** Slack card with Bot Token connection */
+function SlackCard({
+  summary,
+  isLoading,
+}: {
+  summary: IntegrationSummary | undefined;
+  isLoading: boolean;
+}) {
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [token, setToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
+  const [clientError, setClientError] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
+
+  const connectMutation = useConnectSlackBotToken();
+  const revokeMutation = useRevokeIntegration();
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="py-6">
+          <Skeleton className="h-12 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const connected = summary?.connected ?? false;
+
+  const handleConnect = () => {
+    setClientError(null);
+    const validation = validateSlackBotToken(token);
+    if (!validation.valid) {
+      setClientError(validation.error ?? null);
+      return;
+    }
+    connectMutation.mutate(token.trim(), {
+      onSuccess: () => {
+        setToken('');
+        setShowToken(false);
+      },
+    });
+  };
+
+  const handleRevoke = () => {
+    revokeMutation.mutate('slack', {
+      onSuccess: () => setConfirmRevoke(false),
+    });
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-lg">{fr.integrations.slack.title}</CardTitle>
+            </div>
+            {connected ? (
+              <Badge className="bg-emerald-500 hover:bg-emerald-600 flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                {fr.integrations.connected}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <XCircle className="h-3 w-3" />
+                {fr.integrations.notConnected}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {connected && summary ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {fr.integrations.slack.connectedVia}
+              </p>
+              {summary.provider_account_id && (
+                <div>
+                  <p className="text-xs text-muted-foreground">{fr.integrations.slack.teamId}</p>
+                  <p className="text-sm font-mono">{summary.provider_account_id}</p>
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setConfirmRevoke(true)}
+                disabled={revokeMutation.isPending}
+              >
+                {revokeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                {fr.integrations.oauth.disconnect}
+              </Button>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {fr.integrations.slack.description}
+              </p>
+              <div className="relative">
+                <Input
+                  type={showToken ? 'text' : 'password'}
+                  placeholder={fr.integrations.slack.botTokenPlaceholder}
+                  value={token}
+                  onChange={(e) => {
+                    setToken(e.target.value);
+                    setClientError(null);
+                  }}
+                  className="pr-10 font-mono text-sm"
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(!showToken)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {(clientError || connectMutation.error) && (
+                <p className="text-sm text-destructive">
+                  {clientError ?? connectMutation.error?.message}
+                </p>
+              )}
+              <Button
+                size="sm"
+                onClick={handleConnect}
+                disabled={connectMutation.isPending || !token.trim()}
+              >
+                {connectMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                {connectMutation.isPending
+                  ? fr.integrations.slack.connecting
+                  : fr.integrations.slack.connectButton}
+              </Button>
+
+              {/* Security warning */}
+              <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+                <ShieldAlert className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{fr.integrations.slack.securityWarning}</span>
+              </div>
+
+              {/* Collapsible guide */}
+              <div className="border rounded-md">
+                <button
+                  type="button"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-left hover:bg-muted/50"
+                  onClick={() => setGuideOpen(!guideOpen)}
+                >
+                  {guideOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
+                  {fr.integrations.slack.guideTitle}
+                </button>
+                {guideOpen && (
+                  <div className="px-3 pb-3 space-y-2">
+                    <ol className="list-decimal list-inside space-y-1 text-xs text-muted-foreground">
+                      {fr.integrations.slack.guideSteps.map((step, i) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      {fr.integrations.slack.guideNote}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={confirmRevoke} onOpenChange={setConfirmRevoke}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{fr.integrations.oauth.confirmRevoke}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {fr.integrations.oauth.confirmRevokeDesc}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{fr.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRevoke}
+              disabled={revokeMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {revokeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+              {fr.integrations.oauth.disconnect}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
 function UpcomingCard({ name, date }: { name: string; date: string }) {
   return (
     <Card>
@@ -749,7 +948,7 @@ export default function Integrations() {
       {/* OAuth Integrations */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{fr.integrations.activeIntegrations}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <StripeCard
             summary={status?.stripe}
             isLoading={isLoading}
@@ -760,6 +959,10 @@ export default function Integrations() {
             onConnected={() => triggerHubspotSync('initial')}
             hubspotStale={hubspotStale}
             lastHubspotSyncHoursAgo={lastHubspotSyncHoursAgo}
+          />
+          <SlackCard
+            summary={status?.slack}
+            isLoading={isLoading}
           />
         </div>
       </section>

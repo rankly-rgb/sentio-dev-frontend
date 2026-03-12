@@ -1,5 +1,5 @@
 // --- OAuth Integration types ---
-export type IntegrationProvider = 'stripe' | 'hubspot';
+export type IntegrationProvider = 'stripe' | 'hubspot' | 'slack';
 export type IntegrationStatus = 'active' | 'pending' | 'revoked' | 'expired';
 export type IntegrationMethod = 'oauth' | 'api_key';
 
@@ -15,6 +15,7 @@ export interface IntegrationSummary {
 export interface IntegrationStatusResponse {
   stripe: IntegrationSummary;
   hubspot: IntegrationSummary;
+  slack: IntegrationSummary;
 }
 
 export interface AuthorizeResponse {
@@ -38,6 +39,15 @@ export interface ConnectHubspotApiKeyResponse {
   provider: 'hubspot';
   method: 'api_key';
   portal_id: string;
+  status: 'connected';
+}
+
+export interface ConnectSlackBotTokenResponse {
+  success: true;
+  provider: 'slack';
+  method: 'bot_token';
+  team_id: string;
+  team_name: string;
   status: 'connected';
 }
 
@@ -68,6 +78,20 @@ export function validateHubspotKey(key: string): { valid: boolean; error?: strin
   }
   if (trimmed.length < 30) {
     return { valid: false, error: 'Clé trop courte' };
+  }
+  return { valid: true };
+}
+
+// --- Slack Bot Token client-side validation ---
+
+export function validateSlackBotToken(token: string): { valid: boolean; error?: string } {
+  const trimmed = token.trim();
+  if (!trimmed) return { valid: false, error: 'Token requis' };
+  if (!trimmed.startsWith('xoxb-') && !trimmed.startsWith('xoxp-')) {
+    return { valid: false, error: 'Le token doit commencer par xoxb- (Bot Token)' };
+  }
+  if (trimmed.length < 30) {
+    return { valid: false, error: 'Token trop court' };
   }
   return { valid: true };
 }

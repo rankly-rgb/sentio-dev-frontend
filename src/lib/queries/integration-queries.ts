@@ -6,6 +6,7 @@ import type {
   RevokeResponse,
   ConnectApiKeyResponse,
   ConnectHubspotApiKeyResponse,
+  ConnectSlackBotTokenResponse,
 } from '@/lib/types/integration';
 
 export async function getIntegrationStatus(): Promise<IntegrationStatusResponse> {
@@ -53,6 +54,18 @@ export async function connectHubspotApiKey(
     {
       method: 'POST',
       body: { api_key: apiKey },
+    },
+  );
+}
+
+export async function connectSlackBotToken(
+  botToken: string,
+): Promise<ConnectSlackBotTokenResponse> {
+  return fetchWithUserJwt<ConnectSlackBotTokenResponse>(
+    'integration-oauth/slack/bot-token',
+    {
+      method: 'POST',
+      body: { bot_token: botToken },
     },
   );
 }

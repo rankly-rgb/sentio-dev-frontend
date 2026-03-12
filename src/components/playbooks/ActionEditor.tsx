@@ -1,4 +1,4 @@
-import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { fr } from '@/i18n/fr';
 import EmailStepEditor from '@/components/workflows/EmailStepEditor';
+import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
 
 const ACTION_TYPES: ActionType[] = [
@@ -58,10 +59,12 @@ export function ActionConfigFields({
   type,
   config,
   onChange,
+  slackConnected,
 }: {
   type: ActionType;
   config: Record<string, unknown>;
   onChange: (config: Record<string, unknown>) => void;
+  slackConnected?: boolean;
 }) {
   const update = (key: string, value: unknown) => onChange({ ...config, [key]: value });
 
@@ -69,6 +72,20 @@ export function ActionConfigFields({
     case 'slack_notify':
       return (
         <div className="space-y-2">
+          {/* Slack connection indicator */}
+          {slackConnected !== undefined && (
+            slackConnected ? (
+              <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+                <CheckCircle className="h-3 w-3" />
+                {fr.integrations.slack.slackConnectedIndicator}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-xs text-amber-600">
+                <AlertTriangle className="h-3 w-3" />
+                {fr.integrations.slack.slackNotConnectedIndicator}
+              </div>
+            )
+          )}
           <Input
             placeholder={fr.playbooks.form.slackChannel}
             value={String(config.channel ?? '')}
@@ -184,6 +201,9 @@ interface Props {
 }
 
 export default function ActionEditor({ actions, onChange }: Props) {
+  const { data: integrationStatus } = useIntegrationStatus();
+  const slackConnected = integrationStatus?.slack?.connected;
+
   const addAction = () => {
     const newAction: PlaybookAction = {
       type: 'create_task',
@@ -281,6 +301,7 @@ export default function ActionEditor({ actions, onChange }: Props) {
               type={action.type}
               config={action.config}
               onChange={(config) => updateAction(idx, { config })}
+              slackConnected={action.type === 'slack_notify' ? slackConnected : undefined}
             />
           </div>
         );

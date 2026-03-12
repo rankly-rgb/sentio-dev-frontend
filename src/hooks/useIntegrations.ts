@@ -7,6 +7,7 @@ import {
   revokeIntegration,
   connectStripeApiKey,
   connectHubspotApiKey,
+  connectSlackBotToken,
 } from '@/lib/queries/integration-queries';
 import type {
   IntegrationProvider,
@@ -14,6 +15,7 @@ import type {
   RevokeResponse,
   ConnectApiKeyResponse,
   ConnectHubspotApiKeyResponse,
+  ConnectSlackBotTokenResponse,
 } from '@/lib/types/integration';
 
 const KEYS = {
@@ -94,6 +96,26 @@ export function useConnectHubspotApiKey() {
         data.portal_id
           ? `HubSpot connecté (Portal ${data.portal_id}) — synchronisation en cours...`
           : 'HubSpot connecté via clé API — synchronisation en cours...',
+      );
+    },
+    onError: (e) => {
+      toast.error(e.message);
+    },
+    retry: false,
+  });
+}
+
+export function useConnectSlackBotToken() {
+  const qc = useQueryClient();
+
+  return useMutation<ConnectSlackBotTokenResponse, Error, string>({
+    mutationFn: (token) => connectSlackBotToken(token),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: KEYS.status });
+      toast.success(
+        data.team_name
+          ? `Slack connecté — Workspace "${data.team_name}"`
+          : 'Slack connecté via Bot Token',
       );
     },
     onError: (e) => {

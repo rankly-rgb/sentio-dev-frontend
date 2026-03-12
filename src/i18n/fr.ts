@@ -933,6 +933,28 @@ export const fr = {
       connectedViaApiKey: "Connecte via cle API (Private App)",
       portalId: "Portal ID",
     },
+    // Slack Bot Token
+    slack: {
+      title: "Connecter Slack",
+      description: "Connectez votre workspace Slack pour que les playbooks envoient des notifications dans vos canaux.",
+      botTokenPlaceholder: "xoxb-...",
+      connectButton: "Connecter Slack",
+      connecting: "Verification du token…",
+      connectedVia: "Connecte via Bot Token",
+      teamId: "Workspace",
+      securityWarning: "Ne partagez jamais votre Bot Token publiquement. Utilisez un token xoxb- (Bot Token).",
+      guideTitle: "Comment obtenir un Bot Token Slack",
+      guideSteps: [
+        "Allez sur api.slack.com/apps et cliquez sur Create New App",
+        "Choisissez From scratch, nommez l'app (ex: Sentio AI) et selectionnez votre workspace",
+        "Dans OAuth & Permissions, ajoutez les scopes : chat:write, channels:read",
+        "Installez l'app dans votre workspace",
+        "Copiez le Bot User OAuth Token (xoxb-...)",
+      ] as readonly string[],
+      guideNote: "Le bot doit etre invite dans les canaux ou il doit poster (/invite @Sentio AI).",
+      slackConnectedIndicator: "Slack connecte — les messages seront envoyes via votre Bot Token",
+      slackNotConnectedIndicator: "Slack non connecte — configurez le Bot Token dans les integrations",
+    },
     // Tracker d'usage produit
     tracker: {
       title: "Tracker d'usage produit",
