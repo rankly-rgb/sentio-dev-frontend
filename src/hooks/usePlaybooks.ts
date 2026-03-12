@@ -126,7 +126,30 @@ export function useExecutePlaybook() {
     onSuccess: (data, { playbook_id }) => {
       qc.invalidateQueries({ queryKey: KEYS.executions(playbook_id) });
       qc.invalidateQueries({ queryKey: KEYS.detail(playbook_id) });
-      toast.success(`Exécution lancée : ${data.executions_created} comptes ciblés`);
+
+      // Build enriched summary
+      const results = data.results ?? [];
+      const completed = results.filter(r => r.status === 'completed').length;
+      const failed = results.filter(r => r.status === 'failed').length;
+      const skipped = results.filter(r => r.status === 'skipped').length;
+
+      let msg = `${data.executions_created} comptes traités`;
+      if (completed > 0 || failed > 0 || skipped > 0) {
+        const parts: string[] = [];
+        if (completed > 0) parts.push(`${completed} réussis`);
+        if (failed > 0) parts.push(`${failed} échoués`);
+        if (skipped > 0) parts.push(`${skipped} ignorés`);
+        msg += ` — ${parts.join(', ')}`;
+      }
+      toast.success(msg);
+
+      // Warn about skipped actions
+      const hasSkipped = data.actions_summary?.some(a => a.status === 'skipped');
+      if (hasSkipped) {
+        toast.warning('Certaines actions ont été ignorées. Vérifiez la configuration des intégrations.', {
+          duration: 8000,
+        });
+      }
     },
     onError: (e: Error) => {
       toast.error('Erreur exécution : ' + e.message);

@@ -1,5 +1,7 @@
 /** Types UI pour les vues comptes clients */
 
+import type { AccountFlag } from '@/types/database';
+
 export type SegmentType =
   | 'champions'
   | 'en_expansion'
@@ -37,6 +39,7 @@ export interface AccountListItem {
   contract_end_date: string | null;
   active_subscriptions: number;
   segment_name: string | null;
+  flags: AccountFlag[];
 }
 
 export interface AccountDetail {
@@ -62,6 +65,7 @@ export interface AccountDetail {
   scores_calculated_at: string | null;
   last_stripe_sync_at: string | null;
   last_hubspot_sync_at: string | null;
+  flags: AccountFlag[];
   created_at: string;
   subscriptions: SubscriptionItem[];
   recent_invoices: InvoiceItem[];

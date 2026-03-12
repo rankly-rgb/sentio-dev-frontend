@@ -216,6 +216,14 @@ export interface ExecutePlaybookResponse {
   actions_summary?: ExecutionActionDetail[];
 }
 
+// --- Completed action detail (from actions_completed JSONB) ---
+export interface ExecutionCompletedAction {
+  action_type: string;
+  order: number;
+  status: 'completed' | 'failed' | 'skipped';
+  message: string;
+}
+
 // --- Execution row (from playbook_executions table) ---
 export interface PlaybookExecutionRow {
   id: string;
@@ -227,6 +235,9 @@ export interface PlaybookExecutionRow {
   started_at: string | null;
   completed_at: string | null;
   result: Record<string, unknown> | null;
+  actions_completed: ExecutionCompletedAction[] | null;
+  completed_steps: number | null;
+  failed_steps: number | null;
   error_message: string | null;
   created_at: string;
   updated_at: string;

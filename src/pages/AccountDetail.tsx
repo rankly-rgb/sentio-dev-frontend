@@ -4,6 +4,9 @@ import { useAccountDetail } from '@/hooks/useAccountDetail';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { useRemoveAccountFlag } from '@/hooks/useAccountFlags';
+import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
+import AccountNotesSection from '@/components/accounts/AccountNotesSection';
 import { fr } from '@/i18n/fr';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -132,6 +135,7 @@ export default function AccountDetail() {
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
   const { calculateScores, isCalculating } = useManualSync();
+  const removeFlag = useRemoveAccountFlag();
   const [historyDays, setHistoryDays] = useState<30 | 60 | 90>(30);
 
   // Account insights
@@ -200,6 +204,13 @@ export default function AccountDetail() {
                 {fr.accountDetail.createdAt} {fr.format.date(account.created_at)}
               </p>
             </div>
+            {account.flags.length > 0 && (
+              <AccountFlagsBadges
+                flags={account.flags}
+                onRemove={(flagName) => removeFlag.mutate({ accountId: account.id, flagName })}
+                isRemoving={removeFlag.isPending}
+              />
+            )}
           </div>
         </div>
 
@@ -315,6 +326,7 @@ export default function AccountDetail() {
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="notes">{fr.accountDetail.notes}</TabsTrigger>
           <TabsTrigger value="hubspot">{fr.accountDetail.hubspot}</TabsTrigger>
         </TabsList>
 
@@ -546,6 +558,11 @@ export default function AccountDetail() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Notes */}
+        <TabsContent value="notes" className="mt-4">
+          <AccountNotesSection accountId={account.id} />
         </TabsContent>
 
         {/* HubSpot */}

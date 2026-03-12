@@ -1,6 +1,8 @@
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -23,15 +25,30 @@ const ACTION_TYPES: ActionType[] = [
   'send_email',
 ];
 
+const ACTIVE_ACTIONS: ReadonlySet<string> = new Set([
+  'slack_notify',
+  'create_task',
+  'flag_for_review',
+  'log_note',
+]);
+
+const SLACK_VARIABLES = [
+  '{stripe_customer_id}',
+  '{mrr_eur}',
+  '{churn_risk}',
+  '{health_score}',
+  '{playbook}',
+];
+
 function defaultConfig(type: ActionType): Record<string, unknown> {
   switch (type) {
-    case 'slack_notify': return { channel: '', template: '' };
+    case 'slack_notify': return { channel: '', message: '' };
     case 'create_task': return { title: '', due_days: 3 };
     case 'assign_owner': return { role: '' };
     case 'update_tag': return { tag: '' };
-    case 'log_note': return { note: '' };
+    case 'log_note': return { title: '', body: '' };
     case 'schedule_review': return { review_days: 7 };
-    case 'flag_for_review': return {};
+    case 'flag_for_review': return { flag: 'review_needed', reason: 'Signalé par playbook' };
     case 'send_email': return { recipient_field: 'account_email', subject: '', body_html: '' };
     default: return {};
   }
@@ -51,33 +68,50 @@ export function ActionConfigFields({
   switch (type) {
     case 'slack_notify':
       return (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2">
           <Input
-            placeholder={fr.playbooks.form.channel}
+            placeholder={fr.playbooks.form.slackChannel}
             value={String(config.channel ?? '')}
             onChange={(e) => update('channel', e.target.value)}
           />
-          <Input
-            placeholder={fr.playbooks.form.template}
-            value={String(config.template ?? '')}
-            onChange={(e) => update('template', e.target.value)}
+          <Textarea
+            placeholder={fr.playbooks.form.slackMessage}
+            value={String(config.message ?? config.template ?? '')}
+            onChange={(e) => update('message', e.target.value)}
+            rows={3}
           />
+          <div className="flex flex-wrap gap-1">
+            <span className="text-xs text-muted-foreground mr-1">{fr.playbooks.form.variables} :</span>
+            {SLACK_VARIABLES.map((v) => (
+              <Badge
+                key={v}
+                variant="outline"
+                className="text-[10px] cursor-pointer hover:bg-primary/10"
+                onClick={() => update('message', `${String(config.message ?? '')}${v}`)}
+              >
+                {v}
+              </Badge>
+            ))}
+          </div>
         </div>
       );
     case 'create_task':
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            placeholder={fr.playbooks.form.taskTitle}
-            value={String(config.title ?? '')}
-            onChange={(e) => update('title', e.target.value)}
-          />
-          <Input
-            type="number"
-            placeholder={fr.playbooks.form.dueDays}
-            value={String(config.due_days ?? '')}
-            onChange={(e) => update('due_days', Number(e.target.value))}
-          />
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              placeholder={fr.playbooks.form.taskTitle}
+              value={String(config.title ?? '')}
+              onChange={(e) => update('title', e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder={fr.playbooks.form.dueDays}
+              value={String(config.due_days ?? '')}
+              onChange={(e) => update('due_days', Number(e.target.value))}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">{fr.playbooks.form.hubspotRequired}</p>
         </div>
       );
     case 'assign_owner':
@@ -98,11 +132,20 @@ export function ActionConfigFields({
       );
     case 'log_note':
       return (
-        <Input
-          placeholder={fr.playbooks.form.note}
-          value={String(config.note ?? '')}
-          onChange={(e) => update('note', e.target.value)}
-        />
+        <div className="space-y-2">
+          <Input
+            placeholder={fr.playbooks.form.noteTitle}
+            value={String(config.title ?? '')}
+            onChange={(e) => update('title', e.target.value)}
+          />
+          <Textarea
+            placeholder={fr.playbooks.form.noteBody}
+            value={String(config.body ?? config.note ?? '')}
+            onChange={(e) => update('body', e.target.value)}
+            rows={2}
+          />
+          <p className="text-xs text-muted-foreground">{fr.playbooks.form.noteDefaultHint}</p>
+        </div>
       );
     case 'schedule_review':
       return (
@@ -113,10 +156,23 @@ export function ActionConfigFields({
           onChange={(e) => update('review_days', Number(e.target.value))}
         />
       );
+    case 'flag_for_review':
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            placeholder={fr.playbooks.form.flagName}
+            value={String(config.flag ?? 'review_needed')}
+            onChange={(e) => update('flag', e.target.value)}
+          />
+          <Input
+            placeholder={fr.playbooks.form.flagReason}
+            value={String(config.reason ?? '')}
+            onChange={(e) => update('reason', e.target.value)}
+          />
+        </div>
+      );
     case 'send_email':
       return <EmailStepEditor config={config} onChange={onChange} />;
-    case 'flag_for_review':
-      return null;
     default:
       return null;
   }
@@ -161,63 +217,74 @@ export default function ActionEditor({ actions, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      {actions.map((action, idx) => (
-        <div key={idx} className="border rounded-lg p-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground w-6 text-center">
-              {idx + 1}
-            </span>
-            <Select value={action.type} onValueChange={(v) => changeType(idx, v as ActionType)}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ACTION_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {fr.playbooks.actionType[t]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="ml-auto flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                disabled={idx === 0}
-                onClick={() => moveAction(idx, -1)}
+      {actions.map((action, idx) => {
+        const isActive = ACTIVE_ACTIONS.has(action.type);
+        return (
+          <div key={idx} className="border rounded-lg p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground w-6 text-center">
+                {idx + 1}
+              </span>
+              <Select value={action.type} onValueChange={(v) => changeType(idx, v as ActionType)}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTION_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {fr.playbooks.actionType[t]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Badge
+                variant={isActive ? 'default' : 'secondary'}
+                className={isActive
+                  ? 'bg-green-100 text-green-800 hover:bg-green-100 text-[10px] px-1.5 py-0'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-100 text-[10px] px-1.5 py-0'}
               >
-                <ChevronUp className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                disabled={idx === actions.length - 1}
-                onClick={() => moveAction(idx, 1)}
-              >
-                <ChevronDown className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-destructive"
-                onClick={() => removeAction(idx)}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+                {isActive ? fr.playbooks.actionStatusActive : fr.playbooks.actionStatusSoon}
+              </Badge>
+              <div className="ml-auto flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={idx === 0}
+                  onClick={() => moveAction(idx, -1)}
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  disabled={idx === actions.length - 1}
+                  onClick={() => moveAction(idx, 1)}
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-destructive"
+                  onClick={() => removeAction(idx)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
+            <ActionConfigFields
+              type={action.type}
+              config={action.config}
+              onChange={(config) => updateAction(idx, { config })}
+            />
           </div>
-          <ActionConfigFields
-            type={action.type}
-            config={action.config}
-            onChange={(config) => updateAction(idx, { config })}
-          />
-        </div>
-      ))}
+        );
+      })}
       <Button type="button" variant="outline" size="sm" onClick={addAction}>
         <Plus className="h-4 w-4 mr-2" />
         {fr.playbooks.form.addAction}

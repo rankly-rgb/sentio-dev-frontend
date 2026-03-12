@@ -42,7 +42,7 @@ export async function getAccountList(params: {
   let query = supabase
     .from('accounts')
     .select(
-      'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date',
+      'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
       { count: 'exact' },
     );
 
@@ -56,7 +56,12 @@ export async function getAccountList(params: {
   if (error) throw error;
 
   return {
-    data: (data || []).map(a => ({ ...a, active_subscriptions: 0, segment_name: null })),
+    data: (data || []).map(a => ({
+      ...a,
+      active_subscriptions: 0,
+      segment_name: null,
+      flags: Array.isArray(a.flags) ? a.flags : [],
+    })),
     count: count || 0,
   };
 }
@@ -107,6 +112,7 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
 
   return {
     ...account,
+    flags: Array.isArray(account.flags) ? account.flags : [],
     subscriptions: subsRes.data || [],
     recent_invoices: invoicesRes.data || [],
     recent_usage: usageRes.data || [],

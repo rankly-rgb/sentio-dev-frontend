@@ -51,8 +51,16 @@ export interface Account {
   contract_score: number | null;
   scores_calculated_at: string | null;
   last_stripe_sync_at: string | null;
+  flags: AccountFlag[];
   created_at: string;
   updated_at: string;
+}
+
+export interface AccountFlag {
+  flag: string;
+  set_at: string;
+  playbook_id: string | null;
+  reason: string;
 }
 
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'paused';
