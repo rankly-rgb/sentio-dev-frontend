@@ -324,6 +324,28 @@ export const fr = {
       accountsTargeted: "comptes ciblés",
       executionsCreated: "exécutions créées",
     },
+    // Semi-automated — approve/reject
+    semiAutoBadge: "Semi-auto",
+    pendingApproval: "En attente d'approbation",
+    pendingCount: (n: number) => `${n} en attente`,
+    approve: "Approuver",
+    reject: "Rejeter",
+    approving: "Approbation…",
+    rejecting: "Rejet…",
+    rejectDialogTitle: "Rejeter l'exécution",
+    rejectReasonLabel: "Raison du rejet (optionnel)",
+    rejectReasonPlaceholder: "Expliquez pourquoi cette exécution est rejetée…",
+    accountsTargetedLabel: "comptes ciblés",
+    executionDate: "Exécution du",
+    executionStatusLabels: {
+      pending: "En attente",
+      pending_approval: "En attente",
+      running: "En cours",
+      completed: "Terminé",
+      failed: "Échoué",
+      cancelled: "Annulé",
+    } as Record<string, string>,
+    executionHistory: "Historique des exécutions",
     // KPIs
     kpi: {
       eligible: "Éligibles",
@@ -516,6 +538,12 @@ export const fr = {
     scoresRecalculated: "Scores recalculés avec succès",
     syncFailed: "Échec de la synchronisation",
     seconds: "s",
+    syncTypeLabels: {
+      incremental: 'Incrémental',
+      full_sync: 'Complet',
+      daily: 'Quotidien',
+      initial: 'Initial',
+    } as Record<string, string>,
   },
 
   // Paramètres
@@ -533,6 +561,9 @@ export const fr = {
     hubspotConnected: "HubSpot connecté",
     hubspotNotConnected: "HubSpot non connecté",
     connectHubspot: "Connecter HubSpot",
+    hubspotNeverSynced: "Jamais synchronisé",
+    hubspotStale: (hours: number) => `Dernière sync il y a ${hours}h — données potentiellement obsolètes`,
+    hubspotSyncFresh: (hours: number) => `Synchronisé il y a ${hours}h`,
     inviteUser: "Inviter un utilisateur",
     role: "Rôle",
     owner: "Propriétaire",

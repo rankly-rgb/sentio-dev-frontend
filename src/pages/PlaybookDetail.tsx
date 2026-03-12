@@ -18,6 +18,7 @@ import PlaybookActionsSection from '@/components/playbooks/PlaybookActionsSectio
 import PlaybookConditionsSection from '@/components/playbooks/PlaybookConditionsSection';
 import PlaybookExecutionStats from '@/components/playbooks/PlaybookExecutionStats';
 import PlaybookForm from '@/components/playbooks/PlaybookForm';
+import PlaybookPendingApprovals from '@/components/playbooks/PlaybookPendingApprovals';
 import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
 import type { UpdatePlaybookPayload, PlaybookFullDetail } from '@/lib/types/playbook';
 import { buildFullDetailFromPlaybook } from '@/lib/types/playbook';
@@ -183,6 +184,13 @@ export default function PlaybookDetail() {
       <PlaybookStatusBanner
         status={fullDetail.playbook.status}
         affectedSummary={fullDetail.affected_accounts_summary}
+      />
+
+      {/* ZONE 2b — Pending approvals (semi_automated only) */}
+      <PlaybookPendingApprovals
+        playbookId={fullDetail.playbook.id}
+        automationType={fullDetail.playbook.automation_type}
+        requiresApproval={fullDetail.playbook.requires_approval}
       />
 
       {/* ZONE 3 — Affected accounts + export */}

@@ -37,6 +37,17 @@ function formatDuration(s: number | null) {
   return `${Math.floor(s / 60)}m${s % 60}s`;
 }
 
+function syncTypeLabel(t: string | null): string {
+  if (!t) return '—';
+  return fr.syncs.syncTypeLabels[t] ?? t;
+}
+
+function syncTypeBadgeVariant(t: string | null): 'default' | 'secondary' | 'outline' {
+  if (!t) return 'outline';
+  if (t === 'full_sync' || t === 'initial') return 'secondary';
+  return 'outline';
+}
+
 // ─── Fetcher ────────────────────────────────────────────────────────────────
 
 async function fetchSyncs(orgId: string): Promise<DataSync[]> {
@@ -183,7 +194,11 @@ export default function Syncs() {
                 {syncs.map(sync => (
                   <TableRow key={sync.id}>
                     <TableCell className="font-medium capitalize">{sync.sync_source}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{sync.sync_type ?? '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant={syncTypeBadgeVariant(sync.sync_type)} className="text-xs">
+                        {syncTypeLabel(sync.sync_type)}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant={statusVariant(sync.sync_status)}

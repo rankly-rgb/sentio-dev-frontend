@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { fr } from '@/i18n/fr';
 import PlaybookStatusBadge from './PlaybookStatusBadge';
 import PriorityBadge from './PriorityBadge';
@@ -22,6 +23,16 @@ export default function PlaybookCard({ playbook }: Props) {
         <div className="flex items-center gap-2 flex-wrap">
           <PlaybookStatusBadge status={playbook.status} />
           <PriorityBadge priority={playbook.priority} />
+          {playbook.playbook_type === 'semi_automated' && (
+            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+              {fr.playbooks.semiAutoBadge}
+            </Badge>
+          )}
+          {playbook.execution_stats && playbook.execution_stats.pending > 0 && (
+            <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-xs font-medium">
+              {playbook.execution_stats.pending}
+            </span>
+          )}
           <span className="text-xs text-muted-foreground ml-auto">
             {fr.playbooks.type[playbook.playbook_type] ?? playbook.playbook_type}
           </span>

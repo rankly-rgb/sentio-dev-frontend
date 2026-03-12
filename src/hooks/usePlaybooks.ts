@@ -12,6 +12,8 @@ import {
   listPlaybookExecutions,
   getPlaybookFullDetail,
   transitionPlaybookStatus,
+  approveExecution,
+  rejectExecution,
 } from '@/lib/queries/playbook-queries';
 import type {
   PlaybookFilters,
@@ -152,6 +154,46 @@ export function useTransitionPlaybookStatus() {
     },
     onError: (e: Error) => {
       toast.error('Erreur changement de statut : ' + e.message);
+    },
+  });
+}
+
+export function useApproveExecution() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ playbookId, executionId }: { playbookId: string; executionId: string }) =>
+      approveExecution(playbookId, executionId),
+    onSuccess: (data, { playbookId }) => {
+      qc.invalidateQueries({ queryKey: KEYS.executions(playbookId) });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'full-detail', playbookId] });
+      toast.success(`Exécution approuvée — ${data.accounts_count} comptes en cours de traitement`);
+    },
+    onError: (e: Error) => {
+      if (e.message.includes('409') || e.message.includes('statut invalide')) {
+        toast.error('Cette exécution a déjà été traitée');
+      } else {
+        toast.error('Erreur approbation : ' + e.message);
+      }
+    },
+  });
+}
+
+export function useRejectExecution() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ playbookId, executionId, reason }: { playbookId: string; executionId: string; reason?: string }) =>
+      rejectExecution(playbookId, executionId, reason),
+    onSuccess: (_data, { playbookId }) => {
+      qc.invalidateQueries({ queryKey: KEYS.executions(playbookId) });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'full-detail', playbookId] });
+      toast.success('Exécution rejetée');
+    },
+    onError: (e: Error) => {
+      if (e.message.includes('409') || e.message.includes('statut invalide')) {
+        toast.error('Cette exécution a déjà été traitée');
+      } else {
+        toast.error('Erreur rejet : ' + e.message);
+      }
     },
   });
 }

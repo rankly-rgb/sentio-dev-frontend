@@ -44,6 +44,7 @@ import {
 } from '@/hooks/useIntegrations';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
 import type { IntegrationSummary } from '@/lib/types/integration';
 import { validateStripeKey, validateHubspotKey } from '@/lib/types/integration';
 import type { OrganizationDetail } from '@/lib/types/settings';
@@ -297,15 +298,46 @@ function StripeCard({
   );
 }
 
+/** HubSpot sync freshness badge */
+function HubSpotSyncBadge({ hubspotStale, lastHoursAgo }: { hubspotStale: boolean | null; lastHoursAgo: number | null }) {
+  if (hubspotStale === null) return null;
+  if (hubspotStale && lastHoursAgo === null) {
+    return (
+      <span className="inline-block rounded-full px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800">
+        {fr.settings.hubspotNeverSynced}
+      </span>
+    );
+  }
+  if (hubspotStale && lastHoursAgo !== null) {
+    return (
+      <span className="inline-block rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-800">
+        {fr.settings.hubspotStale(Math.round(lastHoursAgo))}
+      </span>
+    );
+  }
+  if (!hubspotStale && lastHoursAgo !== null) {
+    return (
+      <span className="inline-block rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-green-800">
+        {fr.settings.hubspotSyncFresh(Math.round(lastHoursAgo))}
+      </span>
+    );
+  }
+  return null;
+}
+
 /** HubSpot card with OAuth + API Key connection options */
 function HubSpotCard({
   summary,
   isLoading,
   onConnected,
+  hubspotStale,
+  lastHubspotSyncHoursAgo,
 }: {
   summary: IntegrationSummary | undefined;
   isLoading: boolean;
   onConnected?: () => void;
+  hubspotStale: boolean | null;
+  lastHubspotSyncHoursAgo: number | null;
 }) {
   const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [connectionMethod, setConnectionMethod] = useState<'oauth' | 'api_key'>('oauth');
@@ -405,6 +437,7 @@ function HubSpotCard({
                   <p className="text-sm font-mono">{summary.provider_account_id}</p>
                 </div>
               )}
+              <HubSpotSyncBadge hubspotStale={hubspotStale} lastHoursAgo={lastHubspotSyncHoursAgo} />
               {summary.scopes.length > 0 && (
                 <div>
                   <p className="text-xs text-muted-foreground">{fr.integrations.oauth.scopes}</p>
@@ -672,6 +705,7 @@ export default function Integrations() {
   const { data: status, isLoading, refetch } = useIntegrationStatus();
   const { organization } = useOrganizationSettings();
   const { triggerHubspotSync } = useManualSync();
+  const { hubspotStale, lastHubspotSyncHoursAgo } = useHubspotSyncFreshness();
 
   // Handle OAuth callback query params
   useEffect(() => {
@@ -724,6 +758,8 @@ export default function Integrations() {
             summary={status?.hubspot}
             isLoading={isLoading}
             onConnected={() => triggerHubspotSync('initial')}
+            hubspotStale={hubspotStale}
+            lastHubspotSyncHoursAgo={lastHubspotSyncHoursAgo}
           />
         </div>
       </section>

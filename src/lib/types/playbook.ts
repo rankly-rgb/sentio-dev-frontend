@@ -296,6 +296,18 @@ export interface TransitionStatusResponse {
   error?: string;
 }
 
+// --- Approve/reject execution (semi_automated) ---
+export interface ApproveExecutionResponse {
+  execution_id: string;
+  status: 'running';
+  accounts_count: number;
+}
+
+export interface RejectExecutionResponse {
+  execution_id: string;
+  status: 'cancelled';
+}
+
 // --- Fallback: build PlaybookFullDetail from legacy Playbook ---
 
 function summarizeLegacyAction(type: ActionType, config: Record<string, unknown>): string {

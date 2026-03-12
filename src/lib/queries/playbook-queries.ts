@@ -11,6 +11,8 @@ import type {
   PlaybookExecutionRow,
   PlaybookFullDetail,
   TransitionStatusResponse,
+  ApproveExecutionResponse,
+  RejectExecutionResponse,
 } from '@/lib/types/playbook';
 
 // --- CRUD ---
@@ -116,4 +118,27 @@ export async function transitionPlaybookStatus(
   });
   if (error) throw error;
   return data as TransitionStatusResponse;
+}
+
+// --- Approve/reject execution (semi_automated) ---
+
+export async function approveExecution(
+  playbookId: string,
+  executionId: string,
+): Promise<ApproveExecutionResponse> {
+  return fetchWithUserJwt<ApproveExecutionResponse>(
+    `playbook-crud/${playbookId}/approve-execution`,
+    { method: 'POST', body: { execution_id: executionId } },
+  );
+}
+
+export async function rejectExecution(
+  playbookId: string,
+  executionId: string,
+  reason?: string,
+): Promise<RejectExecutionResponse> {
+  return fetchWithUserJwt<RejectExecutionResponse>(
+    `playbook-crud/${playbookId}/reject-execution`,
+    { method: 'POST', body: { execution_id: executionId, reason } },
+  );
 }

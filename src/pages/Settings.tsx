@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
+import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
 import { fr } from '@/i18n/fr';
 import { maskEmail } from '@/lib/queries/settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import { CheckCircle, XCircle, UserPlus, ExternalLink, Link2 } from 'lucide-reac
 export default function Settings() {
   const { organization, team, isLoading } = useOrganizationSettings();
   const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();
+  const { hubspotStale, lastHubspotSyncHoursAgo } = useHubspotSyncFreshness();
 
   if (isLoading) {
     return (
@@ -100,6 +102,21 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground font-mono">
                   {integrationStatus.hubspot.provider_account_id}
                 </p>
+              )}
+              {hubspotConnected && hubspotStale === true && lastHubspotSyncHoursAgo === null && (
+                <span className="inline-block rounded-full px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800 mt-2">
+                  {fr.settings.hubspotNeverSynced}
+                </span>
+              )}
+              {hubspotConnected && hubspotStale === true && lastHubspotSyncHoursAgo !== null && (
+                <span className="inline-block rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-800 mt-2">
+                  {fr.settings.hubspotStale(Math.round(lastHubspotSyncHoursAgo))}
+                </span>
+              )}
+              {hubspotConnected && hubspotStale === false && lastHubspotSyncHoursAgo !== null && (
+                <span className="inline-block rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-green-800 mt-2">
+                  {fr.settings.hubspotSyncFresh(Math.round(lastHubspotSyncHoursAgo))}
+                </span>
               )}
             </CardContent>
           </Card>

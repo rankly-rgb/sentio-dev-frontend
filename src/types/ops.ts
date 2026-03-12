@@ -16,6 +16,10 @@ export interface HealthCheckResponse {
   status: HealthStatus;
   checks: HealthCheckItem[];
   timestamp: string;
+  /** true if last HubSpot sync > 48h or never synced */
+  hubspot_stale?: boolean;
+  /** null if never synced */
+  last_hubspot_sync_hours_ago?: number | null;
 }
 
 // ─── Self-Monitor ────────────────────────────────────────────────────────
