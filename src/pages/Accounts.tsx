@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAccounts } from '@/hooks/useAccounts';
+import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { exportAccountsCsv } from '@/lib/exportCsv';
 import { fr } from '@/i18n/fr';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScoreBadge from '@/components/ScoreBadge';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
+import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 import { Search, Download, Flag } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -21,7 +22,7 @@ export default function Accounts() {
   const [exporting, setExporting] = useState(false);
   const [flagsOnly, setFlagsOnly] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
-  const navigate = useNavigate();
+  const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -155,7 +156,7 @@ export default function Accounts() {
                   <TableRow
                     key={account.id}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => navigate(`/accounts/${account.id}`)}
+                    onClick={() => openPanel(account.id)}
                   >
                     <TableCell className="font-mono text-sm">{account.stripe_customer_id}</TableCell>
                     <TableCell>
@@ -193,6 +194,13 @@ export default function Accounts() {
           </Button>
         </div>
       </div>
+
+      <AccountDetailPanel
+        isOpen={isOpen}
+        onClose={closePanel}
+        account={panelAccount}
+        isLoading={panelLoading}
+      />
     </div>
   );
 }

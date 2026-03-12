@@ -4,6 +4,7 @@ import { useManualSync } from '@/hooks/useManualSync';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useSegments } from '@/hooks/useSegments';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
+import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { fr } from '@/i18n/fr';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { HealthDistributionChart } from '@/components/dashboard/health-distribut
 import { MrrChart } from '@/components/dashboard/mrr-chart';
 import { SyncProgressPanel } from '@/components/dashboard/sync-progress-panel';
 import ScoreBadge from '@/components/ScoreBadge';
+import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 import {
   RefreshCw,
   Calculator,
@@ -40,6 +42,7 @@ export default function Dashboard() {
   const { data: syncs } = useSyncStatus();
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
+  const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   async function handleSync() {
     await triggerStripeSync('incremental');
@@ -230,6 +233,7 @@ export default function Dashboard() {
           emptyText={`0 ${fr.dashboard.accountsAtRisk.toLowerCase()}`}
           viewAllHref="/segments/en_danger_critique"
           borderClass="border-destructive/30"
+          onAccountClick={openPanel}
         />
         <TopAccountsCard
           title={fr.dashboard.topExpansion}
@@ -239,6 +243,7 @@ export default function Dashboard() {
           emptyText={`0 ${fr.dashboard.expansionOpportunities.toLowerCase()}`}
           viewAllHref="/segments/en_expansion"
           borderClass="border-blue-200"
+          onAccountClick={openPanel}
         />
       </div>
 
@@ -284,6 +289,13 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      <AccountDetailPanel
+        isOpen={isOpen}
+        onClose={closePanel}
+        account={panelAccount}
+        isLoading={panelLoading}
+      />
     </div>
   );
 }
@@ -296,6 +308,7 @@ function TopAccountsCard({
   emptyText,
   viewAllHref,
   borderClass,
+  onAccountClick,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -304,6 +317,7 @@ function TopAccountsCard({
   emptyText: string;
   viewAllHref: string;
   borderClass: string;
+  onAccountClick?: (id: string) => void;
 }) {
   return (
     <Card className={borderClass}>
@@ -319,10 +333,11 @@ function TopAccountsCard({
         ) : (
           <div className="space-y-2">
             {accounts.map(a => (
-              <Link
+              <button
                 key={a.id}
-                to={`/accounts/${a.id}`}
-                className="flex items-center justify-between py-1.5 hover:bg-muted/50 rounded px-2 -mx-2 transition-colors"
+                type="button"
+                onClick={() => onAccountClick?.(a.id)}
+                className="flex w-full items-center justify-between py-1.5 hover:bg-muted/50 rounded px-2 -mx-2 transition-colors text-left"
               >
                 <span className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">
                   {a.stripe_customer_id}
@@ -331,7 +346,7 @@ function TopAccountsCard({
                   <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
                   <ScoreBadge score={a[scoreField]} inverted={scoreField === 'churn_risk_score'} />
                 </div>
-              </Link>
+              </button>
             ))}
             <Link
               to={viewAllHref}

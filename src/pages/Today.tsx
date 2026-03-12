@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fr } from '@/i18n/fr';
 import { supabase } from '@/lib/supabase';
 import { useTodayActions } from '@/hooks/useTodayActions';
+import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { getUniqueCategories } from '@/lib/types/today-actions';
 import type { TodayActionsFilters } from '@/lib/types/today-actions';
 import type { PriorityCode } from '@/lib/priority-labels';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import TodaySummaryBar from '@/components/today/TodaySummaryBar';
 import TodayFilters from '@/components/today/TodayFilters';
 import TodayPriorityGroup from '@/components/today/TodayPriorityGroup';
+import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 import EmptyState from '@/components/EmptyState';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
@@ -31,6 +33,7 @@ export default function Today() {
   const [filters, setFilters] = useState<TodayActionsFilters>({});
   const [exporting, setExporting] = useState(false);
   const { summary, playbooks, isLoading, error } = useTodayActions(filters);
+  const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   const p0Ref = useRef<HTMLDivElement>(null);
   const p1Ref = useRef<HTMLDivElement>(null);
@@ -163,6 +166,7 @@ export default function Today() {
                 priority="P0"
                 actions={actionsByPriority.P0}
                 defaultExpanded
+                onAccountClick={openPanel}
               />
             </div>
             <div ref={p1Ref}>
@@ -170,6 +174,7 @@ export default function Today() {
                 priority="P1"
                 actions={actionsByPriority.P1}
                 defaultExpanded
+                onAccountClick={openPanel}
               />
             </div>
             <div ref={p2Ref}>
@@ -177,6 +182,7 @@ export default function Today() {
                 priority="P2"
                 actions={actionsByPriority.P2}
                 defaultExpanded={false}
+                onAccountClick={openPanel}
               />
             </div>
           </div>
@@ -200,6 +206,13 @@ export default function Today() {
           </div>
         </>
       )}
+
+      <AccountDetailPanel
+        isOpen={isOpen}
+        onClose={closePanel}
+        account={panelAccount}
+        isLoading={panelLoading}
+      />
     </div>
   );
 }

@@ -11,11 +11,12 @@ import type { TodayAction } from '@/lib/types/today-actions';
 
 interface TodayActionRowProps {
   action: TodayAction;
+  onAccountClick?: (accountId: string) => void;
 }
 
 const MAX_VISIBLE_REASONS = 2;
 
-export default function TodayActionRow({ action }: TodayActionRowProps) {
+export default function TodayActionRow({ action, onAccountClick }: TodayActionRowProps) {
   const visibleReasons = action.trigger_reasons.slice(0, MAX_VISIBLE_REASONS);
   const hiddenReasonsCount = action.trigger_reasons.length - MAX_VISIBLE_REASONS;
 
@@ -23,12 +24,22 @@ export default function TodayActionRow({ action }: TodayActionRowProps) {
     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors">
       {/* Stripe ID */}
       <td className="px-3 py-2.5">
-        <Link
-          to={`/accounts/${action.account_id}`}
-          className="font-mono text-xs text-primary hover:underline"
-        >
-          {action.stripe_customer_id ?? action.account_id.slice(0, 8)}
-        </Link>
+        {onAccountClick ? (
+          <button
+            type="button"
+            onClick={() => onAccountClick(action.account_id)}
+            className="font-mono text-xs text-primary hover:underline text-left"
+          >
+            {action.stripe_customer_id ?? action.account_id.slice(0, 8)}
+          </button>
+        ) : (
+          <Link
+            to={`/accounts/${action.account_id}`}
+            className="font-mono text-xs text-primary hover:underline"
+          >
+            {action.stripe_customer_id ?? action.account_id.slice(0, 8)}
+          </Link>
+        )}
       </td>
 
       {/* Plan */}

@@ -28,6 +28,7 @@ interface SegmentDetailViewProps {
   segment: SegmentType;
   accounts: SegmentAccount[];
   totalFetched: number;
+  onAccountClick?: (accountId: string) => void;
 }
 
 function comparePlanTier(a: string | null, b: string | null): number {
@@ -35,7 +36,7 @@ function comparePlanTier(a: string | null, b: string | null): number {
   return (order[a ?? ''] ?? 0) - (order[b ?? ''] ?? 0);
 }
 
-export default function SegmentDetailView({ segment, accounts, totalFetched }: SegmentDetailViewProps) {
+export default function SegmentDetailView({ segment, accounts, totalFetched, onAccountClick }: SegmentDetailViewProps) {
   const [sortField, setSortField] = useState<SortField>('mrr_cents');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [page, setPage] = useState(0);
@@ -220,9 +221,19 @@ export default function SegmentDetailView({ segment, accounts, totalFetched }: S
             {pageData.map((a) => (
               <tr key={a.id} className="border-t hover:bg-muted/30">
                 <td className="px-3 py-2 font-mono text-xs">
-                  <Link to={`/accounts/${a.id}`} className="hover:underline text-primary">
-                    {a.stripe_customer_id}
-                  </Link>
+                  {onAccountClick ? (
+                    <button
+                      type="button"
+                      onClick={() => onAccountClick(a.id)}
+                      className="hover:underline text-primary text-left"
+                    >
+                      {a.stripe_customer_id}
+                    </button>
+                  ) : (
+                    <Link to={`/accounts/${a.id}`} className="hover:underline text-primary">
+                      {a.stripe_customer_id}
+                    </Link>
+                  )}
                 </td>
                 <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                   {a.hubspot_company_id ?? '—'}

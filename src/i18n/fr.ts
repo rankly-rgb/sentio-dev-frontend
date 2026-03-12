@@ -988,6 +988,24 @@ export const fr = {
     },
   },
 
+  // Panneau détail compte
+  panel: {
+    financials: 'Finances',
+    timeline: 'Historique',
+    viewFullDetail: 'Voir le détail complet',
+    openInStripe: 'Voir dans Stripe',
+    openInHubspot: 'Voir dans HubSpot',
+    scoreSince: 'Mis à jour',
+    clientSince: 'Client depuis',
+    noMovements: 'Aucun mouvement MRR',
+    invoicePaid: 'Payé',
+    invoiceDue: 'Dû',
+    invoiceOverdue: 'En retard',
+    byType: 'Par type',
+    historyEmpty: 'Historique disponible après le premier calcul de scores',
+    trackerNotConnected: 'Tracker non connecté',
+  },
+
   // Commun
   common: {
     loading: "Chargement...",

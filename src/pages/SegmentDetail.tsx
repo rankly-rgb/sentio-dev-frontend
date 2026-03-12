@@ -4,7 +4,9 @@ import { fr } from '@/i18n/fr';
 import type { SegmentType } from '@/lib/types/segments';
 import { isValidSegmentKey } from '@/lib/types/segments';
 import { useSegmentAccounts } from '@/hooks/useSegmentAccounts';
+import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import SegmentDetailView from '@/components/segments/SegmentDetailView';
+import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 
 export default function SegmentDetail() {
   const { segment: segmentParam } = useParams<{ segment: string }>();
@@ -12,6 +14,7 @@ export default function SegmentDetail() {
     segmentParam && isValidSegmentKey(segmentParam) ? segmentParam : null;
 
   const { data: accounts, isLoading, error } = useSegmentAccounts(validSegment);
+  const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   if (!validSegment) {
     return <Navigate to="/segments" replace />;
@@ -40,10 +43,19 @@ export default function SegmentDetail() {
   }
 
   return (
-    <SegmentDetailView
-      segment={validSegment}
-      accounts={accounts || []}
-      totalFetched={accounts?.length ?? 0}
-    />
+    <>
+      <SegmentDetailView
+        segment={validSegment}
+        accounts={accounts || []}
+        totalFetched={accounts?.length ?? 0}
+        onAccountClick={openPanel}
+      />
+      <AccountDetailPanel
+        isOpen={isOpen}
+        onClose={closePanel}
+        account={panelAccount}
+        isLoading={panelLoading}
+      />
+    </>
   );
 }

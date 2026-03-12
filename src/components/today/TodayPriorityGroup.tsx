@@ -13,6 +13,7 @@ interface TodayPriorityGroupProps {
   actions: TodayAction[];
   defaultExpanded: boolean;
   initialLimit?: number;
+  onAccountClick?: (accountId: string) => void;
 }
 
 const COLUMN_HEADERS = [
@@ -31,6 +32,7 @@ export default function TodayPriorityGroup({
   actions,
   defaultExpanded,
   initialLimit = 5,
+  onAccountClick,
 }: TodayPriorityGroupProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [showAll, setShowAll] = useState(false);
@@ -84,7 +86,7 @@ export default function TodayPriorityGroup({
             </thead>
             <tbody>
               {visibleActions.map((action) => (
-                <TodayActionRow key={action.account_id} action={action} />
+                <TodayActionRow key={action.account_id} action={action} onAccountClick={onAccountClick} />
               ))}
             </tbody>
           </table>
