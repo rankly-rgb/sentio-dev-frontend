@@ -367,7 +367,7 @@ const OP_LABELS: Record<string, string> = {
 
 const ACTION_LABELS: Record<string, string> = {
   slack_notify: 'Notification Slack',
-  create_task: 'Créer une tâche',
+  create_task: 'Envoyer la séquence mail sur HubSpot',
   assign_owner: 'Assigner un responsable',
   update_tag: 'Mettre à jour le tag',
   log_note: 'Ajouter une note',
