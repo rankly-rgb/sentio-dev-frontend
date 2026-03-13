@@ -301,6 +301,53 @@ export interface PlaybookFullDetail {
   actions: PlaybookFullDetailAction[];
 }
 
+// --- Detail (get_playbook_detail RPC — v2) ---
+
+export interface PlaybookDetailPlaybook {
+  id: string;
+  name: string;
+  description: string;
+  status: PlaybookStatus;
+  category: string;
+  is_automated: boolean;
+  requires_approval: boolean;
+  execution_type: string;
+  created_at: string;
+}
+
+export interface PlaybookDetailEligibleAccounts {
+  total: number;
+  mrr_at_risk_cents: number;
+  urgent_count: number;
+  surveiller_count: number;
+  stable_count: number;
+}
+
+export interface PlaybookDetailExecutionStats {
+  total: number;
+  completed: number;
+  failed: number;
+  in_progress: number;
+  mrr_recovered_cents: number;
+  mrr_expansion_cents: number;
+}
+
+export interface PlaybookDetailAction {
+  id: string;
+  action_type: ActionType | string;
+  label: string;
+  config: Record<string, unknown>;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface PlaybookDetail {
+  playbook: PlaybookDetailPlaybook;
+  eligible_accounts: PlaybookDetailEligibleAccounts;
+  execution_stats: PlaybookDetailExecutionStats;
+  actions: PlaybookDetailAction[];
+}
+
 export interface TransitionStatusResponse {
   success: boolean;
   new_status?: string;

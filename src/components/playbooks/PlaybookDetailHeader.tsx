@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Zap,
-  Pause,
   Archive,
   Pencil,
   Play,
   Loader2,
-  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,57 +23,50 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { fr } from '@/i18n/fr';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
-import PriorityBadge from '@/components/playbooks/PriorityBadge';
-import { useUpdatePlaybook, useArchivePlaybook } from '@/hooks/usePlaybooks';
-import type {
-  PlaybookFullDetailPlaybook,
-  PlaybookAffectedAccountsSummary,
-  PlaybookStatus,
-} from '@/lib/types/playbook';
+import { useArchivePlaybook, useTransitionPlaybookStatus } from '@/hooks/usePlaybooks';
+import type { PlaybookDetailPlaybook } from '@/lib/types/playbook';
+
+const CATEGORY_COLORS: Record<string, string> = {
+  critical: 'bg-red-100 text-red-800 hover:bg-red-100',
+  standard: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
+};
 
 interface Props {
-  playbook: PlaybookFullDetailPlaybook;
-  affectedSummary: PlaybookAffectedAccountsSummary;
+  playbook: PlaybookDetailPlaybook;
   onEdit: () => void;
   onExecute: () => void;
 }
 
 export default function PlaybookDetailHeader({
   playbook,
-  affectedSummary,
   onEdit,
   onExecute,
 }: Props) {
   const navigate = useNavigate();
-  const updateMutation = useUpdatePlaybook();
+  const transitionMutation = useTransitionPlaybookStatus();
   const archiveMutation = useArchivePlaybook();
-  const [activateOpen, setActivateOpen] = useState(false);
+  const [_activateConfirm, setActivateConfirm] = useState(false);
 
-  const isMutating = updateMutation.isPending || archiveMutation.isPending;
+  const isMutating = transitionMutation.isPending || archiveMutation.isPending;
 
-  const handleStatusChange = (status: PlaybookStatus) => {
-    updateMutation.mutate(
-      { id: playbook.id, payload: { status } },
+  const handleActivate = () => {
+    transitionMutation.mutate(
+      { id: playbook.id, targetStatus: 'active' },
       {
         onSuccess: () => {
-          if (status === 'active') {
-            setActivateOpen(false);
-            toast.success('Playbook activé avec succès');
-          } else {
-            toast.success('Playbook désactivé');
-          }
+          setActivateConfirm(false);
+          toast.success('Playbook activé avec succès');
         },
       },
+    );
+  };
+
+  const handleDeactivate = () => {
+    transitionMutation.mutate(
+      { id: playbook.id, targetStatus: 'draft' },
+      { onSuccess: () => toast.success('Playbook désactivé') },
     );
   };
 
@@ -83,35 +76,49 @@ export default function PlaybookDetailHeader({
     });
   };
 
-  const mrrFormatted = fr.format.currency(affectedSummary?.mrr_at_risk_cents ?? 0);
-  const isFullyAutomated =
-    !playbook.requires_approval && playbook.automation_type === 'automated';
+  const categoryKey = playbook.category?.toLowerCase() || '';
+  const categoryLabel =
+    fr.playbooks.categoryBadge[categoryKey] ??
+    fr.playbooks.category[categoryKey as keyof typeof fr.playbooks.category] ??
+    playbook.category;
+  const categoryColor = CATEGORY_COLORS[categoryKey] ?? CATEGORY_COLORS.standard;
 
   return (
-    <>
+    <div className="space-y-4">
+      {/* Breadcrumb */}
+      <button
+        onClick={() => navigate('/playbooks')}
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        {fr.playbooks.backToList}
+      </button>
+
+      {/* Title row */}
       <div className="flex items-start justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/playbooks')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold">{playbook.name}</h1>
-              <PlaybookStatusBadge status={playbook.status} />
-              <PriorityBadge priority={playbook.priority} />
-            </div>
-            {playbook.description && (
-              <p className="text-sm text-muted-foreground mt-1">{playbook.description}</p>
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-bold">{playbook.name}</h1>
+            <PlaybookStatusBadge status={playbook.status} />
+            {playbook.category && (
+              <Badge variant="secondary" className={categoryColor}>
+                {categoryLabel}
+              </Badge>
             )}
           </div>
+          {playbook.description && (
+            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+              {playbook.description}
+            </p>
+          )}
         </div>
 
+        {/* Action buttons */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Draft → Activer + Exécuter + Modifier + Archiver */}
           {playbook.status === 'draft' && (
             <>
-              <Button size="sm" onClick={() => setActivateOpen(true)} disabled={isMutating}>
-                {updateMutation.isPending ? (
+              <Button size="sm" onClick={handleActivate} disabled={isMutating}>
+                {transitionMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Zap className="h-4 w-4 mr-2" />
@@ -149,19 +156,13 @@ export default function PlaybookDetailHeader({
             </>
           )}
 
-          {/* Active → Désactiver + Exécuter + Modifier + Archiver */}
           {playbook.status === 'active' && (
             <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleStatusChange('draft')}
-                disabled={isMutating}
-              >
-                {updateMutation.isPending ? (
+              <Button size="sm" variant="outline" onClick={handleDeactivate} disabled={isMutating}>
+                {transitionMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
-                  <Pause className="h-4 w-4 mr-2" />
+                  <Zap className="h-4 w-4 mr-2" />
                 )}
                 {fr.playbooks.deactivate}
               </Button>
@@ -196,7 +197,6 @@ export default function PlaybookDetailHeader({
             </>
           )}
 
-          {/* Archived → Modifier seulement */}
           {playbook.status === 'archived' && (
             <Button size="sm" variant="outline" onClick={onEdit}>
               <Pencil className="h-4 w-4 mr-2" />
@@ -206,46 +206,13 @@ export default function PlaybookDetailHeader({
         </div>
       </div>
 
-      {/* Activation confirmation modal */}
-      <Dialog open={activateOpen} onOpenChange={setActivateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{fr.playbooks.activateModalTitle}</DialogTitle>
-            <DialogDescription className="space-y-3 pt-2">
-              <span className="block">{fr.playbooks.activateModalBody}</span>
-              <span className="flex items-start gap-2 text-amber-600">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>
-                  {fr.playbooks.activateModalImpact(affectedSummary.total, mrrFormatted)}
-                </span>
-              </span>
-              <span className="block text-sm">
-                {isFullyAutomated ? (
-                  <span className="flex items-start gap-2 text-amber-600 font-medium">
-                    <Zap className="h-4 w-4 shrink-0 mt-0.5" />
-                    {fr.playbooks.activateModalAutoWarning}
-                  </span>
-                ) : (
-                  fr.playbooks.activateModalApprovalNote(
-                    fr.playbooks.type[playbook.automation_type] ?? playbook.automation_type,
-                  )
-                )}
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setActivateOpen(false)}>
-              {fr.playbooks.form.cancel}
-            </Button>
-            <Button onClick={() => handleStatusChange('active')} disabled={updateMutation.isPending}>
-              {updateMutation.isPending && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              )}
-              {fr.playbooks.confirmActivation}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      {/* Draft info banner */}
+      {playbook.status === 'draft' && (
+        <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <Info className="h-4 w-4 shrink-0" />
+          <span>{fr.playbooks.bannerDraft(0)}</span>
+        </div>
+      )}
+    </div>
   );
 }

@@ -462,6 +462,13 @@ export const fr = {
     mrrRecovered: "MRR récupéré",
     mrrExpansion: "MRR expansion",
     deactivate: "Désactiver",
+    // Redesign v2
+    configTitle: "Configuration",
+    urgencySurveiller: "À surveiller",
+    categoryBadge: {
+      critical: "Critique",
+      standard: "Standard",
+    } as Record<string, string>,
   },
 
   // Workflows

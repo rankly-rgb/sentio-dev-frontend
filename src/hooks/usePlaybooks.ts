@@ -11,6 +11,7 @@ import {
   executePlaybook,
   listPlaybookExecutions,
   getPlaybookFullDetail,
+  getPlaybookDetail,
   transitionPlaybookStatus,
   approveExecution,
   rejectExecution,
@@ -161,6 +162,15 @@ export function usePlaybookFullDetail(id: string | undefined) {
   return useQuery({
     queryKey: ['playbooks', 'full-detail', id ?? ''],
     queryFn: () => getPlaybookFullDetail(id ?? ''),
+    enabled: !!id,
+    staleTime: 60_000,
+  });
+}
+
+export function usePlaybookDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: ['playbooks', 'detail-v2', id ?? ''],
+    queryFn: () => getPlaybookDetail(id ?? ''),
     enabled: !!id,
     staleTime: 60_000,
   });

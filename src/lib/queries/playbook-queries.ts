@@ -10,6 +10,7 @@ import type {
   ExecutePlaybookResponse,
   PlaybookExecutionRow,
   PlaybookFullDetail,
+  PlaybookDetail,
   TransitionStatusResponse,
   ApproveExecutionResponse,
   RejectExecutionResponse,
@@ -104,6 +105,18 @@ export async function getPlaybookFullDetail(
   });
   if (error) throw error;
   return data as PlaybookFullDetail;
+}
+
+// --- Detail v2 (get_playbook_detail RPC) ---
+
+export async function getPlaybookDetail(
+  playbookId: string,
+): Promise<PlaybookDetail> {
+  const { data, error } = await supabase.rpc('get_playbook_detail', {
+    p_playbook_id: playbookId,
+  });
+  if (error) throw error;
+  return data as PlaybookDetail;
 }
 
 // --- Status transition ---
