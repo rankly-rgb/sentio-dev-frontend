@@ -125,13 +125,29 @@ interface RawPlaybookAction {
   step?: number;
 }
 
+// Action types that are fully implemented on the backend
+const IMPLEMENTED_ACTIONS: ReadonlySet<string> = new Set([
+  'slack_notify',
+  'create_task',
+  'send_email_hubspot',
+  'flag_for_review',
+  'log_note',
+]);
+
 function normalizeAction(raw: RawPlaybookAction): PlaybookDetailAction {
+  const actionType = raw.action_type ?? raw.type ?? '';
+  // Use DB is_active when present, otherwise derive from known implemented types
+  const hasActiveField = raw.is_active !== undefined || raw.active !== undefined;
+  const isActive = hasActiveField
+    ? (raw.is_active ?? raw.active ?? false)
+    : IMPLEMENTED_ACTIONS.has(actionType);
+
   return {
     id: raw.id ?? raw.action_id ?? '',
-    action_type: raw.action_type ?? raw.type ?? '',
+    action_type: actionType,
     label: raw.label ?? '',
     config: raw.config ?? {},
-    is_active: raw.is_active ?? raw.active ?? false,
+    is_active: isActive,
     sort_order: raw.sort_order ?? raw.order ?? raw.step ?? 0,
   };
 }
