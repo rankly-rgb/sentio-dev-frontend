@@ -38,6 +38,10 @@ export const fr = {
     viewAll: "Voir tout",
     topAtRisk: "Comptes à risque",
     topExpansion: "Opportunités d'expansion",
+    expansionContext: (count: number, totalMrr: string) =>
+      `${count} opportunité${count > 1 ? 's' : ''} · ${totalMrr} MRR potentiel`,
+    expansionEmptyDetail: "Aucune opportunité détectée — les scores d'expansion se calculent à partir de l'utilisation des sièges et des fonctionnalités",
+    seats: "Sièges",
     segmentsQuickLinks: "Segments",
     recentSyncs: "Synchronisations récentes",
     noSyncs: "Aucune synchronisation effectuée",
@@ -189,6 +193,13 @@ export const fr = {
     trend: "Tendance MRR",
     cohortNrr: "NRR par cohorte",
     period: "Période",
+    currentMrr: "MRR actuel",
+    delta: "Variation",
+    accounts: "comptes",
+    emptyState: "Aucune donnée MRR disponible — les tendances apparaîtront après la première synchronisation Stripe",
+    period7d: "7j",
+    period30d: "30j",
+    period90d: "90j",
   },
 
   // Playbooks

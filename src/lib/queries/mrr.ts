@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { MrrMovementSummary } from '@/types/dashboard';
+import type { MrrMovementSummary, MrrTrendPoint } from '@/types/dashboard';
 
 export async function getMrrMovementSummary(period: {
   from: string;
@@ -54,6 +54,17 @@ export async function getMrrTrend(_months: number = 12): Promise<
     date,
     mrr_cents,
   }));
+}
+
+/** Appelle la RPC get_mrr_trend pour récupérer la série temporelle MRR */
+export async function fetchMrrTrend(startDate: string, endDate: string): Promise<MrrTrendPoint[]> {
+  const { data, error } = await supabase.rpc('get_mrr_trend', {
+    p_start_date: startDate,
+    p_end_date: endDate,
+  });
+
+  if (error) throw error;
+  return (data as MrrTrendPoint[]) || [];
 }
 
 export async function calculateNrr(period: {

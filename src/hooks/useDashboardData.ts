@@ -11,6 +11,9 @@ export interface TopAccount {
   churn_risk_score: number | null;
   expansion_score: number | null;
   health_score: number | null;
+  seat_count: number | null;
+  seat_limit: number | null;
+  plan_tier: string | null;
 }
 
 async function fetchDashboardMetrics(organizationId: string): Promise<DashboardMetrics> {
@@ -68,10 +71,17 @@ async function fetchHealthDistribution(organizationId: string): Promise<HealthDi
   };
 }
 
-async function fetchTopAccounts(organizationId: string): Promise<{ atRisk: TopAccount[]; expansion: TopAccount[] }> {
+export interface TopAccountsResult {
+  atRisk: TopAccount[];
+  expansion: TopAccount[];
+  expansionTotalCount: number;
+  expansionTotalMrrCents: number;
+}
+
+async function fetchTopAccounts(organizationId: string): Promise<TopAccountsResult> {
   const { data: accounts, error } = await supabase
     .from('accounts')
-    .select('id, stripe_customer_id, mrr_cents, churn_risk_score, expansion_score, health_score')
+    .select('id, stripe_customer_id, mrr_cents, churn_risk_score, expansion_score, health_score, seat_count, seat_limit, plan_tier')
     .eq('organization_id', organizationId);
 
   if (error) throw error;
@@ -83,12 +93,16 @@ async function fetchTopAccounts(organizationId: string): Promise<{ atRisk: TopAc
     .sort((a, b) => (b.churn_risk_score ?? 0) - (a.churn_risk_score ?? 0))
     .slice(0, 5);
 
-  const expansion = all
+  const allExpansion = all
     .filter(a => (a.expansion_score ?? 0) >= 70 && (a.health_score ?? 0) >= 60)
-    .sort((a, b) => (b.expansion_score ?? 0) - (a.expansion_score ?? 0))
-    .slice(0, 5);
+    .sort((a, b) => (b.expansion_score ?? 0) - (a.expansion_score ?? 0));
 
-  return { atRisk, expansion };
+  return {
+    atRisk,
+    expansion: allExpansion.slice(0, 5),
+    expansionTotalCount: allExpansion.length,
+    expansionTotalMrrCents: allExpansion.reduce((s, a) => s + (a.mrr_cents || 0), 0),
+  };
 }
 
 export function useDashboardData() {

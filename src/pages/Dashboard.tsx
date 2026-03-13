@@ -30,7 +30,7 @@ import {
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
 import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
-import type { TopAccount } from '@/hooks/useDashboardData';
+import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
@@ -235,14 +235,8 @@ export default function Dashboard() {
           borderClass="border-destructive/30"
           onAccountClick={openPanel}
         />
-        <TopAccountsCard
-          title={fr.dashboard.topExpansion}
-          icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
-          accounts={topAccounts?.expansion || []}
-          scoreField="expansion_score"
-          emptyText={`0 ${fr.dashboard.expansionOpportunities.toLowerCase()}`}
-          viewAllHref="/segments/en_expansion"
-          borderClass="border-blue-200"
+        <ExpansionCard
+          topAccounts={topAccounts}
           onAccountClick={openPanel}
         />
       </div>
@@ -350,6 +344,93 @@ function TopAccountsCard({
             ))}
             <Link
               to={viewAllHref}
+              className="flex items-center justify-end gap-1 text-sm text-primary hover:underline pt-1"
+            >
+              {fr.dashboard.viewAll} <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SeatProgressBar({ count, limit }: { count: number; limit: number }) {
+  const pct = limit > 0 ? Math.round((count / limit) * 100) : 0;
+  const color = pct >= 90 ? 'bg-destructive' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500';
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs text-muted-foreground whitespace-nowrap">{count}/{limit}</span>
+      <div className="w-12 h-1 rounded-full bg-muted overflow-hidden">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function ExpansionCard({
+  topAccounts,
+  onAccountClick,
+}: {
+  topAccounts: TopAccountsResult | null;
+  onAccountClick?: (id: string) => void;
+}) {
+  const accounts = topAccounts?.expansion || [];
+  const totalCount = topAccounts?.expansionTotalCount ?? 0;
+  const totalMrrCents = topAccounts?.expansionTotalMrrCents ?? 0;
+
+  return (
+    <Card className="border-blue-200">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-blue-600" />
+          <CardTitle className="text-base">{fr.dashboard.topExpansion}</CardTitle>
+        </div>
+        {totalCount > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {fr.dashboard.expansionContext(totalCount, fr.format.currency(totalMrrCents))}
+          </p>
+        )}
+      </CardHeader>
+      <CardContent>
+        {accounts.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-2">
+            {fr.dashboard.expansionEmptyDetail}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {accounts.map(a => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => onAccountClick?.(a.id)}
+                className="flex w-full items-center justify-between py-1.5 hover:bg-muted/50 rounded px-2 -mx-2 transition-colors text-left gap-2"
+              >
+                <span className="font-mono text-xs text-muted-foreground truncate max-w-[140px]">
+                  {a.stripe_customer_id}
+                </span>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {/* Seats */}
+                  {a.seat_count != null && a.seat_limit != null ? (
+                    <SeatProgressBar count={a.seat_count} limit={a.seat_limit} />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                  {/* Plan */}
+                  {a.plan_tier && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {a.plan_tier}
+                    </Badge>
+                  )}
+                  {/* MRR */}
+                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
+                  {/* Score */}
+                  <ScoreBadge score={a.expansion_score} />
+                </div>
+              </button>
+            ))}
+            <Link
+              to="/segments/en_expansion"
               className="flex items-center justify-end gap-1 text-sm text-primary hover:underline pt-1"
             >
               {fr.dashboard.viewAll} <ChevronRight className="h-3 w-3" />

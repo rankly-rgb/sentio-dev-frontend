@@ -47,3 +47,18 @@ export interface MrrTrend {
   contraction_cents: number;
   churn_cents: number;
 }
+
+/** Point de la série temporelle MRR (RPC get_mrr_trend) */
+export interface MrrTrendPoint {
+  snapshot_date: string;
+  total_mrr_cents: number;
+  account_count: number;
+}
+
+/** Résumé calculé côté client à partir des points MRR */
+export interface MrrTrendSummary {
+  start: number;
+  end: number;
+  delta: number;
+  deltaPct: number | null;
+}
