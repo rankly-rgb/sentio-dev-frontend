@@ -11,6 +11,7 @@ import type {
   PlaybookExecutionRow,
   PlaybookFullDetail,
   PlaybookDetail,
+  PlaybookDetailAction,
   TransitionStatusResponse,
   ApproveExecutionResponse,
   RejectExecutionResponse,
@@ -109,6 +110,32 @@ export async function getPlaybookFullDetail(
 
 // --- Detail v2 (get_playbook_detail RPC) ---
 
+// Raw action shape from the RPC — field names may vary
+interface RawPlaybookAction {
+  id?: string;
+  action_id?: string;
+  action_type?: string;
+  type?: string;
+  label?: string;
+  config?: Record<string, unknown>;
+  is_active?: boolean;
+  active?: boolean;
+  sort_order?: number;
+  order?: number;
+  step?: number;
+}
+
+function normalizeAction(raw: RawPlaybookAction): PlaybookDetailAction {
+  return {
+    id: raw.id ?? raw.action_id ?? '',
+    action_type: raw.action_type ?? raw.type ?? '',
+    label: raw.label ?? '',
+    config: raw.config ?? {},
+    is_active: raw.is_active ?? raw.active ?? false,
+    sort_order: raw.sort_order ?? raw.order ?? raw.step ?? 0,
+  };
+}
+
 export async function getPlaybookDetail(
   playbookId: string,
 ): Promise<PlaybookDetail> {
@@ -116,7 +143,11 @@ export async function getPlaybookDetail(
     p_playbook_id: playbookId,
   });
   if (error) throw error;
-  return data as PlaybookDetail;
+  const raw = data as PlaybookDetail & { actions: RawPlaybookAction[] };
+  return {
+    ...raw,
+    actions: Array.isArray(raw.actions) ? raw.actions.map(normalizeAction) : [],
+  };
 }
 
 // --- Status transition ---
