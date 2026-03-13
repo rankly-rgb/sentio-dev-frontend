@@ -1,4 +1,4 @@
-import { Plus, Trash2, ChevronUp, ChevronDown, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,7 @@ import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
 const ACTION_TYPES: ActionType[] = [
   'slack_notify',
   'create_task',
+  'send_email_hubspot',
   'assign_owner',
   'update_tag',
   'log_note',
@@ -29,6 +30,7 @@ const ACTION_TYPES: ActionType[] = [
 const ACTIVE_ACTIONS: ReadonlySet<string> = new Set([
   'slack_notify',
   'create_task',
+  'send_email_hubspot',
   'flag_for_review',
   'log_note',
 ]);
@@ -45,6 +47,7 @@ function defaultConfig(type: ActionType): Record<string, unknown> {
   switch (type) {
     case 'slack_notify': return { channel: '', message: '' };
     case 'create_task': return { title: '', due_days: 3 };
+    case 'send_email_hubspot': return { subject: '', body_html: '' };
     case 'assign_owner': return { role: '' };
     case 'update_tag': return { tag: '' };
     case 'log_note': return { title: '', body: '' };
@@ -55,16 +58,27 @@ function defaultConfig(type: ActionType): Record<string, unknown> {
   }
 }
 
+const HUBSPOT_EMAIL_VARIABLES = [
+  '{stripe_customer_id}',
+  '{health_score}',
+  '{churn_risk}',
+  '{expansion_score}',
+  '{mrr_eur}',
+  '{playbook}',
+];
+
 export function ActionConfigFields({
   type,
   config,
   onChange,
   slackConnected,
+  hubspotConnected,
 }: {
   type: ActionType;
   config: Record<string, unknown>;
   onChange: (config: Record<string, unknown>) => void;
   slackConnected?: boolean;
+  hubspotConnected?: boolean;
 }) {
   const update = (key: string, value: unknown) => onChange({ ...config, [key]: value });
 
@@ -115,6 +129,12 @@ export function ActionConfigFields({
     case 'create_task':
       return (
         <div className="space-y-2">
+          {hubspotConnected !== undefined && !hubspotConnected && (
+            <div className="flex items-start gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2">
+              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+              <span>{fr.playbooks.form.hubspotNotConnectedWarning}</span>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <Input
               placeholder={fr.playbooks.form.taskTitle}
@@ -129,6 +149,52 @@ export function ActionConfigFields({
             />
           </div>
           <p className="text-xs text-muted-foreground">{fr.playbooks.form.hubspotRequired}</p>
+        </div>
+      );
+    case 'send_email_hubspot':
+      return (
+        <div className="space-y-2">
+          {hubspotConnected !== undefined && !hubspotConnected && (
+            <div className="flex items-start gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2">
+              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+              <span>{fr.playbooks.form.hubspotNotConnectedWarning}</span>
+            </div>
+          )}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">{fr.playbooks.form.emailHubspotSubject}</label>
+            <Input
+              placeholder={fr.playbooks.form.emailHubspotSubjectPlaceholder}
+              value={String(config.subject ?? '')}
+              onChange={(e) => update('subject', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">{fr.playbooks.form.emailHubspotBody}</label>
+            <Textarea
+              placeholder={fr.playbooks.form.emailHubspotBodyPlaceholder}
+              value={String(config.body_html ?? '')}
+              onChange={(e) => update('body_html', e.target.value)}
+              rows={4}
+            />
+          </div>
+          <div className="flex flex-wrap gap-1">
+            <span className="text-xs text-muted-foreground mr-1">{fr.playbooks.form.variables} :</span>
+            {HUBSPOT_EMAIL_VARIABLES.map((v) => (
+              <Badge
+                key={v}
+                variant="outline"
+                className="text-[10px] cursor-pointer hover:bg-primary/10"
+                onClick={() => update('body_html', `${String(config.body_html ?? '')}${v}`)}
+              >
+                {v}
+              </Badge>
+            ))}
+          </div>
+          <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+            <span>{fr.playbooks.form.emailHubspotDefaultHint}</span>
+          </div>
+          <p className="text-xs text-muted-foreground">{fr.playbooks.form.emailHubspotPrerequisite}</p>
         </div>
       );
     case 'assign_owner':
@@ -203,6 +269,7 @@ interface Props {
 export default function ActionEditor({ actions, onChange }: Props) {
   const { data: integrationStatus } = useIntegrationStatus();
   const slackConnected = integrationStatus?.slack?.connected;
+  const hubspotConnected = integrationStatus?.hubspot?.connected;
 
   const addAction = () => {
     const newAction: PlaybookAction = {
@@ -302,6 +369,7 @@ export default function ActionEditor({ actions, onChange }: Props) {
               config={action.config}
               onChange={(config) => updateAction(idx, { config })}
               slackConnected={action.type === 'slack_notify' ? slackConnected : undefined}
+              hubspotConnected={action.type === 'send_email_hubspot' || action.type === 'create_task' ? hubspotConnected : undefined}
             />
           </div>
         );

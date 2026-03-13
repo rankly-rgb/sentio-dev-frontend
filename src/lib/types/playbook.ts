@@ -19,6 +19,7 @@ export type TemplateCategory =
 export type ActionType =
   | 'slack_notify'
   | 'create_task'
+  | 'send_email_hubspot'
   | 'assign_owner'
   | 'update_tag'
   | 'log_note'
@@ -384,6 +385,8 @@ function summarizeLegacyAction(type: ActionType, config: Record<string, unknown>
       return config.review_days ? `${config.review_days} jours` : '';
     case 'flag_for_review':
       return '';
+    case 'send_email_hubspot':
+      return config.subject ? `Email HubSpot : "${String(config.subject)}"` : 'Email via HubSpot';
     case 'send_email':
       return config.subject ? `Email : "${String(config.subject)}"` : 'Email';
     default:
@@ -420,6 +423,7 @@ const ACTION_LABELS: Record<string, string> = {
   log_note: 'Ajouter une note',
   schedule_review: 'Planifier une revue',
   flag_for_review: 'Signaler pour revue',
+  send_email_hubspot: 'Email via HubSpot',
   send_email: 'Envoyer un email',
 };
 

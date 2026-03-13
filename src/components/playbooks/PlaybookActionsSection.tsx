@@ -22,6 +22,7 @@ const ACTION_ICON_CONFIG: Record<string, { icon: React.ElementType; color: strin
   log_note: { icon: FileText, color: 'text-gray-600' },
   schedule_review: { icon: CalendarClock, color: 'text-blue-600' },
   flag_for_review: { icon: Flag, color: 'text-green-600' },
+  send_email_hubspot: { icon: Mail, color: 'text-orange-600' },
   send_email: { icon: Mail, color: 'text-blue-600' },
   hubspot_sequence: { icon: Mail, color: 'text-blue-600' },
 };

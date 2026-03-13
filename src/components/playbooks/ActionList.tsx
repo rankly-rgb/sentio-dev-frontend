@@ -14,6 +14,7 @@ import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
 const actionIcons: Record<ActionType, React.ElementType> = {
   slack_notify: MessageSquare,
   create_task: ListTodo,
+  send_email_hubspot: Mail,
   assign_owner: UserCheck,
   update_tag: Tag,
   log_note: FileText,
@@ -38,6 +39,8 @@ function summarizeConfig(type: ActionType, config: Record<string, unknown>): str
       return config.review_days ? `${config.review_days} jours` : '';
     case 'flag_for_review':
       return '';
+    case 'send_email_hubspot':
+      return config.subject ? `Email HubSpot: "${String(config.subject)}"` : 'Email via HubSpot';
     case 'send_email':
       return config.subject ? `Email: "${String(config.subject)}"` : 'Email';
     default:
