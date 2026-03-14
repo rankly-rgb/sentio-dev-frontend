@@ -57,6 +57,11 @@ export const fr = {
     financialHealth: "Santé financière",
     engagementScore: "Score d'engagement",
     contractScore: "Score contrat",
+    financialHealthTooltip: "Basé sur le MRR, la régularité des paiements et l'historique de facturation",
+    engagementScoreTooltip: "Basé sur l'activité HubSpot : emails, réunions, tickets et interactions récentes",
+    contractScoreTooltip: "Basé sur l'ancienneté du contrat, le plan souscrit et le nombre de sièges utilisés",
+    productUsageTooltip: "Basé sur la fréquence et la profondeur d'utilisation du produit",
+    healthScoreTooltip: "Moyenne pondérée des sous-scores : financier, engagement, contrat et usage produit",
   },
 
   // Segments (section 4.3)

@@ -1,6 +1,12 @@
 import { fr } from '@/i18n/fr';
 import ScoreBadge from '@/components/ScoreBadge';
 import { relativeTimeFr } from '@/lib/account-detail-helpers';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 import type { AccountDetail } from '@/lib/types/accounts';
 
 interface Props {
@@ -20,13 +26,25 @@ function healthScoreColor(score: number): string {
   return 'text-red-600 border-red-200';
 }
 
-function ScoreBar({ label, score }: { label: string; score: number | null }) {
+function ScoreBar({ label, score, tooltip }: { label: string; score: number | null; tooltip?: string }) {
   const isNull = score === null || score === undefined;
 
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground flex items-center gap-1">
+          {label}
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3 w-3 text-muted-foreground/60 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[220px] text-xs">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </span>
         <span className="font-medium">
           {isNull ? (
             <span className="text-muted-foreground">{fr.accountDetail.scoreNotCalculated}</span>
@@ -79,15 +97,25 @@ export default function AccountScoreCard({ account, trackerConnected }: Props) {
 
       {/* Sub-scores */}
       <div className="space-y-2.5">
-        <ScoreBar label={fr.scores.financialHealth} score={account.financial_score} />
-        <ScoreBar label={fr.scores.engagementScore} score={account.engagement_score} />
-        <ScoreBar label={fr.scores.contractScore} score={account.contract_score} />
+        <ScoreBar label={fr.scores.financialHealth} score={account.financial_score} tooltip={fr.scores.financialHealthTooltip} />
+        <ScoreBar label={fr.scores.engagementScore} score={account.engagement_score} tooltip={fr.scores.engagementScoreTooltip} />
+        <ScoreBar label={fr.scores.contractScore} score={account.contract_score} tooltip={fr.scores.contractScoreTooltip} />
         {trackerConnected ? (
-          <ScoreBar label={fr.scores.productUsage} score={account.product_usage_score} />
+          <ScoreBar label={fr.scores.productUsage} score={account.product_usage_score} tooltip={fr.scores.productUsageTooltip} />
         ) : (
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">{fr.scores.productUsage}</span>
+              <span className="text-muted-foreground flex items-center gap-1">
+                {fr.scores.productUsage}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-3 w-3 text-muted-foreground/60 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    {fr.scores.productUsageTooltip}
+                  </TooltipContent>
+                </Tooltip>
+              </span>
               <span className="text-muted-foreground text-[10px]">Tracker non connecté</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary border border-dashed border-gray-300" />
