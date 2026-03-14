@@ -184,7 +184,7 @@ export interface UpdatePlaybookPayload {
 
 export interface ExecutePlaybookPayload {
   playbook_id: string;
-  organization_id: string;
+  target_mode?: 'eligible';
   account_ids?: string[];
   segment_id?: string;
   execution_source: 'manual';
@@ -212,9 +212,15 @@ export interface ExecutePlaybookResponse {
   success: boolean;
   playbook_id: string;
   executions_created: number;
+  total_eligible?: number;
   has_more: boolean;
+  message?: string;
   results: ExecutePlaybookResult[];
   actions_summary?: ExecutionActionDetail[];
+  // Semi-automated response fields
+  execution_id?: string;
+  status?: 'pending_approval';
+  accounts_count?: number;
 }
 
 // --- Completed action detail (from actions_completed JSONB) ---
@@ -331,6 +337,7 @@ export interface PlaybookDetailExecutionStats {
   in_progress: number;
   mrr_recovered_cents: number;
   mrr_expansion_cents: number;
+  last_executed_at: string | null;
 }
 
 export interface PlaybookDetailAction {

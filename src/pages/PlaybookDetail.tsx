@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fr } from '@/i18n/fr';
-import { useAuth } from '@/contexts/AuthContext';
 import {
   usePlaybookDetail,
   usePlaybook,
@@ -23,7 +22,6 @@ import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 export default function PlaybookDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   // Single RPC call for all detail data
   const {
@@ -154,7 +152,7 @@ export default function PlaybookDetail() {
         open={showExecuteModal}
         onOpenChange={setShowExecuteModal}
         playbookId={detail.playbook.id}
-        organizationId={user?.organization_id || ''}
+        lastExecutedAt={detail.execution_stats.last_executed_at}
       />
     </div>
   );

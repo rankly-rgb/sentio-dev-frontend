@@ -26,7 +26,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { fr } from '@/i18n/fr';
-import { useAuth } from '@/contexts/AuthContext';
 import {
   usePlaybook,
   usePlaybookExecutions,
@@ -46,7 +45,6 @@ export default function WorkflowDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
 
   const { data: playbook, isLoading, error } = usePlaybook(id);
   const { data: executions, isLoading: execLoading } = usePlaybookExecutions(id);
@@ -416,7 +414,7 @@ export default function WorkflowDetail() {
         open={showExecuteModal}
         onOpenChange={setShowExecuteModal}
         playbookId={playbook.id}
-        organizationId={user?.organization_id ?? ''}
+        lastExecutedAt={playbook.execution_stats?.last_executed_at ?? null}
       />
     </div>
   );

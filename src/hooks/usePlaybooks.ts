@@ -126,30 +126,56 @@ export function useExecutePlaybook() {
     mutationFn: (payload: ExecutePlaybookPayload) => executePlaybook(payload),
     onSuccess: (data, { playbook_id }) => {
       qc.invalidateQueries({ queryKey: KEYS.executions(playbook_id) });
+      // Invalidate both detail key shapes (legacy + v2)
       qc.invalidateQueries({ queryKey: KEYS.detail(playbook_id) });
+      qc.invalidateQueries({ queryKey: ['playbooks', 'detail-v2', playbook_id] });
 
-      // Build enriched summary
-      const results = data.results ?? [];
-      const completed = results.filter(r => r.status === 'completed').length;
-      const failed = results.filter(r => r.status === 'failed').length;
-      const skipped = results.filter(r => r.status === 'skipped').length;
-
-      let msg = `${data.executions_created} comptes traités`;
-      if (completed > 0 || failed > 0 || skipped > 0) {
-        const parts: string[] = [];
-        if (completed > 0) parts.push(`${completed} réussis`);
-        if (failed > 0) parts.push(`${failed} échoués`);
-        if (skipped > 0) parts.push(`${skipped} ignorés`);
-        msg += ` — ${parts.join(', ')}`;
+      // Semi-automated → pending approval
+      if (data.status === 'pending_approval') {
+        toast.info(`Exécution en attente d'approbation — ${data.accounts_count ?? 0} comptes`);
+        return;
       }
-      toast.success(msg);
 
-      // Warn about skipped actions
-      const hasSkipped = data.actions_summary?.some(a => a.status === 'skipped');
-      if (hasSkipped) {
-        toast.warning('Certaines actions ont été ignorées. Vérifiez la configuration des intégrations.', {
-          duration: 8000,
-        });
+      if (data.executions_created > 0) {
+        // Build enriched summary
+        const results = data.results ?? [];
+        const completed = results.filter(r => r.status === 'completed').length;
+        const failed = results.filter(r => r.status === 'failed').length;
+        const skipped = results.filter(r => r.status === 'skipped').length;
+
+        let msg = data.has_more
+          ? `${data.executions_created} comptes traités (${data.total_eligible ?? '?'} éligibles au total — max 200 par run)`
+          : `${data.executions_created} comptes traités`;
+        if (completed > 0 || failed > 0 || skipped > 0) {
+          const parts: string[] = [];
+          if (completed > 0) parts.push(`${completed} réussis`);
+          if (failed > 0) parts.push(`${failed} échoués`);
+          if (skipped > 0) parts.push(`${skipped} ignorés`);
+          msg += ` — ${parts.join(', ')}`;
+        }
+        toast.success(msg);
+
+        // Warn about skipped actions
+        const hasSkipped = data.actions_summary?.some(a => a.status === 'skipped');
+        if (hasSkipped) {
+          toast.warning('Certaines actions ont été ignorées. Vérifiez la configuration des intégrations.', {
+            duration: 8000,
+          });
+        }
+      } else {
+        // 0 executions — display backend message with French translation
+        const MESSAGE_MAP: Record<string, string> = {
+          'All eligible accounts have recent executions':
+            'Tous les comptes éligibles ont déjà été traités dans les dernières 24h. Réessayez plus tard.',
+          'No accounts match eligibility criteria':
+            'Aucun compte ne correspond aux critères d\'éligibilité du playbook.',
+          'No accounts found':
+            'Aucun compte trouvé dans l\'organisation.',
+          'No eligible accounts':
+            'Aucun compte éligible dans le segment cible.',
+        };
+        const displayMsg = MESSAGE_MAP[data.message ?? ''] ?? data.message ?? 'Aucun compte éligible';
+        toast.warning(displayMsg);
       }
     },
     onError: (e: Error) => {

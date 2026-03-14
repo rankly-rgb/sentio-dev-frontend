@@ -30,10 +30,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   playbookId: string;
-  organizationId: string;
+  lastExecutedAt?: string | null;
 }
 
-export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, organizationId }: Props) {
+export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, lastExecutedAt }: Props) {
   const [mode, setMode] = useState<'segment' | 'accounts'>('segment');
   const [segmentId, setSegmentId] = useState('');
   const [accountIdsRaw, setAccountIdsRaw] = useState('');
@@ -42,10 +42,22 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, o
 
   const { mutate, isPending } = useExecutePlaybook();
 
+  // Compute cooldown warning from last execution
+  const cooldownWarning = (() => {
+    if (!lastExecutedAt) return null;
+    const cooldownEnd = new Date(new Date(lastExecutedAt).getTime() + cooldownHours * 3600000);
+    const now = new Date();
+    if (now < cooldownEnd) {
+      const hoursLeft = Math.ceil((cooldownEnd.getTime() - now.getTime()) / 3600000);
+      return `Cooldown actif — prochain run possible dans ${hoursLeft}h`;
+    }
+    return null;
+  })();
+
   const handleExecute = () => {
     const payload = {
       playbook_id: playbookId,
-      organization_id: organizationId,
+      target_mode: 'eligible' as const,
       execution_source: 'manual' as const,
       cooldown_hours: cooldownHours,
       ...(mode === 'segment'
@@ -83,18 +95,40 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, o
           /* Results */
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-3">
-              {result.success ? (
+              {result.status === 'pending_approval' ? (
+                <AlertTriangle className="h-8 w-8 text-amber-500" />
+              ) : result.executions_created > 0 ? (
                 <CheckCircle className="h-8 w-8 text-emerald-500" />
               ) : (
-                <XCircle className="h-8 w-8 text-destructive" />
+                <AlertTriangle className="h-8 w-8 text-orange-500" />
               )}
               <div>
                 <p className="font-medium">
-                  {result.success ? fr.playbooks.executeModal.success : 'Erreur'}
+                  {result.status === 'pending_approval'
+                    ? `Exécution en attente d'approbation — ${result.accounts_count ?? 0} comptes`
+                    : result.executions_created > 0
+                      ? result.has_more
+                        ? `${result.executions_created} comptes traités (${result.total_eligible ?? '?'} éligibles au total)`
+                        : `${result.executions_created} comptes traités`
+                      : 'Aucun compte traité'}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {result.executions_created} {fr.playbooks.executeModal.executionsCreated}
-                </p>
+                {result.executions_created === 0 && result.status !== 'pending_approval' && (
+                  <p className="text-sm text-muted-foreground">
+                    {(() => {
+                      const MESSAGE_MAP: Record<string, string> = {
+                        'All eligible accounts have recent executions':
+                          'Tous les comptes éligibles ont déjà été traités dans les dernières 24h. Réessayez plus tard.',
+                        'No accounts match eligibility criteria':
+                          'Aucun compte ne correspond aux critères d\'éligibilité du playbook.',
+                        'No accounts found':
+                          'Aucun compte trouvé dans l\'organisation.',
+                        'No eligible accounts':
+                          'Aucun compte éligible dans le segment cible.',
+                      };
+                      return MESSAGE_MAP[result.message ?? ''] ?? result.message ?? 'Aucun compte éligible';
+                    })()}
+                  </p>
+                )}
               </div>
             </div>
             {/* Actions summary (webhook, slack, hubspot, email) */}
@@ -214,6 +248,12 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, o
               <p className="text-xs text-muted-foreground mt-1">
                 {fr.playbooks.executeModal.cooldownHelp}
               </p>
+              {cooldownWarning && (
+                <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                  {cooldownWarning}
+                </p>
+              )}
             </div>
 
             <DialogFooter>
