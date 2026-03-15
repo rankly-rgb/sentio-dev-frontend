@@ -31,10 +31,11 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   playbookId: string;
   lastExecutedAt?: string | null;
+  eligibleCount?: number;
 }
 
-export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, lastExecutedAt }: Props) {
-  const [mode, setMode] = useState<'segment' | 'accounts'>('segment');
+export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, lastExecutedAt, eligibleCount }: Props) {
+  const [mode, setMode] = useState<'eligible' | 'segment' | 'accounts'>('eligible');
   const [segmentId, setSegmentId] = useState('');
   const [accountIdsRaw, setAccountIdsRaw] = useState('');
   const [cooldownHours, setCooldownHours] = useState(24);
@@ -55,15 +56,17 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
   })();
 
   const handleExecute = () => {
-    const payload = {
+    const base = {
       playbook_id: playbookId,
-      target_mode: 'eligible' as const,
       execution_source: 'manual' as const,
       cooldown_hours: cooldownHours,
-      ...(mode === 'segment'
-        ? { segment_id: segmentId }
-        : { account_ids: accountIdsRaw.split(',').map((id) => id.trim()).filter(Boolean) }),
     };
+
+    const payload = mode === 'eligible'
+      ? { ...base, target_mode: 'eligible' as const }
+      : mode === 'segment'
+        ? { ...base, segment_id: segmentId }
+        : { ...base, account_ids: accountIdsRaw.split(',').map((id) => id.trim()).filter(Boolean) };
 
     mutate(payload, {
       onSuccess: (data) => setResult(data),
@@ -72,7 +75,7 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
 
   const handleClose = () => {
     setResult(null);
-    setMode('segment');
+    setMode('eligible');
     setSegmentId('');
     setAccountIdsRaw('');
     setCooldownHours(24);
@@ -81,7 +84,11 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
 
   const canSubmit =
     !isPending &&
-    (mode === 'segment' ? !!segmentId : accountIdsRaw.trim().length > 0);
+    (mode === 'eligible'
+      ? true
+      : mode === 'segment'
+        ? !!segmentId
+        : accountIdsRaw.trim().length > 0);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -190,7 +197,16 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
           /* Form */
           <div className="space-y-4 py-4">
             {/* Mode selection */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant={mode === 'eligible' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('eligible')}
+              >
+                {fr.playbooks.executeModal.allEligible}
+                {eligibleCount != null && ` (${eligibleCount})`}
+              </Button>
               <Button
                 type="button"
                 variant={mode === 'segment' ? 'default' : 'outline'}
@@ -209,7 +225,7 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
               </Button>
             </div>
 
-            {mode === 'segment' ? (
+            {mode === 'segment' && (
               <div>
                 <label className="text-sm font-medium">{fr.playbooks.form.segment}</label>
                 <Select value={segmentId} onValueChange={setSegmentId}>
@@ -225,7 +241,8 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
                   </SelectContent>
                 </Select>
               </div>
-            ) : (
+            )}
+            {mode === 'accounts' && (
               <div>
                 <label className="text-sm font-medium">{fr.playbooks.executeModal.accountIds}</label>
                 <Input

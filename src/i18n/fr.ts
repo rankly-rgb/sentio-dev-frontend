@@ -350,6 +350,7 @@ export const fr = {
     executeModal: {
       title: "Exécuter le playbook",
       description: "Choisissez comment cibler les comptes pour cette exécution.",
+      allEligible: "Tous les comptes éligibles",
       bySegment: "Par segment",
       byAccounts: "Par ID de comptes",
       accountIds: "IDs des comptes (séparés par des virgules)",

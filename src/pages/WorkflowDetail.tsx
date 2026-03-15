@@ -415,6 +415,7 @@ export default function WorkflowDetail() {
         onOpenChange={setShowExecuteModal}
         playbookId={playbook.id}
         lastExecutedAt={playbook.execution_stats?.last_executed_at ?? null}
+        eligibleCount={playbook.current_eligible_count}
       />
     </div>
   );

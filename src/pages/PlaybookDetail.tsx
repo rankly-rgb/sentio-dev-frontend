@@ -153,6 +153,7 @@ export default function PlaybookDetail() {
         onOpenChange={setShowExecuteModal}
         playbookId={detail.playbook.id}
         lastExecutedAt={detail.execution_stats.last_executed_at}
+        eligibleCount={detail.eligible_accounts.total}
       />
     </div>
   );
