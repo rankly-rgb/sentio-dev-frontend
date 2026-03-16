@@ -1069,6 +1069,7 @@ export const fr = {
 
   // Formatage
   format: {
+    number: (value: number) => value.toLocaleString('fr-FR'),
     currency: (cents: number) =>
       (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }),
     percentage: (value: number) => `${value.toFixed(1)} %`,

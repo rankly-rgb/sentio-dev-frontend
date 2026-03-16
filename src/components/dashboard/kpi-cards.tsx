@@ -29,13 +29,13 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     },
     {
       label: fr.dashboard.activeAccounts,
-      value: metrics.active_accounts.toString(),
+      value: fr.format.number(metrics.active_accounts),
       icon: Users,
       color: 'text-primary',
     },
     {
       label: fr.dashboard.accountsAtRisk,
-      value: metrics.accounts_at_risk.toString(),
+      value: fr.format.number(metrics.accounts_at_risk),
       icon: AlertTriangle,
       color: 'text-destructive',
     },
@@ -47,7 +47,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     },
     {
       label: fr.dashboard.expansionOpportunities,
-      value: metrics.expansion_opportunities.toString(),
+      value: fr.format.number(metrics.expansion_opportunities),
       icon: Target,
       color: 'text-success',
     },

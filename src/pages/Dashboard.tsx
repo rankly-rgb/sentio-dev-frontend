@@ -198,7 +198,7 @@ export default function Dashboard() {
                 <Card className={`hover:shadow-md transition-shadow cursor-pointer border ${colors.bg}`}>
                   <CardContent className="p-4">
                     <p className={`text-xs font-medium ${colors.text}`}>{SEGMENT_LABELS[key]}</p>
-                    <p className={`text-2xl font-bold ${colors.text}`}>{count}</p>
+                    <p className={`text-2xl font-bold ${colors.text}`}>{fr.format.number(count)}</p>
                     <p className="text-xs text-muted-foreground">{fr.segmentDetail.accountCount}</p>
                   </CardContent>
                 </Card>
@@ -274,7 +274,7 @@ export default function Dashboard() {
                     <span className="text-muted-foreground">{sync.sync_type}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    {sync.records_processed != null && <span>{sync.records_processed} enr.</span>}
+                    {sync.records_processed != null && <span>{fr.format.number(sync.records_processed)} enr.</span>}
                     <span>{fr.format.date(sync.created_at)}</span>
                   </div>
                 </div>
