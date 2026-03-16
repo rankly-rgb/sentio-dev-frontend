@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
+import { BenchmarkSection } from '@/components/dashboard/BenchmarkSection';
+import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
 import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 
@@ -43,6 +45,7 @@ export default function Dashboard() {
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
+  const { data: benchmarkData, isLoading: benchmarkLoading } = useBenchmarkData();
 
   async function handleSync() {
     await triggerStripeSync('incremental');
@@ -180,6 +183,9 @@ export default function Dashboard() {
 
       {/* KPI cards */}
       {metrics && <KpiCards metrics={metrics} />}
+
+      {/* Benchmarks sectoriels */}
+      <BenchmarkSection data={benchmarkData ?? null} isLoading={benchmarkLoading} />
 
       {/* Segment quick-links */}
       <div>

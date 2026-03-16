@@ -48,6 +48,26 @@ export const fr = {
     noSyncsDesc: "Connectez Stripe dans les Paramètres pour lancer la première synchronisation.",
   },
 
+  // Benchmarks sectoriels
+  benchmark: {
+    title: "Benchmarks sectoriels",
+    subtitle: "Votre position par rapport aux standards du marché SaaS B2B",
+    nrr: "NRR",
+    churnRate: "Taux de churn",
+    mrrGrowth: "Croissance MRR",
+    sectorBenchmark: "Benchmark sectoriel",
+    peerComparison: "Comparaison pairs",
+    peerMedian: "Médiane Sentio",
+    peerUnavailable: "Données pairs disponibles à partir de 3 organisations",
+    sources: "Sources",
+    excellent: "Excellent",
+    bon: "Bon",
+    correct: "Correct",
+    mediocre: "Médiocre",
+    orgs: (count: number) => `${count} org.`,
+    vsPeers: (delta: string) => `${delta} vs pairs`,
+  },
+
   // Scores
   scores: {
     healthScore: "Score de santé",
