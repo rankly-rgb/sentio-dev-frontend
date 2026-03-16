@@ -1068,10 +1068,12 @@ export const fr = {
   },
 
   // Formatage
+  // Replace narrow no-break space (U+202F) with regular no-break space (U+00A0)
+  // so thousand separators render visibly in all fonts
   format: {
-    number: (value: number) => value.toLocaleString('fr-FR'),
+    number: (value: number) => value.toLocaleString('fr-FR').replace(/\u202F/g, '\u00A0'),
     currency: (cents: number) =>
-      (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }),
+      (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }).replace(/\u202F/g, '\u00A0'),
     percentage: (value: number) => `${value.toFixed(1)} %`,
     date: (dateStr: string) => new Date(dateStr).toLocaleDateString('fr-FR'),
     dateTime: (dateStr: string) => new Date(dateStr).toLocaleString('fr-FR'),
