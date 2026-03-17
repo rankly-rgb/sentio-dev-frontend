@@ -45,7 +45,7 @@ export default function Dashboard() {
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
-  const { data: benchmarkData, isLoading: benchmarkLoading } = useBenchmarkData();
+  const { data: benchmarkData, isLoading: benchmarkLoading, error: benchmarkError } = useBenchmarkData();
 
   async function handleSync() {
     await triggerStripeSync('incremental');
@@ -185,7 +185,7 @@ export default function Dashboard() {
       {metrics && <KpiCards metrics={metrics} />}
 
       {/* Benchmarks sectoriels */}
-      <BenchmarkSection data={benchmarkData ?? null} isLoading={benchmarkLoading} />
+      <BenchmarkSection data={benchmarkData ?? null} isLoading={benchmarkLoading} error={benchmarkError} />
 
       {/* Segment quick-links */}
       <div>

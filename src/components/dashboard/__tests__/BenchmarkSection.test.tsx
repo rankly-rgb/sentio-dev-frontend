@@ -134,4 +134,11 @@ describe('BenchmarkSection', () => {
     expect(screen.getByText(/OpenView Partners/)).toBeInTheDocument();
     expect(screen.getByText(/Bessemer/)).toBeInTheDocument();
   });
+
+  it('displays error state when error is provided', () => {
+    render(<BenchmarkSection data={null} error={new Error('Erreur 500')} />);
+
+    expect(screen.getByText('Benchmarks indisponibles')).toBeInTheDocument();
+    expect(screen.getByText(/Impossible de charger/)).toBeInTheDocument();
+  });
 });

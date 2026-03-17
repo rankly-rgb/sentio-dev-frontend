@@ -220,10 +220,32 @@ const METRIC_ORDER: BenchmarkMetricKey[] = ['nrr', 'churn_rate', 'mrr_growth'];
 interface BenchmarkSectionProps {
   data: BenchmarkResponse | null;
   isLoading?: boolean;
+  error?: Error | null;
 }
 
-export function BenchmarkSection({ data, isLoading }: BenchmarkSectionProps) {
+export function BenchmarkSection({ data, isLoading, error }: BenchmarkSectionProps) {
   if (isLoading) return <BenchmarkSkeleton />;
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">{fr.benchmark.title}</h2>
+          <p className="text-sm text-muted-foreground">{fr.benchmark.subtitle}</p>
+        </div>
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="p-4">
+            <p className="text-sm font-medium text-amber-800">{fr.benchmark.errorTitle}</p>
+            <p className="text-xs text-amber-600 mt-1">{fr.benchmark.errorDescription}</p>
+            {import.meta.env.DEV && (
+              <p className="text-xs text-muted-foreground mt-2 font-mono">{error.message}</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!data) return null;
 
   return (

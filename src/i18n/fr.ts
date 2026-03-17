@@ -66,6 +66,8 @@ export const fr = {
     mediocre: "Médiocre",
     orgs: (count: number) => `${count} org.`,
     vsPeers: (delta: string) => `${delta} vs pairs`,
+    errorTitle: "Benchmarks indisponibles",
+    errorDescription: "Impossible de charger les benchmarks sectoriels. Réessayez plus tard.",
   },
 
   // Scores
