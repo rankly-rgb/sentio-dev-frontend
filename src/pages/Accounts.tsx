@@ -19,11 +19,12 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 export default function Accounts() {
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [exporting, setExporting] = useState(false);
   const [flagsOnly, setFlagsOnly] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
+  const currentCursor = cursorStack[cursorStack.length - 1];
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -38,9 +39,10 @@ export default function Accounts() {
     }
   }, []);
 
-  const { accounts, totalCount, summary, isLoading, error, refetch } = useAccounts({
-    page,
+  const { accounts, nextCursor, hasMore, summary, isLoading, error, refetch } = useAccounts({
+    cursor: currentCursor,
     search: debouncedSearch,
+    limit: 25,
   });
 
   const filteredAccounts = flagsOnly
@@ -95,14 +97,14 @@ export default function Accounts() {
             className="pl-10"
             placeholder={fr.accounts.search}
             value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
+            onChange={e => { setSearch(e.target.value); setCursorStack([null]); }}
           />
         </div>
         <Button
           variant={flagsOnly ? 'default' : 'outline'}
           size="sm"
           className="shrink-0"
-          onClick={() => { setFlagsOnly(f => !f); setPage(1); }}
+          onClick={() => { setFlagsOnly(f => !f); setCursorStack([null]); }}
         >
           <Flag className="h-4 w-4 mr-1.5" />
           {fr.accounts.withFlags}
@@ -184,18 +186,23 @@ export default function Accounts() {
       </Card>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {fr.common.showing} {(page - 1) * 25 + 1}-{Math.min(page * 25, totalCount)} {fr.common.of} {totalCount}
-        </p>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-            {fr.common.previous}
-          </Button>
-          <Button variant="outline" size="sm" disabled={page * 25 >= totalCount} onClick={() => setPage(p => p + 1)}>
-            {fr.common.next}
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={cursorStack.length <= 1}
+          onClick={() => setCursorStack(s => s.slice(0, -1))}
+        >
+          {fr.common.previous}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!hasMore}
+          onClick={() => { if (nextCursor) setCursorStack(s => [...s, nextCursor]); }}
+        >
+          {fr.common.next}
+        </Button>
       </div>
 
       <AccountDetailPanel

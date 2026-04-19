@@ -1,5 +1,30 @@
 import { supabase } from '@/lib/supabase';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import type { AccountListItem, AccountDetail, AccountSummaryCards } from '@/lib/types/accounts';
+import type { AccountFlag } from '@/types/database';
+
+interface AccountsApiItem {
+  id: string;
+  stripe_customer_id: string;
+  display_name: string | null;
+  plan_tier: string | null;
+  billing_interval: string | null;
+  mrr_cents: number;
+  seat_count: number | null;
+  seat_limit: number | null;
+  health_score: number | null;
+  churn_risk_score: number | null;
+  expansion_score: number | null;
+  product_usage_score: number | null;
+  contract_end_date: string | null;
+  flags: AccountFlag[];
+  created_at: string;
+}
+
+interface AccountsListResponse {
+  data: AccountsApiItem[];
+  pagination: { limit: number; next_cursor: string | null; has_more: boolean };
+}
 
 export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
   const { data, error } = await supabase
@@ -22,40 +47,25 @@ export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
 }
 
 export async function getAccountList(params: {
-  page?: number;
-  pageSize?: number;
+  cursor?: string | null;
+  limit?: number;
   search?: string;
-  segment?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-} = {}): Promise<{ data: AccountListItem[]; count: number }> {
-  const {
-    page = 1,
-    pageSize = 25,
-    search,
-    sortBy = 'mrr_cents',
-    sortOrder = 'desc',
-  } = params;
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
-
-  let query = supabase.from('accounts').select(
-    'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
-    { count: 'exact' },
-  );
-  if (search) query = query.ilike('stripe_customer_id', `%${search}%`);
-  const { data, error, count } = await query.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
-  if (error) throw error;
-
+} = {}): Promise<{ data: AccountListItem[]; pagination: { next_cursor: string | null; has_more: boolean } }> {
+  const qs = new URLSearchParams();
+  if (params.limit) qs.set('limit', String(params.limit));
+  if (params.cursor) qs.set('cursor', params.cursor);
+  if (params.search) qs.set('search', params.search);
+  const path = qs.toString() ? `accounts-api?${qs}` : 'accounts-api';
+  const res = await fetchWithUserJwt<AccountsListResponse>(path);
   return {
-    data: (data || []).map(a => ({
+    data: res.data.map(a => ({
       ...a,
-      display_name: null,
+      display_name: a.display_name ?? null,
       active_subscriptions: 0,
       segment_name: null,
       flags: Array.isArray(a.flags) ? a.flags : [],
     })),
-    count: count || 0,
+    pagination: res.pagination,
   };
 }
 

@@ -3,12 +3,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getAccountList, getAccountSummaryCards } from '@/lib/queries/accounts';
 
 export function useAccounts(params: {
-  page?: number;
-  pageSize?: number;
+  cursor?: string | null;
+  limit?: number;
   search?: string;
-  segment?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
 } = {}) {
   const { user } = useAuth();
 
@@ -28,7 +25,8 @@ export function useAccounts(params: {
 
   return {
     accounts: listQuery.data?.data || [],
-    totalCount: listQuery.data?.count || 0,
+    nextCursor: listQuery.data?.pagination.next_cursor ?? null,
+    hasMore: listQuery.data?.pagination.has_more ?? false,
     summary: summaryQuery.data || null,
     isLoading: listQuery.isLoading || summaryQuery.isLoading,
     error: listQuery.error || summaryQuery.error,
