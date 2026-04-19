@@ -39,31 +39,34 @@ export async function getAccountList(params: {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let query = supabase
-    .from('accounts')
-    .select(
-      'id, stripe_customer_id, display_name, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
-      { count: 'exact' },
-    );
+  const buildQuery = (cols: string) => {
+    let q = supabase.from('accounts').select(cols, { count: 'exact' });
+    if (search) q = q.ilike('stripe_customer_id', `%${search}%`);
+    return q.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
+  };
 
-  if (search) {
-    query = query.ilike('stripe_customer_id', `%${search}%`);
+  let res = await buildQuery(
+    'id, stripe_customer_id, display_name, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
+  );
+
+  // Graceful fallback if display_name column doesn't exist in the database yet
+  if (res.error && res.error.message?.includes('display_name')) {
+    res = await buildQuery(
+      'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
+    );
   }
 
-  query = query.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
-
-  const { data, error, count } = await query;
-  if (error) throw error;
+  if (res.error) throw res.error;
 
   return {
-    data: (data || []).map(a => ({
+    data: (res.data || []).map(a => ({
       ...a,
-      display_name: a.display_name ?? null,
+      display_name: (a as { display_name?: string | null }).display_name ?? null,
       active_subscriptions: 0,
       segment_name: null,
       flags: Array.isArray(a.flags) ? a.flags : [],
     })),
-    count: count || 0,
+    count: res.count || 0,
   };
 }
 
