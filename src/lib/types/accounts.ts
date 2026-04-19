@@ -27,6 +27,7 @@ export interface SegmentMembership {
 export interface AccountListItem {
   id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   plan_tier: string | null;
   billing_interval: string | null;
   mrr_cents: number;
@@ -46,6 +47,7 @@ export interface AccountDetail {
   id: string;
   organization_id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   hubspot_company_id: string | null;
   plan_tier: string | null;
   billing_interval: string | null;
@@ -62,7 +64,12 @@ export interface AccountDetail {
   financial_score: number | null;
   engagement_score: number | null;
   contract_score: number | null;
+  financial_score_narrative?: string | null;
+  engagement_score_narrative?: string | null;
+  contract_score_narrative?: string | null;
+  product_usage_score_narrative?: string | null;
   scores_calculated_at: string | null;
+  health_score_is_new?: boolean;
   last_stripe_sync_at: string | null;
   last_hubspot_sync_at: string | null;
   flags: AccountFlag[];

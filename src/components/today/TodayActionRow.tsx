@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import ScoreBadge from '@/components/ScoreBadge';
+import AccountName from '@/components/AccountName';
 import { fr } from '@/i18n/fr';
 import type { TodayAction } from '@/lib/types/today-actions';
 
@@ -22,22 +23,22 @@ export default function TodayActionRow({ action, onAccountClick }: TodayActionRo
 
   return (
     <tr className="border-b border-border/30 hover:bg-muted/50 transition-colors">
-      {/* Stripe ID */}
+      {/* Account name */}
       <td className="px-3 py-2.5">
         {onAccountClick ? (
           <button
             type="button"
             onClick={() => onAccountClick(action.account_id)}
-            className="font-mono text-xs text-primary hover:underline text-left"
+            className="text-xs text-primary hover:underline text-left"
           >
-            {action.stripe_customer_id ?? action.account_id.slice(0, 8)}
+            <AccountName stripeId={action.stripe_customer_id} displayName={action.display_name} />
           </button>
         ) : (
           <Link
             to={`/accounts/${action.account_id}`}
-            className="font-mono text-xs text-primary hover:underline"
+            className="text-xs text-primary hover:underline"
           >
-            {action.stripe_customer_id ?? action.account_id.slice(0, 8)}
+            <AccountName stripeId={action.stripe_customer_id} displayName={action.display_name} />
           </Link>
         )}
       </td>

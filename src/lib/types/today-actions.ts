@@ -20,6 +20,7 @@ export interface MatchingPlaybook {
 export interface TodayAction {
   account_id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   hubspot_company_id: string | null;
   priority: PriorityCode;
   health_score: number | null;

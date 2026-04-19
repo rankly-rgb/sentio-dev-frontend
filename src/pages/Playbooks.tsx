@@ -16,6 +16,7 @@ import { fr } from '@/i18n/fr';
 import { usePlaybooks, useWorkflows } from '@/hooks/usePlaybooks';
 import PlaybookCard from '@/components/playbooks/PlaybookCard';
 import WorkflowCard from '@/components/workflows/WorkflowCard';
+import SuggestedPlaybook from '@/components/playbooks/SuggestedPlaybook';
 import type { Playbook, PlaybookStatus, PlaybookType, TemplateCategory, PlaybookFilters } from '@/lib/types/playbook';
 
 const STATUSES: PlaybookStatus[] = ['draft', 'active', 'paused', 'completed', 'archived'];
@@ -93,6 +94,9 @@ export default function Playbooks() {
           {activeTab === 'workflows' ? fr.workflows.create : fr.playbooks.create}
         </Button>
       </div>
+
+      {/* Suggested playbook */}
+      <SuggestedPlaybook />
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'playbooks' | 'workflows')}>
@@ -267,6 +271,7 @@ function ContentGrid({
           <BookOpen className="h-12 w-12 text-muted-foreground/40 mb-4" />
           <p className="text-lg font-medium text-muted-foreground">{emptyTitle}</p>
           <p className="text-sm text-muted-foreground mt-1">{emptyDesc}</p>
+          <p className="text-xs text-muted-foreground/60 mt-2 max-w-xs">{fr.suggestedPlaybook.analyzingPortfolio}</p>
           <Button className="mt-6" onClick={onCreateClick}>
             <Plus className="h-4 w-4 mr-2" />
             {createLabel}

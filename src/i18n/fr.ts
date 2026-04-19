@@ -656,6 +656,16 @@ export const fr = {
       hubspot: "Synchronisation HubSpot",
       scoring: "Calcul des scores",
     },
+    progressTitle: 'Configuration en cours',
+    stripeNotConnected: 'Connectez Stripe',
+    hubspotNotConnected: 'Connectez HubSpot',
+    configureIntegrations: 'Configurer les intégrations',
+    stepsRemaining: (n: number) => `${n} étape${n > 1 ? 's' : ''} restante${n > 1 ? 's' : ''}`,
+    ahaMomentTitle: "Votre portefeuille vient d'être analysé.",
+    ahaMomentSubtitle: 'Voici le compte le plus à risque dans votre portefeuille.',
+    ahaMomentRisk: 'Raison principale du risque',
+    ahaMomentCta: 'Voir ce compte',
+    ahaMomentSkip: 'Explorer tout le portefeuille',
   },
 
   // Insights IA
@@ -1061,6 +1071,55 @@ export const fr = {
     byType: 'Par type',
     historyEmpty: 'Historique disponible après le premier calcul de scores',
     trackerNotConnected: 'Tracker non connecté',
+  },
+
+  // Nommage des comptes (Chantier 1)
+  accountName: {
+    addName: '+ Nommer ce compte',
+    editName: 'Modifier le nom',
+    placeholder: 'Nom du compte',
+    saveSuccess: 'Nom sauvegardé',
+    saveError: 'Erreur lors de la sauvegarde',
+  },
+
+  // Briefing quotidien (Chantier 3)
+  briefing: {
+    portfolioDown: (delta: number, n: number) =>
+      `Votre portefeuille a perdu **${delta}** points cette semaine. **${n}** compte${n > 1 ? 's' : ''} bascule${n > 1 ? 'nt' : ''} vers la zone à risque.`,
+    portfolioStable: () =>
+      `Votre portefeuille est stable. Continuez à surveiller vos comptes à risque.`,
+    portfolioUp: (delta: number) =>
+      `Votre portefeuille a progressé de **${delta}** points cette semaine. Excellente dynamique.`,
+    insightOfDay: "Insight du jour",
+    actionsP0: (n: number) => `${n} action${n > 1 ? 's' : ''} P0 en attente`,
+    viewActions: "Voir les actions",
+    mainRisk: "Dimension principale",
+    loadingError: "Impossible de charger le briefing",
+  },
+
+  // Victoires de la semaine (Chantier 4)
+  wins: {
+    title: "Victoires de la semaine",
+    emptyState: "Aucune amélioration significative cette semaine. Les données se mettent à jour quotidiennement.",
+    scoreBefore: "Avant",
+    scoreAfter: "Après",
+    improvedDimension: "Dimension améliorée",
+    newSegment: "Nouveau segment",
+    champion: "Champion",
+  },
+
+  // Playbook suggéré (Chantier 6)
+  suggestedPlaybook: {
+    recommendation: "Sentio recommande",
+    targetedAccounts: (n: number) => `${n} compte${n > 1 ? 's' : ''} ciblé${n > 1 ? 's' : ''}`,
+    activate: "Activer ce playbook",
+    ignore: "Ignorer",
+    analyzingPortfolio: "Sentio analyse votre portefeuille pour vous recommander les actions les plus impactantes.",
+  },
+
+  // Badge "Nouveau" (Chantier 7)
+  badge: {
+    new: "Nouveau",
   },
 
   // Commun

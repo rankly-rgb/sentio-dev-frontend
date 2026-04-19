@@ -31,6 +31,7 @@ export interface Insight {
   dismissed_at: string | null;
   created_at: string;
   updated_at: string;
+  is_new?: boolean;
 }
 
 export interface InsightsPagination {

@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import TodaySummaryBar from '@/components/today/TodaySummaryBar';
 import TodayFilters from '@/components/today/TodayFilters';
 import TodayPriorityGroup from '@/components/today/TodayPriorityGroup';
+import DailyBriefing from '@/components/today/DailyBriefing';
+import WeeklyWins from '@/components/today/WeeklyWins';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 import EmptyState from '@/components/EmptyState';
 
@@ -135,6 +137,9 @@ export default function Today() {
         </p>
       </div>
 
+      {/* Daily briefing — always shown */}
+      <DailyBriefing />
+
       {/* Empty state */}
       {summary && summary.total === 0 && (
         <EmptyState
@@ -186,6 +191,9 @@ export default function Today() {
               />
             </div>
           </div>
+
+          {/* Weekly wins */}
+          <WeeklyWins />
 
           {/* Export */}
           <div className="flex items-center gap-3 pt-2">

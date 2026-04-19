@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -22,9 +22,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useInsightStats } from '@/hooks/useInsights';
 import { useTodayActions } from '@/hooks/useTodayActions';
 import { useWebhookConfig } from '@/hooks/useWebhook';
+import { useSessionPing } from '@/hooks/useSessionPing';
+import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
 import { fr } from '@/i18n/fr';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import AhaMomentModal from '@/components/onboarding/AhaMomentModal';
+import OnboardingProgressBar from '@/components/onboarding/OnboardingProgressBar';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 
 const navItems = [
   { label: fr.nav.today, path: '/today', icon: CalendarCheck, badgeKey: 'today' as const },
@@ -40,7 +45,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [ahaSeen, setAhaSeen] = useState(false);
   const { data: statsData } = useInsightStats();
+
+  useSessionPing();
+
+  const { data: onboardingStatus } = useOnboardingStatus();
+
+  const showAha = !ahaSeen
+    && onboardingStatus?.aha_moment_ready === true
+    && onboardingStatus.aha_moment_seen === false;
+
+  const handleCloseAha = useCallback(() => {
+    setAhaSeen(true);
+    fetchWithUserJwt<void>('onboarding-status/aha-seen', { method: 'POST' }).catch(() => {});
+  }, []);
   const criticalInsightsCount = statsData?.data?.by_priority?.critical ?? 0;
   const { totalCount: todayActionsCount } = useTodayActions();
   const { data: webhookConfig } = useWebhookConfig();
@@ -234,6 +253,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex flex-1 flex-col min-w-0">
+        {onboardingStatus && <OnboardingProgressBar status={onboardingStatus} />}
+
         <header className="flex h-14 items-center gap-4 border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 lg:px-6">
           <button
             className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
@@ -260,6 +281,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+
+      {showAha && onboardingStatus && (
+        <AhaMomentModal status={onboardingStatus} onClose={handleCloseAha} />
+      )}
     </div>
   );
 }

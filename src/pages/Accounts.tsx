@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScoreBadge from '@/components/ScoreBadge';
+import AccountName from '@/components/AccountName';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 import { Search, Download, Flag } from 'lucide-react';
@@ -158,7 +159,9 @@ export default function Accounts() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => openPanel(account.id)}
                   >
-                    <TableCell className="font-mono text-sm">{account.stripe_customer_id}</TableCell>
+                    <TableCell className="text-sm">
+                      <AccountName stripeId={account.stripe_customer_id} displayName={account.display_name} />
+                    </TableCell>
                     <TableCell>
                       {account.plan_tier && <Badge variant="outline">{account.plan_tier}</Badge>}
                     </TableCell>

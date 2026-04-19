@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fr } from '@/i18n/fr';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,6 +58,17 @@ interface InsightCardProps {
 
 export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdating }: InsightCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [showNewBadge, setShowNewBadge] = useState(insight.is_new === true);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!insight.is_new) return;
+    timerRef.current = setTimeout(() => setShowNewBadge(false), 5000);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [insight.is_new]);
+
   const priority = PRIORITY_CONFIG[insight.priority];
   const type = TYPE_CONFIG[insight.insight_type];
   const statusCfg = STATUS_CONFIG[insight.status];
@@ -73,8 +84,17 @@ export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdat
       ? 'border-l-4 border-l-orange-400'
       : '';
 
+  const animationClass = insight.is_new ? 'animate-slide-in-right' : '';
+
   return (
-    <Card className={`${borderClass} ${isTerminal ? 'opacity-60' : ''}`}>
+    <Card className={`relative ${borderClass} ${isTerminal ? 'opacity-60' : ''} ${animationClass}`}>
+      {/* New badge */}
+      {showNewBadge && (
+        <span className="absolute right-3 top-3 inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground z-10 animate-scale-in">
+          {fr.badge.new}
+        </span>
+      )}
+
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">

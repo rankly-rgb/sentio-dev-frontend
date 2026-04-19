@@ -42,7 +42,7 @@ export async function getAccountList(params: {
   let query = supabase
     .from('accounts')
     .select(
-      'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
+      'id, stripe_customer_id, display_name, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
       { count: 'exact' },
     );
 
@@ -58,6 +58,7 @@ export async function getAccountList(params: {
   return {
     data: (data || []).map(a => ({
       ...a,
+      display_name: a.display_name ?? null,
       active_subscriptions: 0,
       segment_name: null,
       flags: Array.isArray(a.flags) ? a.flags : [],
@@ -112,6 +113,12 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
 
   return {
     ...account,
+    display_name: (account as { display_name?: string | null }).display_name ?? null,
+    health_score_is_new: (account as { health_score_is_new?: boolean }).health_score_is_new ?? false,
+    financial_score_narrative: (account as { financial_score_narrative?: string | null }).financial_score_narrative ?? null,
+    engagement_score_narrative: (account as { engagement_score_narrative?: string | null }).engagement_score_narrative ?? null,
+    contract_score_narrative: (account as { contract_score_narrative?: string | null }).contract_score_narrative ?? null,
+    product_usage_score_narrative: (account as { product_usage_score_narrative?: string | null }).product_usage_score_narrative ?? null,
     flags: Array.isArray(account.flags) ? account.flags : [],
     subscriptions: subsRes.data || [],
     recent_invoices: invoicesRes.data || [],

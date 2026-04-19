@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { fr } from '@/i18n/fr';
 import { useInsights, useInsightStats, useUpdateInsightStatus } from '@/hooks/useInsights';
 import InsightStatsCards from '@/components/insights/InsightStatsCards';
@@ -30,6 +30,8 @@ export default function Insights() {
   const { data: listData, isLoading, error, refetch } = useInsights(filters);
   const { data: statsData, isLoading: statsLoading } = useInsightStats();
   const updateStatus = useUpdateInsightStatus();
+
+  const lastSeenAt = useMemo(() => sessionStorage.getItem('sentio_last_seen_at'), []);
 
   const handleTypeChange = useCallback((type: string) => {
     setInsightType(type);
@@ -113,7 +115,10 @@ export default function Insights() {
             {insights.map(insight => (
               <InsightCard
                 key={insight.id}
-                insight={insight}
+                insight={{
+                  ...insight,
+                  is_new: lastSeenAt ? new Date(insight.created_at) > new Date(lastSeenAt) : false,
+                }}
                 onAcknowledge={handleAcknowledge}
                 onDismiss={handleDismiss}
                 isUpdating={updateStatus.isPending}

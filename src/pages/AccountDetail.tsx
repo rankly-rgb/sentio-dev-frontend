@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import ScoreBadge from '@/components/ScoreBadge';
+import AccountName from '@/components/AccountName';
 import InsightCard from '@/components/insights/InsightCard';
 import { ArrowLeft, Calculator, BrainCircuit, BarChart3 } from 'lucide-react';
 import {
@@ -186,7 +187,9 @@ export default function AccountDetail() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold font-mono">{account.stripe_customer_id}</h1>
+            <h1 className="text-2xl font-bold">
+              <AccountName stripeId={account.stripe_customer_id} displayName={account.display_name} truncate={false} />
+            </h1>
             <div className="flex gap-2 mt-1 flex-wrap items-center">
               {/* Segment badge */}
               {primarySegment && (
