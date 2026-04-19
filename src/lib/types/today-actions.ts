@@ -95,7 +95,7 @@ export function computePriority(
   daysToRenewal: number | null,
 ): PriorityCode {
   const risk = churnRisk ?? 0;
-  if (risk >= 70 && daysToRenewal !== null && daysToRenewal < 30) return 'P0';
+  if (risk >= 70) return 'P0';
   if (risk >= 50 || (daysToRenewal !== null && daysToRenewal < 60)) return 'P1';
   return 'P2';
 }
