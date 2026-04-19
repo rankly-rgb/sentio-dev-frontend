@@ -39,34 +39,45 @@ export async function getAccountList(params: {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const buildQuery = (cols: string) => {
-    let q = supabase.from('accounts').select(cols, { count: 'exact' });
-    if (search) q = q.ilike('stripe_customer_id', `%${search}%`);
-    return q.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
-  };
-
-  let res = await buildQuery(
+  let primaryQuery = supabase.from('accounts').select(
     'id, stripe_customer_id, display_name, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
+    { count: 'exact' },
   );
+  if (search) primaryQuery = primaryQuery.ilike('stripe_customer_id', `%${search}%`);
+  const { data, error, count } = await primaryQuery.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
 
   // Graceful fallback if display_name column doesn't exist in the database yet
-  if (res.error && res.error.message?.includes('display_name')) {
-    res = await buildQuery(
-      'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
-    );
+  if (error) {
+    if (error.message?.includes('display_name')) {
+      let fallbackQuery = supabase.from('accounts').select(
+        'id, stripe_customer_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, health_score, churn_risk_score, expansion_score, product_usage_score, contract_end_date, flags',
+        { count: 'exact' },
+      );
+      if (search) fallbackQuery = fallbackQuery.ilike('stripe_customer_id', `%${search}%`);
+      const fallback = await fallbackQuery.order(sortBy, { ascending: sortOrder === 'asc' }).range(from, to);
+      if (fallback.error) throw fallback.error;
+      return {
+        data: (fallback.data || []).map(a => ({
+          ...a,
+          display_name: null,
+          active_subscriptions: 0,
+          segment_name: null,
+          flags: Array.isArray(a.flags) ? a.flags : [],
+        })),
+        count: fallback.count || 0,
+      };
+    }
+    throw error;
   }
 
-  if (res.error) throw res.error;
-
   return {
-    data: (res.data || []).map(a => ({
+    data: (data || []).map(a => ({
       ...a,
-      display_name: (a as { display_name?: string | null }).display_name ?? null,
       active_subscriptions: 0,
       segment_name: null,
       flags: Array.isArray(a.flags) ? a.flags : [],
     })),
-    count: res.count || 0,
+    count: count || 0,
   };
 }
 
