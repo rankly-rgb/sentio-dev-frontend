@@ -17,6 +17,7 @@ import AccountInsights from './AccountInsights';
 import AccountScoreHistory from './AccountScoreHistory';
 import AccountUsageSection from './AccountUsageSection';
 import AccountActions from './AccountActions';
+import AccountAiSummary from './AccountAiSummary';
 import type { AccountDetail } from '@/lib/types/accounts';
 
 // ─── Section wrapper ─────────────────────────────────────────────────────────
@@ -96,27 +97,30 @@ export default function AccountDetailPanel({ isOpen, onClose, account, isLoading
                   <AccountScoreCard account={account} trackerConnected={trackerConnected} />
                 </Section>
 
-                {/* 3. Financials */}
+                {/* 3. AI Summary */}
+                <AccountAiSummary accountId={account.id} />
+
+                {/* 4. Financials */}
                 <Section title={fr.panel.financials}>
                   <AccountFinancials account={account} />
                 </Section>
 
-                {/* 4. Score History */}
+                {/* 5. Score History */}
                 <Section title={fr.accountDetail.scoreHistory}>
                   <AccountScoreHistory scoreHistory={account.score_history} />
                 </Section>
 
-                {/* 5. Insights */}
+                {/* 6. Insights */}
                 <Section title={fr.insights.accountInsightsTitle}>
                   <AccountInsights accountId={account.id} />
                 </Section>
 
-                {/* 6. Timeline */}
+                {/* 7. Timeline */}
                 <Section title={fr.panel.timeline}>
                   <AccountTimeline accountId={account.id} flags={account.flags} />
                 </Section>
 
-                {/* 7. Usage */}
+                {/* 8. Usage */}
                 <Section title={fr.accountDetail.usage}>
                   <AccountUsageSection
                     usageEvents={account.recent_usage}

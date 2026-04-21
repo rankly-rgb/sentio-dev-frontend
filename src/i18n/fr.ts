@@ -1056,6 +1056,11 @@ export const fr = {
   },
 
   // Panneau détail compte
+  aiSummary: {
+    title: 'Résumé IA',
+    generatedNow: 'Généré maintenant',
+  },
+
   panel: {
     financials: 'Finances',
     timeline: 'Historique',
