@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function AccountAiSummary({ accountId }: Props) {
-  const { data, isLoading } = useAccountSummary(accountId);
+  const { data, isPending, isFetching } = useAccountSummary(accountId);
   const [showBadge, setShowBadge] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function AccountAiSummary({ accountId }: Props) {
     }
   }, [data]);
 
-  if (isLoading) {
+  if (isPending || (isFetching && !data)) {
     return (
       <div className="space-y-2">
         <div className="flex items-center gap-1.5">
