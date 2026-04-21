@@ -21,25 +21,16 @@ export default function AccountAiSummary({ accountId }: Props) {
     }
   }, [data]);
 
-  if (isPending || (isFetching && !data)) {
+  if (!data?.summary) {
+    if (!isPending && !isFetching) return null;
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {fr.aiSummary.title}
-          </span>
-        </div>
-        <div className="space-y-1.5">
-          <Skeleton className="h-3.5 w-full" />
-          <Skeleton className="h-3.5 w-5/6" />
-          <Skeleton className="h-3.5 w-4/6" />
-        </div>
+      <div className="space-y-1.5 py-1">
+        <Skeleton className="h-3.5 w-full" />
+        <Skeleton className="h-3.5 w-5/6" />
+        <Skeleton className="h-3.5 w-4/6" />
       </div>
     );
   }
-
-  if (!data?.summary) return null;
 
   return (
     <div className="space-y-2">
