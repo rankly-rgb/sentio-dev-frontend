@@ -37,8 +37,32 @@
 - `src/lib/invokeEdgeFunction.ts` — appels Edge Functions (service_role)
 - `src/components/ErrorBoundary.tsx` — error boundary global (dans AuthProvider)
 - `src/hooks/` — tous les hooks React Query (usePlaybooks, useInsights, useManualSync…)
-- `src/lib/types/` — types métier (playbook.ts, accounts.ts)
+- `src/lib/types/` — types métier (playbook.ts, accounts.ts, webhook-destinations.ts)
 - `src/types/` — types Supabase (database.ts, insights.ts, ops.ts)
+
+## Destinations webhook sortantes (`/settings/destinations`)
+Feature complète permettant de configurer des outils externes (Brevo, Slack, Lemlist,
+ActiveCampaign, Mailchimp, custom) qui reçoivent un payload JSON quand un compte est à risque.
+
+Fichiers :
+- `src/lib/types/webhook-destinations.ts` — types (`OutboundWebhookDestination`, `SegmentKey`, `LogTrigger`…)
+- `src/lib/queries/webhook-destination-queries.ts` — appels Edge Functions via `fetchWithUserJwt`
+- `src/hooks/useWebhookDestinations.ts` — hooks React Query (liste, CRUD, test, logs)
+- `src/pages/WebhookDestinations.tsx` — page principale, gère les dialogs form + logs
+- `src/components/destinations/DestinationsList.tsx` — grille de cartes (test inline, toggle, suppression)
+- `src/components/destinations/DestinationForm.tsx` — formulaire contrôlé (pas de `<form>`, validation manuelle)
+- `src/components/destinations/DestinationDocPanel.tsx` — aide contextuelle par provider (statique)
+- `src/components/destinations/DestinationTestResult.tsx` — affichage résultat test inline
+- `src/components/destinations/DestinationLogs.tsx` — tableau des 20 derniers envois
+
+Edge Functions backend attendues :
+- `GET/POST outbound-webhook-destinations` — liste et création
+- `PATCH/DELETE outbound-webhook-destinations/:id` — mise à jour et suppression
+- `POST outbound-webhook-test` — test de connexion `{ destination_id }`
+- `GET outbound-webhook-logs?destination_id=&limit=20` — logs de livraison
+
+Providers supportés : `brevo | mailchimp | lemlist | activecampaign | slack | custom`
+Segments déclencheurs : `champions | expanding | stable | at_risk | critical | past_due | churned | new`
 
 ## Patterns
 - AuthContext : `queryClient.clear()` au logout, profilePromiseRef pour race condition
