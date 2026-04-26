@@ -7,6 +7,8 @@ import {
   CalendarClock,
   Flag,
   Mail,
+  ListChecks,
+  Building2,
 } from 'lucide-react';
 import { fr } from '@/i18n/fr';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +27,8 @@ const ACTION_ICON_CONFIG: Record<string, { icon: React.ElementType; color: strin
   send_email_hubspot: { icon: Mail, color: 'text-orange-600' },
   send_email: { icon: Mail, color: 'text-blue-600' },
   hubspot_sequence: { icon: Mail, color: 'text-blue-600' },
+  hubspot_enroll_sequence: { icon: ListChecks, color: 'text-orange-600' },
+  hubspot_update_company: { icon: Building2, color: 'text-orange-600' },
 };
 
 const DEFAULT_ICON_CONFIG = { icon: Flag, color: 'text-gray-500' };

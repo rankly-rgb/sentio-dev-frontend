@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,8 @@ const ACTION_TYPES: ActionType[] = [
   'slack_notify',
   'create_task',
   'send_email_hubspot',
+  'hubspot_enroll_sequence',
+  'hubspot_update_company',
   'assign_owner',
   'update_tag',
   'log_note',
@@ -31,6 +34,8 @@ const ACTIVE_ACTIONS: ReadonlySet<string> = new Set([
   'slack_notify',
   'create_task',
   'send_email_hubspot',
+  'hubspot_enroll_sequence',
+  'hubspot_update_company',
   'flag_for_review',
   'log_note',
 ]);
@@ -54,6 +59,8 @@ function defaultConfig(type: ActionType): Record<string, unknown> {
     case 'schedule_review': return { review_days: 7 };
     case 'flag_for_review': return { flag: 'review_needed', reason: 'Signalé par playbook' };
     case 'send_email': return { recipient_field: 'account_email', subject: '', body_html: '' };
+    case 'hubspot_enroll_sequence': return { sequence_id: '', sender_id: '' };
+    case 'hubspot_update_company': return { properties: {} };
     default: return {};
   }
 }
@@ -66,6 +73,96 @@ const HUBSPOT_EMAIL_VARIABLES = [
   '{mrr_eur}',
   '{playbook}',
 ];
+
+function PropertyEditor({
+  config,
+  onChange,
+  hubspotConnected,
+}: {
+  config: Record<string, unknown>;
+  onChange: (config: Record<string, unknown>) => void;
+  hubspotConnected?: boolean;
+}) {
+  const rawProperties = (config.properties ?? {}) as Record<string, string>;
+  const [pairs, setPairs] = useState<{ key: string; value: string }[]>(() => {
+    const entries = Object.entries(rawProperties);
+    return entries.length > 0 ? entries.map(([key, value]) => ({ key, value })) : [{ key: '', value: '' }];
+  });
+
+  const commit = (newPairs: { key: string; value: string }[]) => {
+    setPairs(newPairs);
+    const properties: Record<string, string> = {};
+    for (const { key, value } of newPairs) {
+      if (key.trim()) properties[key.trim()] = value;
+    }
+    onChange({ ...config, properties });
+  };
+
+  const updatePair = (idx: number, field: 'key' | 'value', val: string) => {
+    commit(pairs.map((p, i) => (i === idx ? { ...p, [field]: val } : p)));
+  };
+
+  const addPair = () => commit([...pairs, { key: '', value: '' }]);
+
+  const removePair = (idx: number) => {
+    const next = pairs.filter((_, i) => i !== idx);
+    commit(next.length > 0 ? next : [{ key: '', value: '' }]);
+  };
+
+  const hasNonEmptyPair = pairs.some(p => p.key.trim() !== '');
+  const hasEmptyKey = pairs.some(p => p.key.trim() === '' && pairs.length > 1);
+
+  return (
+    <div className="space-y-2">
+      {hubspotConnected !== undefined && !hubspotConnected && (
+        <div className="flex items-start gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2">
+          <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+          <span>{fr.playbooks.form.hubspotNotConnectedWarning}</span>
+        </div>
+      )}
+      <div className="space-y-1.5">
+        {pairs.map((pair, idx) => (
+          <div key={idx} className="flex gap-2 items-center">
+            <Input
+              placeholder={fr.playbooks.form.hubspotPropertyKey}
+              value={pair.key}
+              onChange={e => updatePair(idx, 'key', e.target.value)}
+              className={pair.key === '' && pairs.length > 1 ? 'border-amber-400' : ''}
+            />
+            <Input
+              placeholder={fr.playbooks.form.hubspotPropertyValue}
+              value={pair.value}
+              onChange={e => updatePair(idx, 'value', e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-destructive"
+              onClick={() => removePair(idx)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={addPair}>
+        <Plus className="h-3.5 w-3.5 mr-1.5" />
+        {fr.playbooks.form.hubspotAddProperty}
+      </Button>
+      {!hasNonEmptyPair && (
+        <p className="text-xs text-destructive">{fr.playbooks.form.hubspotPropertiesRequired}</p>
+      )}
+      {hasEmptyKey && (
+        <p className="text-xs text-amber-600">{fr.playbooks.form.hubspotPropertyKeyRequired}</p>
+      )}
+      <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+        <Info className="h-3 w-3 mt-0.5 shrink-0" />
+        <span>{fr.playbooks.form.hubspotUpdateHint}</span>
+      </div>
+    </div>
+  );
+}
 
 export function ActionConfigFields({
   type,
@@ -256,6 +353,58 @@ export function ActionConfigFields({
       );
     case 'send_email':
       return <EmailStepEditor config={config} onChange={onChange} />;
+    case 'hubspot_enroll_sequence': {
+      const sequenceId = String(config.sequence_id ?? '');
+      const senderId = String(config.sender_id ?? '');
+      const senderIdInvalid = senderId !== '' && !/^\d+$/.test(senderId);
+      return (
+        <div className="space-y-2">
+          {hubspotConnected !== undefined && !hubspotConnected && (
+            <div className="flex items-start gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2">
+              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+              <span>{fr.playbooks.form.hubspotNotConnectedWarning}</span>
+            </div>
+          )}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">{fr.playbooks.form.sequenceId}</label>
+            <Input
+              placeholder={fr.playbooks.form.sequenceIdPlaceholder}
+              value={sequenceId}
+              onChange={e => update('sequence_id', e.target.value)}
+            />
+            {sequenceId === '' && (
+              <p className="text-xs text-destructive mt-0.5">{fr.playbooks.form.fieldRequired}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">{fr.playbooks.form.senderId}</label>
+            <Input
+              placeholder={fr.playbooks.form.senderIdPlaceholder}
+              value={senderId}
+              onChange={e => update('sender_id', e.target.value)}
+            />
+            {senderId === '' && (
+              <p className="text-xs text-destructive mt-0.5">{fr.playbooks.form.fieldRequired}</p>
+            )}
+            {senderIdInvalid && (
+              <p className="text-xs text-destructive mt-0.5">{fr.playbooks.form.senderIdNumeric}</p>
+            )}
+          </div>
+          <div className="flex items-start gap-1.5 text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded p-2">
+            <Info className="h-3 w-3 mt-0.5 shrink-0 text-blue-500" />
+            <span>{fr.playbooks.form.senderIdHint}</span>
+          </div>
+        </div>
+      );
+    }
+    case 'hubspot_update_company':
+      return (
+        <PropertyEditor
+          config={config}
+          onChange={onChange}
+          hubspotConnected={hubspotConnected}
+        />
+      );
     default:
       return null;
   }
@@ -369,7 +518,14 @@ export default function ActionEditor({ actions, onChange }: Props) {
               config={action.config}
               onChange={(config) => updateAction(idx, { config })}
               slackConnected={action.type === 'slack_notify' ? slackConnected : undefined}
-              hubspotConnected={action.type === 'send_email_hubspot' || action.type === 'create_task' ? hubspotConnected : undefined}
+              hubspotConnected={
+                action.type === 'send_email_hubspot' ||
+                action.type === 'create_task' ||
+                action.type === 'hubspot_enroll_sequence' ||
+                action.type === 'hubspot_update_company'
+                  ? hubspotConnected
+                  : undefined
+              }
             />
           </div>
         );

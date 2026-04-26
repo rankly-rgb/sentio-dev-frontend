@@ -57,7 +57,17 @@ function ActionDetails({ actions }: { actions: ExecutionCompletedAction[] }) {
           <span className="font-medium">
             {fr.playbooks.actionType[action.action_type as keyof typeof fr.playbooks.actionType] ?? action.action_type}
           </span>
-          <span className="text-muted-foreground truncate max-w-[200px]">{action.message}</span>
+          {action.status === 'skipped' ? (
+            <Badge
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-500 hover:bg-gray-100"
+            >
+              {fr.playbooks.actionSkipped}
+              {action.message ? ` — ${action.message}` : ''}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground truncate max-w-[200px]">{action.message}</span>
+          )}
         </div>
       ))}
     </div>

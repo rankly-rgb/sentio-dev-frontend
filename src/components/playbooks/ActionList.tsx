@@ -7,6 +7,8 @@ import {
   CalendarClock,
   Flag,
   Mail,
+  ListChecks,
+  Building2,
 } from 'lucide-react';
 import { fr } from '@/i18n/fr';
 import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
@@ -21,6 +23,8 @@ const actionIcons: Record<ActionType, React.ElementType> = {
   schedule_review: CalendarClock,
   flag_for_review: Flag,
   send_email: Mail,
+  hubspot_enroll_sequence: ListChecks,
+  hubspot_update_company: Building2,
 };
 
 function summarizeConfig(type: ActionType, config: Record<string, unknown>): string {
@@ -43,6 +47,13 @@ function summarizeConfig(type: ActionType, config: Record<string, unknown>): str
       return config.subject ? `Email HubSpot: "${String(config.subject)}"` : 'Email via HubSpot';
     case 'send_email':
       return config.subject ? `Email: "${String(config.subject)}"` : 'Email';
+    case 'hubspot_enroll_sequence':
+      return config.sequence_id ? `Séquence ${String(config.sequence_id)}` : '';
+    case 'hubspot_update_company': {
+      const props = config.properties as Record<string, string> | undefined;
+      const count = props ? Object.keys(props).length : 0;
+      return count > 0 ? `${count} propriété${count > 1 ? 's' : ''}` : '';
+    }
     default:
       return '';
   }

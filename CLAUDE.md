@@ -40,6 +40,33 @@
 - `src/lib/types/` — types métier (playbook.ts, accounts.ts, webhook-destinations.ts)
 - `src/types/` — types Supabase (database.ts, insights.ts, ops.ts)
 
+## Actions HubSpot dans les playbooks
+
+Deux types d'actions opérationnelles qui s'intègrent dans les composants existants de création/édition :
+
+- `hubspot_enroll_sequence` : enrôle les contacts HubSpot d'un compte dans une séquence.
+  Config : `{ sequence_id: string, sender_id: string }` (sender_id = ID numérique HubSpot)
+- `hubspot_update_company` : met à jour des propriétés HubSpot d'une company.
+  Config : `{ properties: Record<string, string> }` (ex: `hs_lead_status`, `lifecyclestage`)
+
+Fichiers impactés :
+- `src/lib/types/playbook.ts` — `ActionType` union (ajouter les deux types ici si de nouveaux types arrivent)
+- `src/components/playbooks/ActionEditor.tsx` — `ACTION_TYPES`, `ACTIVE_ACTIONS`, `defaultConfig()`, `ActionConfigFields` (switch), `PropertyEditor` sub-component pour l'éditeur clé/valeur
+- `src/components/playbooks/ActionList.tsx` — `actionIcons` Record + `summarizeConfig()` switch
+- `src/components/playbooks/PlaybookActionsSection.tsx` — `ACTION_ICON_CONFIG`
+- `src/components/playbooks/ExecutionTimeline.tsx` — badge gris "Ignoré" pour `status: 'skipped'`
+- `src/lib/queries/playbook-queries.ts` — `IMPLEMENTED_ACTIONS` set (contrôle badge "Actif" vs "Bientôt")
+- `src/i18n/fr.ts` — `playbooks.actionType.*`, `playbooks.actionSkipped`, `playbooks.form.*`
+
+Contrat backend (`POST /functions/v1/playbook-execute`) :
+```json
+{ "type": "hubspot_enroll_sequence", "order": 1, "config": { "sequence_id": "12345", "sender_id": "98765" } }
+{ "type": "hubspot_update_company",  "order": 2, "config": { "properties": { "hs_lead_status": "MQL" } } }
+```
+
+Statut d'action `skipped` : retourné quand pas de `hubspot_company_id` associé au compte.
+Affiché dans `ExecutionTimeline` avec un badge `bg-gray-100 text-gray-500` + message backend.
+
 ## Destinations webhook sortantes (`/settings/destinations`)
 Feature complète permettant de configurer des outils externes (Brevo, Slack, Lemlist,
 ActiveCampaign, Mailchimp, custom) qui reçoivent un payload JSON quand un compte est à risque.

@@ -132,6 +132,8 @@ const IMPLEMENTED_ACTIONS: ReadonlySet<string> = new Set([
   'send_email_hubspot',
   'flag_for_review',
   'log_note',
+  'hubspot_enroll_sequence',
+  'hubspot_update_company',
 ]);
 
 function normalizeAction(raw: RawPlaybookAction): PlaybookDetailAction {

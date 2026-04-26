@@ -25,7 +25,9 @@ export type ActionType =
   | 'log_note'
   | 'schedule_review'
   | 'flag_for_review'
-  | 'send_email';
+  | 'send_email'
+  | 'hubspot_enroll_sequence'
+  | 'hubspot_update_company';
 export type ExecutionFrequency = 'daily' | 'weekly' | 'monthly';
 export type ConditionOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in';
 export type ConditionField =
