@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, XCircle, UserPlus, ExternalLink, Link2 } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, ExternalLink, Link2, Zap } from 'lucide-react';
 
 export default function Settings() {
   const { organization, team, isLoading } = useOrganizationSettings();
@@ -133,6 +133,12 @@ export default function Settings() {
               <Button variant="outline" className="w-full justify-start">
                 <Link2 className="h-4 w-4 mr-2" />
                 {fr.integrations.webhookUniversal}
+              </Button>
+            </Link>
+            <Link to="/settings/destinations">
+              <Button variant="outline" className="w-full justify-start">
+                <Zap className="h-4 w-4 mr-2" />
+                {fr.destinations.title}
               </Button>
             </Link>
           </div>

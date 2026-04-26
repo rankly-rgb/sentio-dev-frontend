@@ -15,6 +15,7 @@ import {
   Building2,
   Activity,
   Settings,
+  Zap,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr as dateFnsFr } from 'date-fns/locale';
@@ -153,6 +154,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         >
           <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname.startsWith('/settings') ? 'text-primary' : 'text-muted-foreground')} />
           <span>{fr.nav.settings}</span>
+        </Link>
+
+        {/* Destinations webhook */}
+        <Link
+          to="/settings/destinations"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            'flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200',
+            location.pathname === '/settings/destinations'
+              ? 'text-primary bg-primary/5'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
+        >
+          <Zap className="h-[14px] w-[14px] shrink-0" />
+          <span>{fr.nav.destinations}</span>
         </Link>
 
         {/* Webhook status indicator */}

@@ -5,60 +5,30 @@ import type { BenchmarkResponse } from '@/lib/types/benchmark';
 
 function makeBenchmarkData(overrides?: Partial<BenchmarkResponse>): BenchmarkResponse {
   return {
-    computed_at: '2026-03-16T10:00:00Z',
-    period_days: 30,
-    metrics: {
-      nrr: {
-        value: 112.3,
-        external_benchmark: {
-          excellent: 110,
-          bon: 100,
-          correct: 95,
-          mediocre: 85,
-          rating: 'excellent',
-          sources: ['OpenView Partners', 'SaaS Capital'],
-        },
-        peer: {
-          available: true,
-          median: 105.2,
-          org_count: 12,
-          delta: 7.1,
-        },
-      },
-      churn_rate: {
-        value: 1.8,
-        external_benchmark: {
-          excellent: 1,
-          bon: 2,
-          correct: 3.5,
-          mediocre: 5,
-          rating: 'bon',
-          sources: ['Bessemer'],
-        },
-        peer: {
-          available: true,
-          median: 2.4,
-          org_count: 12,
-          delta: -0.6,
-        },
-      },
-      mrr_growth: {
-        value: 8.2,
-        external_benchmark: {
-          excellent: 10,
-          bon: 7,
-          correct: 4,
-          mediocre: 1,
-          rating: 'bon',
-          sources: ['KeyBanc'],
-        },
-        peer: {
-          available: false,
-          median: null,
-          org_count: null,
-          delta: null,
-        },
-      },
+    nrr: {
+      value: 112.3,
+      rating: 'excellent',
+      thresholds: { excellent: 110, bon: 100, correct: 95 },
+      higher_is_better: true,
+      sources: ['OpenView Partners', 'SaaS Capital'],
+    },
+    churn_rate: {
+      value: 1.8,
+      rating: 'bon',
+      thresholds: { excellent: 1, bon: 2, correct: 3.5 },
+      higher_is_better: false,
+      sources: ['Bessemer'],
+    },
+    mrr_growth: {
+      value: 8.2,
+      rating: 'bon',
+      thresholds: { excellent: 10, bon: 7, correct: 4 },
+      higher_is_better: true,
+      sources: ['KeyBanc'],
+    },
+    peers: {
+      available: false,
+      min_orgs_required: 3,
     },
     ...overrides,
   };
@@ -86,33 +56,21 @@ describe('BenchmarkSection', () => {
     expect(badge.className).toContain('text-emerald-700');
   });
 
-  it('shows peer unavailable message when peer.available is false', () => {
+  it('shows peer unavailable message when peers.available is false', () => {
     const data = makeBenchmarkData();
     render(<BenchmarkSection data={data} />);
 
     expect(
-      screen.getByText('Données pairs disponibles à partir de 3 organisations'),
-    ).toBeInTheDocument();
+      screen.getAllByText('Données pairs disponibles à partir de 3 organisations').length,
+    ).toBeGreaterThanOrEqual(1);
   });
 
-  it('inverts delta color on churn_rate (negative delta = green)', () => {
+  it('displays benchmark sources', () => {
     const data = makeBenchmarkData();
     render(<BenchmarkSection data={data} />);
 
-    // churn_rate delta is -0.6 → negative → should be green (emerald) because lower churn is good
-    const churnDelta = screen.getByText(/-0,6/);
-    const parent = churnDelta.closest('span');
-    expect(parent?.className).toContain('text-emerald-600');
-  });
-
-  it('shows positive delta as green for NRR', () => {
-    const data = makeBenchmarkData();
-    render(<BenchmarkSection data={data} />);
-
-    // NRR delta is +7.1 → positive → green
-    const nrrDelta = screen.getByText(/\+7,1/);
-    const parent = nrrDelta.closest('span');
-    expect(parent?.className).toContain('text-emerald-600');
+    expect(screen.getByText(/OpenView Partners/)).toBeInTheDocument();
+    expect(screen.getByText(/Bessemer/)).toBeInTheDocument();
   });
 
   it('renders skeleton when isLoading is true', () => {
@@ -125,14 +83,6 @@ describe('BenchmarkSection', () => {
   it('renders nothing when data is null and not loading', () => {
     const { container } = render(<BenchmarkSection data={null} />);
     expect(container.innerHTML).toBe('');
-  });
-
-  it('displays benchmark sources', () => {
-    const data = makeBenchmarkData();
-    render(<BenchmarkSection data={data} />);
-
-    expect(screen.getByText(/OpenView Partners/)).toBeInTheDocument();
-    expect(screen.getByText(/Bessemer/)).toBeInTheDocument();
   });
 
   it('displays error state when error is provided', () => {

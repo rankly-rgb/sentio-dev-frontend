@@ -29,6 +29,7 @@ import PlaybookDetail from '@/pages/PlaybookDetail';
 import WorkflowDetail from '@/pages/WorkflowDetail';
 import Integrations from '@/pages/Integrations';
 import Webhook from '@/pages/Webhook';
+import WebhookDestinations from '@/pages/WebhookDestinations';
 
 // Admin
 import Organizations from '@/pages/admin/Organizations';
@@ -112,6 +113,7 @@ export default function App() {
                 <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/integrations" element={<ProtectedRoute><AppLayout><Integrations /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/webhook" element={<ProtectedRoute><AppLayout><Webhook /></AppLayout></ProtectedRoute>} />
+                <Route path="/settings/destinations" element={<ProtectedRoute><AppLayout><WebhookDestinations /></AppLayout></ProtectedRoute>} />
 
                 {/* Routes admin */}
                 <Route path="/admin/organizations" element={<AdminRoute><AppLayout><Organizations /></AppLayout></AdminRoute>} />
