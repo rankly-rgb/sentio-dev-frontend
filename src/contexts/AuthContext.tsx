@@ -20,6 +20,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string, companyName: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -231,6 +232,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const signUp = useCallback(async (email: string, password: string, companyName: string): Promise<{ error?: string }> => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { company_name: companyName } },
+      });
+      if (error) return { error: error.message };
+      return {};
+    } catch {
+      return { error: 'Une erreur inattendue est survenue' };
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     profileLoadedRef.current = false;
     profilePromiseRef.current = null;
@@ -247,8 +262,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     loading,
     login,
+    signUp,
     logout,
-  }), [user, supabaseUser, session, loading, login, logout]);
+  }), [user, supabaseUser, session, loading, login, signUp, logout]);
 
   return (
     <AuthContext.Provider value={value}>

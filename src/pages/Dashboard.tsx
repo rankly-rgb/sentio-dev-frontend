@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useOnboardingFlowStatus } from '@/hooks/useOnboardingFlow';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
@@ -37,6 +39,19 @@ import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { data: onboardingStatus } = useOnboardingFlowStatus();
+
+  useEffect(() => {
+    if (
+      onboardingStatus &&
+      onboardingStatus.onboarding_completed === false &&
+      onboardingStatus.stripe_sync_completed === true
+    ) {
+      navigate('/onboarding/done', { replace: true });
+    }
+  }, [onboardingStatus, navigate]);
+
   const { metrics, distribution, topAccounts, isLoading, error, refetch } = useDashboardData();
   const { triggerStripeSync, triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();

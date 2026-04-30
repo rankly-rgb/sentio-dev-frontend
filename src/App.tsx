@@ -36,6 +36,13 @@ import Organizations from '@/pages/admin/Organizations';
 import NewOrganization from '@/pages/admin/NewOrganization';
 import Ops from '@/pages/admin/Ops';
 
+// Onboarding
+import Signup from '@/pages/onboarding/Signup';
+import StripeConnect from '@/pages/onboarding/StripeConnect';
+import SyncWait from '@/pages/onboarding/SyncWait';
+import HubSpot from '@/pages/onboarding/HubSpot';
+import Done from '@/pages/onboarding/Done';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -95,7 +102,14 @@ export default function App() {
                 {/* Routes publiques */}
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+
+                {/* Flux onboarding (authentifié, sans AppLayout) */}
+                <Route path="/onboarding/stripe" element={<ProtectedRoute><StripeConnect /></ProtectedRoute>} />
+                <Route path="/onboarding/sync" element={<ProtectedRoute><SyncWait /></ProtectedRoute>} />
+                <Route path="/onboarding/hubspot" element={<ProtectedRoute><HubSpot /></ProtectedRoute>} />
+                <Route path="/onboarding/done" element={<ProtectedRoute><Done /></ProtectedRoute>} />
 
                 {/* Routes protégées avec layout */}
                 <Route path="/today" element={<ProtectedRoute><AppLayout><Today /></AppLayout></ProtectedRoute>} />
