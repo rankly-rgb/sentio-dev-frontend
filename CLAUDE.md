@@ -107,5 +107,39 @@ Segments déclencheurs : `champions | expanding | stable | at_risk | critical | 
 - Playwright pour les tests E2E
 - Écrire le test AVANT l'implémentation quand c'est possible
 
+## Flux d'onboarding (`/signup` → `/onboarding/*`)
+
+Feature complète guidant un nouvel utilisateur de l'inscription jusqu'au dashboard.
+
+**Routes (toutes sauf `/signup` wrappées dans `<ProtectedRoute>` sans `<AppLayout>`) :**
+- `/signup` — création de compte (Supabase `signUp`), validation inline, redirect → `/onboarding/stripe`
+- `/onboarding/stripe` — saisie clé API Stripe restreinte, affiche les permissions requises vs non-requises
+- `/onboarding/sync` — attend la fin de la sync Stripe (polling 3s sur `GET /onboarding-status`), timeout 3min
+- `/onboarding/hubspot` — connexion OAuth HubSpot (optionnel), lien "Passer" → `/onboarding/done`
+- `/onboarding/done` — "First Win" : métriques réelles + top 3 comptes à risque, appelle `PATCH /onboarding-status`
+
+**Guard Dashboard :** `Dashboard.tsx` charge `useOnboardingFlowStatus` et redirige vers `/onboarding/done`
+si `onboarding_completed === false && stripe_sync_completed === true`.
+
+**Fichiers clés :**
+- `src/lib/types/onboarding-flow.ts` — `OnboardingFlowStatus`, `OnboardingFirstWin`, `OnboardingFirstWinAccount`
+- `src/hooks/useOnboardingFlow.ts` — `useOnboardingFlowStatus`, `useOnboardingFirstWin`, `useConnectStripe`, `useMarkOnboardingField`
+- `src/components/onboarding/OnboardingHeader.tsx` — header logo + points de progression réutilisable
+- `src/pages/onboarding/` — Signup, StripeConnect, SyncWait, HubSpot, Done
+- `src/contexts/AuthContext.tsx` — méthode `signUp(email, password, companyName)` exposée
+
+**Contrats API backend (`fetchWithUserJwt`) :**
+```
+GET  /onboarding-status  → OnboardingFlowStatus
+POST /stripe-connect     body: { api_key }
+PATCH /onboarding-status body: { field: 'first_win_seen' | 'onboarding_completed', value: true }
+GET  /onboarding-first-win → OnboardingFirstWin
+GET  /hubspot-oauth-init → redirect OAuth HubSpot (via window.location.href)
+```
+
+**Note :** `useOnboardingFlowStatus` (nouveau, `queryKey: ['onboarding-flow-status']`) est distinct
+de l'ancien `useOnboardingStatus` (queryKey `['onboarding-status']`) utilisé par `AhaMomentModal`.
+Les deux appellent le même endpoint mais avec des shapes de réponse différentes — à unifier côté backend.
+
 ## Quand compacter
 Préserver : liste des fichiers modifiés, commandes de test, erreurs en cours de résolution
