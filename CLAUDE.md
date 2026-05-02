@@ -67,6 +67,33 @@ Contrat backend (`POST /functions/v1/playbook-execute`) :
 Statut d'action `skipped` : retourné quand pas de `hubspot_company_id` associé au compte.
 Affiché dans `ExecutionTimeline` avec un badge `bg-gray-100 text-gray-500` + message backend.
 
+## Benchmarks sectoriels (Dashboard)
+
+Section sous les KPIs du dashboard affichant NRR, taux de churn et croissance MRR par rapport aux standards SaaS B2B.
+
+**Fichiers clés :**
+- `src/lib/types/benchmark.ts` — `BenchmarkRating`, `MetricBenchmark`, `BenchmarkResponse`, `BenchmarkPeers` (union discriminée `available: true | false`), `PeerPercentiles`
+- `src/lib/queries/benchmark-queries.ts` — `getBenchmarkData()` → `GET /dashboard-api/benchmarks` (enveloppe `{ data: ... }`)
+- `src/hooks/useBenchmarkData.ts` — hook React Query (`queryKey: ['dashboard', 'benchmark', orgId]`, staleTime 5min)
+- `src/components/dashboard/BenchmarkSection.tsx` — composant principal (3 cards, skeleton, error card)
+
+**Logique barre de spectre (`RangeBar`) :**
+- 4 zones CSS égales (rouge → orange → bleu → vert), pas de librairie
+- `higher_is_better: false` (churn) → ordre inversé (vert à gauche)
+- Curseur interpolé via `computeCursorPosition()` : thresholds triés ascending ancrent les positions 25/50/75%
+- `value === null` → aucun curseur affiché
+
+**Comparaison pairs (`PeerComparison`) :**
+- `peers.available = false` → message italique avec seuil `min_orgs_required`
+- `peers.available = true` → affiche p25/p50/p75 + label "au-dessus/en dessous de la médiane" (logique inversée pour churn)
+
+**Contrat API backend :**
+```
+GET /dashboard-api/benchmarks → { data: BenchmarkResponse }
+```
+
+**i18n :** `fr.benchmark.*` — labels, ratings, messages pairs (`aboveMedian`, `belowMedian`, `atMedian`, `peerUnavailable(n)`)
+
 ## Destinations webhook sortantes (`/settings/destinations`)
 Feature complète permettant de configurer des outils externes (Brevo, Slack, Lemlist,
 ActiveCampaign, Mailchimp, custom) qui reçoivent un payload JSON quand un compte est à risque.
