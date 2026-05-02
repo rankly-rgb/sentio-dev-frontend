@@ -116,7 +116,9 @@ export default function StripeConnect() {
                     placeholder="sk_live_... ou sk_test_..."
                     className="font-mono pr-10"
                     autoComplete="off"
+                    aria-label={fr.onboarding.stripe.keyLabel}
                     aria-invalid={formatError || isError}
+                    aria-describedby={formatError || isError ? 'apiKey-error' : undefined}
                   />
                   <button
                     type="button"
@@ -128,11 +130,20 @@ export default function StripeConnect() {
                   </button>
                 </div>
                 {formatError && (
-                  <p className="text-xs text-[#ef4444]">{fr.onboarding.stripe.errorFormat}</p>
+                  <p id="apiKey-error" className="text-xs text-[#ef4444]">{fr.onboarding.stripe.errorFormat}</p>
                 )}
                 {!formatError && isError && (
-                  <p className="text-xs text-[#ef4444]">{fr.onboarding.stripe.errorInvalid}</p>
+                  <p id="apiKey-error" className="text-xs text-[#ef4444]">{fr.onboarding.stripe.errorInvalid}</p>
                 )}
+                <a
+                  href="https://dashboard.stripe.com/apikeys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-[#3b5bdb] hover:underline"
+                >
+                  {fr.onboarding.stripe.whereIsMyKey}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
               </div>
 
               <Button
