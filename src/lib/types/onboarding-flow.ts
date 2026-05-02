@@ -18,6 +18,11 @@ export interface OnboardingFirstWinAccount {
   top_risk_reason: string;
 }
 
+export interface IntegrationsConfigStatus {
+  stripe_configured: boolean;
+  hubspot_configured: boolean;
+}
+
 export interface OnboardingFirstWin {
   total_accounts: number;
   at_risk_accounts: OnboardingFirstWinAccount[];

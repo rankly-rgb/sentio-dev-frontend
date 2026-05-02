@@ -6,21 +6,40 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
-import { useConnectStripe } from '@/hooks/useOnboardingFlow';
+import { useSaveIntegrationsConfig } from '@/hooks/useOnboardingFlow';
+import { useManualSync } from '@/hooks/useManualSync';
+
+function isValidStripeKey(key: string) {
+  return key.startsWith('sk_live_') || key.startsWith('sk_test_');
+}
 
 export default function StripeConnect() {
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
+  const [formatError, setFormatError] = useState(false);
   const navigate = useNavigate();
-  const { mutate: connectStripe, isPending, isError } = useConnectStripe();
+  const { mutateAsync: saveConfig, isPending, isError } = useSaveIntegrationsConfig();
+  const { triggerStripeSync } = useManualSync();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!apiKey.trim()) return;
+    const key = apiKey.trim();
+    if (!key) return;
 
-    connectStripe(apiKey.trim(), {
-      onSuccess: () => navigate('/onboarding/sync'),
-    });
+    if (!isValidStripeKey(key)) {
+      setFormatError(true);
+      return;
+    }
+    setFormatError(false);
+
+    try {
+      await saveConfig({ provider: 'stripe', api_key: key });
+      // Déclenche le sync sans bloquer la navigation — SyncWait polled for completion
+      void triggerStripeSync('full_sync');
+      navigate('/onboarding/sync');
+    } catch {
+      // isError gère l'affichage
+    }
   };
 
   return (
@@ -90,11 +109,14 @@ export default function StripeConnect() {
                     id="apiKey"
                     type={showKey ? 'text' : 'password'}
                     value={apiKey}
-                    onChange={e => setApiKey(e.target.value)}
-                    placeholder={fr.onboarding.stripe.keyPlaceholder}
+                    onChange={e => {
+                      setApiKey(e.target.value);
+                      if (formatError) setFormatError(false);
+                    }}
+                    placeholder="sk_live_... ou sk_test_..."
                     className="font-mono pr-10"
                     autoComplete="off"
-                    aria-invalid={isError}
+                    aria-invalid={formatError || isError}
                   />
                   <button
                     type="button"
@@ -105,7 +127,10 @@ export default function StripeConnect() {
                     {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {isError && (
+                {formatError && (
+                  <p className="text-xs text-[#ef4444]">{fr.onboarding.stripe.errorFormat}</p>
+                )}
+                {!formatError && isError && (
                   <p className="text-xs text-[#ef4444]">{fr.onboarding.stripe.errorInvalid}</p>
                 )}
               </div>
