@@ -1,40 +1,39 @@
-export type BenchmarkRating = 'excellent' | 'bon' | 'correct' | 'médiocre';
+export type BenchmarkRating = 'excellent' | 'bon' | 'correct' | 'mediocre';
 
 export interface MetricBenchmark {
-  value: number;
-  external_benchmark: {
+  value: number | null;
+  rating: BenchmarkRating | null;
+  thresholds: {
     excellent: number;
     bon: number;
     correct: number;
-    mediocre: number;
-    rating: BenchmarkRating;
-    sources: string[];
   };
-  peer: {
-    available: boolean;
-    median: number | null;
-    org_count: number | null;
-    delta: number | null;
-  };
+  higher_is_better: boolean;
+  sources: string[];
 }
+
+export interface PeerPercentiles {
+  p25: number;
+  p50: number;
+  p75: number;
+}
+
+export type BenchmarkPeers =
+  | { available: false; min_orgs_required: number }
+  | {
+      available: true;
+      org_count: number;
+      computed_at: string;
+      nrr: PeerPercentiles;
+      churn_rate: PeerPercentiles;
+      mrr_growth: PeerPercentiles;
+    };
 
 export interface BenchmarkResponse {
-  computed_at: string;
-  period_days: number;
-  metrics: {
-    nrr: MetricBenchmark;
-    churn_rate: MetricBenchmark;
-    mrr_growth: MetricBenchmark;
-  };
+  nrr: MetricBenchmark;
+  churn_rate: MetricBenchmark;
+  mrr_growth: MetricBenchmark;
+  peers: BenchmarkPeers;
 }
 
-export type BenchmarkMetricKey = keyof BenchmarkResponse['metrics'];
-
-/**
- * Returns true when a positive delta is favorable for the given metric.
- * For churn_rate, lower is better — so a negative delta (churning less than peers) is green.
- */
-export function isPositiveDelta(metric: BenchmarkMetricKey, delta: number): boolean {
-  if (metric === 'churn_rate') return delta < 0;
-  return delta > 0;
-}
+export type BenchmarkMetricKey = 'nrr' | 'churn_rate' | 'mrr_growth';

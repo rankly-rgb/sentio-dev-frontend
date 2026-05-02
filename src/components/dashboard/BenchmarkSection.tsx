@@ -2,106 +2,99 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fr } from '@/i18n/fr';
-import type { BenchmarkResponse, BenchmarkMetricKey, BenchmarkRating, MetricBenchmark } from '@/lib/types/benchmark';
-import { isPositiveDelta } from '@/lib/types/benchmark';
-
-// --- Rating badge colors (Tailwind classes matching project palette) ---
+import type { BenchmarkResponse, BenchmarkMetricKey, BenchmarkRating, MetricBenchmark, BenchmarkPeers, PeerPercentiles } from '@/lib/types/benchmark';
 
 const RATING_CLASSES: Record<BenchmarkRating, string> = {
   excellent: 'bg-emerald-100 text-emerald-700',
   bon: 'bg-blue-100 text-blue-700',
   correct: 'bg-amber-100 text-amber-700',
-  'médiocre': 'bg-red-100 text-red-700',
+  mediocre: 'bg-red-100 text-red-700',
 };
 
 const RATING_LABELS: Record<BenchmarkRating, string> = {
   excellent: fr.benchmark.excellent,
   bon: fr.benchmark.bon,
   correct: fr.benchmark.correct,
-  'médiocre': fr.benchmark.mediocre,
+  mediocre: fr.benchmark.mediocre,
 };
-
-// --- Metric display config ---
 
 const METRIC_CONFIG: Record<BenchmarkMetricKey, { label: string; formatValue: (v: number) => string }> = {
   nrr: {
     label: fr.benchmark.nrr,
-    formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}\u00A0%`,
+    formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
   },
   churn_rate: {
     label: fr.benchmark.churnRate,
-    formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}\u00A0%`,
+    formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
   },
   mrr_growth: {
     label: fr.benchmark.mrrGrowth,
-    formatValue: (v) => `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}\u00A0%`,
+    formatValue: (v) =>
+      `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
   },
 };
 
-// --- Range bar component ---
+// --- Cursor position calculation ---
+// The bar has 4 equal zones (each 25%).
+// Sorted-ascending thresholds [low, mid, high] anchor positions 25%, 50%, 75%.
+// Works for both higher_is_better=true and false because:
+//   - HiB=true (NRR): sorted=[correct, bon, excellent], left=médiocre, right=excellent
+//   - HiB=false (churn): sorted=[excellent, bon, correct], left=excellent, right=médiocre
+// In both cases position increases with value, and the colored zones are reversed visually.
 
-function RangeBar({ metric, benchmark }: { metric: BenchmarkMetricKey; benchmark: MetricBenchmark }) {
-  const ext = benchmark.external_benchmark;
+function computeCursorPosition(
+  value: number,
+  thresholds: { excellent: number; bon: number; correct: number },
+): number {
+  const sorted = [thresholds.correct, thresholds.bon, thresholds.excellent].sort((a, b) => a - b);
+  const [low, mid, high] = sorted as [number, number, number];
+  const gapLow = mid - low || 1;
+  const gapHigh = high - mid || 1;
 
-  // For churn_rate the scale is inverted (lower = better, right side is excellent)
-  const isInverted = metric === 'churn_rate';
+  let pos: number;
+  if (value <= low) {
+    pos = 25 - ((low - value) / gapLow) * 25;
+  } else if (value <= mid) {
+    pos = 25 + ((value - low) / gapLow) * 25;
+  } else if (value <= high) {
+    pos = 50 + ((value - mid) / gapHigh) * 25;
+  } else {
+    pos = 75 + ((value - high) / gapHigh) * 25;
+  }
 
-  // Build ordered threshold values from left to right
-  const thresholds = isInverted
-    ? [ext.mediocre, ext.correct, ext.bon, ext.excellent]
-    : [ext.mediocre, ext.correct, ext.bon, ext.excellent];
+  return Math.min(Math.max(pos, 0), 100);
+}
 
-  // Compute min/max with some padding
-  const allValues = [...thresholds, benchmark.value];
-  const min = Math.min(...allValues);
-  const max = Math.max(...allValues);
-  const range = max - min || 1;
-  const pad = range * 0.1;
-  const scaleMin = min - pad;
-  const scaleMax = max + pad;
-  const scaleRange = scaleMax - scaleMin;
+// --- Range bar ---
 
-  const toPercent = (v: number) => ((v - scaleMin) / scaleRange) * 100;
+function RangeBar({ benchmark }: { benchmark: MetricBenchmark }) {
+  const { value, thresholds, higher_is_better } = benchmark;
+  if (value === null) return null;
 
-  const segmentColors = isInverted
-    ? ['bg-emerald-400', 'bg-blue-400', 'bg-amber-400', 'bg-red-400']
-    : ['bg-red-400', 'bg-amber-400', 'bg-blue-400', 'bg-emerald-400'];
+  const cursorPos = computeCursorPosition(value, thresholds);
 
-  const labels = isInverted
-    ? [fr.benchmark.excellent, fr.benchmark.bon, fr.benchmark.correct, fr.benchmark.mediocre]
-    : [fr.benchmark.mediocre, fr.benchmark.correct, fr.benchmark.bon, fr.benchmark.excellent];
+  // HiB=true: left=médiocre(red) → excellent(green)
+  // HiB=false: left=excellent(green) → médiocre(red)
+  const colors = higher_is_better
+    ? ['bg-red-400', 'bg-amber-400', 'bg-blue-400', 'bg-emerald-400']
+    : ['bg-emerald-400', 'bg-blue-400', 'bg-amber-400', 'bg-red-400'];
 
-  // Sort thresholds for segment boundaries
-  const sorted = [...thresholds].sort((a, b) => a - b);
+  const labels = higher_is_better
+    ? [fr.benchmark.mediocre, fr.benchmark.correct, fr.benchmark.bon, fr.benchmark.excellent]
+    : [fr.benchmark.excellent, fr.benchmark.bon, fr.benchmark.correct, fr.benchmark.mediocre];
 
   return (
     <div className="space-y-1">
-      {/* Bar */}
-      <div className="relative h-3 rounded-full bg-muted overflow-hidden">
-        {sorted.map((threshold, i) => {
-          const start = i === 0 ? 0 : toPercent(sorted[i - 1]);
-          const end = toPercent(threshold);
-          return (
-            <div
-              key={i}
-              className={`absolute top-0 h-full ${segmentColors[i]}`}
-              style={{ left: `${start}%`, width: `${Math.max(end - start, 0)}%` }}
-            />
-          );
-        })}
-        {/* Last segment to 100% */}
+      <div className="relative h-3 rounded-full overflow-hidden flex">
+        {colors.map((color, i) => (
+          <div key={i} className={`flex-1 ${color}`} />
+        ))}
         <div
-          className={`absolute top-0 h-full ${segmentColors[segmentColors.length - 1]}`}
-          style={{ left: `${toPercent(sorted[sorted.length - 1])}%`, width: `${100 - toPercent(sorted[sorted.length - 1])}%` }}
-        />
-        {/* Org position indicator */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-foreground border-2 border-background shadow-sm"
-          style={{ left: `${Math.min(Math.max(toPercent(benchmark.value), 2), 98)}%`, transform: 'translate(-50%, -50%)' }}
-          aria-label={`Position : ${benchmark.value}`}
+          className="absolute top-1/2 w-3 h-3 rounded-full bg-foreground border-2 border-background shadow-sm"
+          style={{ left: `${cursorPos}%`, transform: 'translate(-50%, -50%)' }}
+          aria-label={`Position : ${value}`}
         />
       </div>
-      {/* Labels */}
       <div className="flex justify-between text-[10px] text-muted-foreground">
         {labels.map((label, i) => (
           <span key={i}>{label}</span>
@@ -111,57 +104,94 @@ function RangeBar({ metric, benchmark }: { metric: BenchmarkMetricKey; benchmark
   );
 }
 
-// --- Peer comparison section ---
+// --- Peer comparison ---
 
-function PeerSection({ metric, peer }: { metric: BenchmarkMetricKey; peer: MetricBenchmark['peer'] }) {
-  if (!peer.available) {
-    return <p className="text-xs text-muted-foreground italic">{fr.benchmark.peerUnavailable}</p>;
+function peerPositionLabel(value: number, percentiles: PeerPercentiles, higherIsBetter: boolean): string {
+  const { p50 } = percentiles;
+  const aboveMedian = value > p50;
+  const atMedian = value === p50;
+
+  if (atMedian) return fr.benchmark.atMedian;
+  // For churn_rate (higherIsBetter=false), being below p50 numerically is better
+  if (higherIsBetter) return aboveMedian ? fr.benchmark.aboveMedian : fr.benchmark.belowMedian;
+  return aboveMedian ? fr.benchmark.belowMedian : fr.benchmark.aboveMedian;
+}
+
+function PeerComparison({
+  metricKey,
+  value,
+  higherIsBetter,
+  peers,
+}: {
+  metricKey: BenchmarkMetricKey;
+  value: number | null;
+  higherIsBetter: boolean;
+  peers: BenchmarkPeers;
+}) {
+  if (!peers.available) {
+    return (
+      <p className="text-xs text-muted-foreground italic">
+        {fr.benchmark.peerUnavailable(peers.min_orgs_required)}
+      </p>
+    );
   }
 
-  const deltaValue = peer.delta ?? 0;
-  const positive = isPositiveDelta(metric, deltaValue);
-  const deltaFormatted = `${deltaValue > 0 ? '+' : ''}${deltaValue.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}\u00A0%`;
+  const percentiles = peers[metricKey];
+  const { p25, p50, p75 } = percentiles;
+  const positionLabel = value !== null ? peerPositionLabel(value, percentiles, higherIsBetter) : '—';
 
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-muted-foreground">
-        {fr.benchmark.peerMedian} : {peer.median != null ? `${peer.median.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}\u00A0%` : '—'}
-        {peer.org_count != null && (
-          <span className="ml-1 text-xs">({fr.benchmark.orgs(peer.org_count)})</span>
-        )}
-      </span>
-      <span className={positive ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
-        {fr.benchmark.vsPeers(deltaFormatted)}
-      </span>
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium text-foreground">{positionLabel}</p>
+      <div className="flex items-end justify-between text-[10px] text-muted-foreground gap-1">
+        <span>p25 : {p25}</span>
+        <span className="font-medium text-foreground">
+          {fr.benchmark.peerMedian} : {p50}
+        </span>
+        <span>p75 : {p75}</span>
+      </div>
+      <p className="text-[10px] text-muted-foreground">{fr.benchmark.orgs(peers.org_count)}</p>
     </div>
   );
 }
 
 // --- Metric card ---
 
-function BenchmarkCard({ metricKey, benchmark }: { metricKey: BenchmarkMetricKey; benchmark: MetricBenchmark }) {
+function BenchmarkCard({
+  metricKey,
+  benchmark,
+  peers,
+}: {
+  metricKey: BenchmarkMetricKey;
+  benchmark: MetricBenchmark;
+  peers: BenchmarkPeers;
+}) {
   const config = METRIC_CONFIG[metricKey];
-  const rating = benchmark.external_benchmark.rating;
+  const { value, rating, sources, higher_is_better } = benchmark;
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground">{config.label}</CardTitle>
-          <Badge className={`${RATING_CLASSES[rating]} border-0`}>
-            {RATING_LABELS[rating]}
-          </Badge>
+          {rating && (
+            <Badge className={`${RATING_CLASSES[rating]} border-0`}>{RATING_LABELS[rating]}</Badge>
+          )}
         </div>
-        <p className="text-2xl font-bold">{config.formatValue(benchmark.value)}</p>
+        <p className="text-2xl font-bold">{value !== null ? config.formatValue(value) : '—'}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Sector benchmark */}
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">{fr.benchmark.sectorBenchmark}</p>
-          <RangeBar metric={metricKey} benchmark={benchmark} />
-          {benchmark.external_benchmark.sources.length > 0 && (
-            <p className="text-[10px] text-muted-foreground">
-              {fr.benchmark.sources} : {benchmark.external_benchmark.sources.join(', ')}
+          {value !== null ? (
+            <RangeBar benchmark={benchmark} />
+          ) : (
+            <p className="text-xs text-muted-foreground">—</p>
+          )}
+          {sources.length > 0 && (
+            <p className="text-[10px] text-muted-foreground italic">
+              {fr.benchmark.sources} : {sources.join(', ')}
             </p>
           )}
         </div>
@@ -169,7 +199,12 @@ function BenchmarkCard({ metricKey, benchmark }: { metricKey: BenchmarkMetricKey
         {/* Peer comparison */}
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">{fr.benchmark.peerComparison}</p>
-          <PeerSection metric={metricKey} peer={benchmark.peer} />
+          <PeerComparison
+            metricKey={metricKey}
+            value={value}
+            higherIsBetter={higher_is_better}
+            peers={peers}
+          />
         </div>
       </CardContent>
     </Card>
@@ -256,7 +291,7 @@ export function BenchmarkSection({ data, isLoading, error }: BenchmarkSectionPro
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {METRIC_ORDER.map((key) => (
-          <BenchmarkCard key={key} metricKey={key} benchmark={data.metrics[key]} />
+          <BenchmarkCard key={key} metricKey={key} benchmark={data[key]} peers={data.peers} />
         ))}
       </div>
     </div>
