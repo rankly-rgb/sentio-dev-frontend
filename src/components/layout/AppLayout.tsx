@@ -25,6 +25,7 @@ import { useTodayActions } from '@/hooks/useTodayActions';
 import { useWebhookConfig } from '@/hooks/useWebhook';
 import { useSessionPing } from '@/hooks/useSessionPing';
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
+import { usePendingApprovalsCount } from '@/hooks/usePlaybookDestinations';
 import { fr } from '@/i18n/fr';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
@@ -38,7 +39,7 @@ const navItems = [
   { label: fr.nav.accounts, path: '/accounts', icon: Users },
   { label: fr.nav.segments, path: '/segments', icon: Tag },
   { label: fr.nav.insights, path: '/insights', icon: Lightbulb },
-  { label: fr.nav.playbooks, path: '/playbooks', icon: Play },
+  { label: fr.nav.playbooks, path: '/playbooks', icon: Play, badgeKey: 'playbooks' as const },
   { label: fr.nav.syncs, path: '/syncs', icon: RefreshCw },
 ];
 
@@ -64,6 +65,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const criticalInsightsCount = statsData?.data?.by_priority?.critical ?? 0;
   const { totalCount: todayActionsCount } = useTodayActions();
   const { data: webhookConfig } = useWebhookConfig();
+  const { data: pendingApprovalsCount = 0 } = usePendingApprovalsCount();
   const { data: lastSyncData } = useQuery({
     queryKey: ['sync-status', 'last-completed', user?.organization_id],
     queryFn: async () => {
@@ -111,6 +113,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
           const rawBadgeCount =
             badgeKey === 'today' ? todayActionsCount
+            : badgeKey === 'playbooks' ? pendingApprovalsCount
             : path === '/insights' ? criticalInsightsCount
             : 0;
           const badgeCount = rawBadgeCount > 99 ? '99+' : rawBadgeCount;
@@ -154,6 +157,41 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         >
           <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname.startsWith('/settings') ? 'text-primary' : 'text-muted-foreground')} />
           <span>{fr.nav.settings}</span>
+        </Link>
+
+        {/* Playbook destinations */}
+        <Link
+          to="/playbooks/destinations"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            'flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200',
+            location.pathname === '/playbooks/destinations'
+              ? 'text-primary bg-primary/5'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
+        >
+          <Zap className="h-[14px] w-[14px] shrink-0" />
+          <span>{fr.nav.playbookDestinations}</span>
+        </Link>
+
+        {/* Playbook approvals */}
+        <Link
+          to="/playbooks/approvals"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            'flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200',
+            location.pathname === '/playbooks/approvals'
+              ? 'text-primary bg-primary/5'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
+        >
+          <Play className="h-[14px] w-[14px] shrink-0" />
+          <span>{fr.nav.playbookApprovals}</span>
+          {pendingApprovalsCount > 0 && (
+            <span className="ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {pendingApprovalsCount > 99 ? '99+' : pendingApprovalsCount}
+            </span>
+          )}
         </Link>
 
         {/* Destinations webhook */}

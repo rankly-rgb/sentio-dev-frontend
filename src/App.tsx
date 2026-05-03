@@ -30,6 +30,8 @@ import WorkflowDetail from '@/pages/WorkflowDetail';
 import Integrations from '@/pages/Integrations';
 import Webhook from '@/pages/Webhook';
 import WebhookDestinations from '@/pages/WebhookDestinations';
+import PlaybookDestinations from '@/pages/PlaybookDestinations';
+import PlaybookApprovals from '@/pages/PlaybookApprovals';
 
 // Admin
 import Organizations from '@/pages/admin/Organizations';
@@ -122,6 +124,8 @@ export default function App() {
                 <Route path="/syncs" element={<ProtectedRoute><AppLayout><Syncs /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks" element={<ProtectedRoute><AppLayout><Playbooks /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/new" element={<ProtectedRoute><AppLayout><PlaybookNew /></AppLayout></ProtectedRoute>} />
+                <Route path="/playbooks/destinations" element={<ProtectedRoute><AppLayout><PlaybookDestinations /></AppLayout></ProtectedRoute>} />
+                <Route path="/playbooks/approvals" element={<ProtectedRoute><AppLayout><PlaybookApprovals /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/workflows/:id" element={<ProtectedRoute><AppLayout><WorkflowDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
