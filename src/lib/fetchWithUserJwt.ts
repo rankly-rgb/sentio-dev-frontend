@@ -1,6 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/utils/productionLogger';
 
+export class TrialExpiredError extends Error {
+  readonly status = 402;
+  constructor() {
+    super('Essai expiré — veuillez mettre à jour votre abonnement');
+    this.name = 'TrialExpiredError';
+  }
+}
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -55,6 +63,7 @@ export async function fetchWithUserJwt<T>(
     throw new Error(`Réponse invalide du serveur (${res.status})`);
   }
 
+  if (res.status === 402) throw new TrialExpiredError();
   if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
   return data as T;
 }

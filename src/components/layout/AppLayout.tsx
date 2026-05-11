@@ -1,4 +1,4 @@
-import { ReactNode, useState, useCallback } from 'react';
+import { ReactNode, useState, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -27,27 +27,32 @@ import { useSessionPing } from '@/hooks/useSessionPing';
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
 import { usePendingApprovalsCount } from '@/hooks/usePlaybookDestinations';
 import { fr } from '@/i18n/fr';
+import { useLanguage } from '@/lib/i18n/useLanguage';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import AhaMomentModal from '@/components/onboarding/AhaMomentModal';
 import OnboardingProgressBar from '@/components/onboarding/OnboardingProgressBar';
+import TrialBanner from '@/components/layout/TrialBanner';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
-
-const navItems = [
-  { label: fr.nav.today, path: '/today', icon: CalendarCheck, badgeKey: 'today' as const },
-  { label: fr.nav.dashboard, path: '/dashboard', icon: BarChart3 },
-  { label: fr.nav.accounts, path: '/accounts', icon: Users },
-  { label: fr.nav.segments, path: '/segments', icon: Tag },
-  { label: fr.nav.insights, path: '/insights', icon: Lightbulb },
-  { label: fr.nav.playbooks, path: '/playbooks', icon: Play, badgeKey: 'playbooks' as const },
-  { label: fr.nav.syncs, path: '/syncs', icon: RefreshCw },
-];
+import { useTrialStatus } from '@/hooks/useTrialStatus';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ahaSeen, setAhaSeen] = useState(false);
+
+  const navItems = useMemo(() => [
+    { label: t('nav.today'), path: '/today', icon: CalendarCheck, badgeKey: 'today' as const },
+    { label: t('nav.dashboard'), path: '/dashboard', icon: BarChart3 },
+    { label: t('nav.accounts'), path: '/accounts', icon: Users },
+    { label: t('nav.segments'), path: '/segments', icon: Tag },
+    { label: t('nav.insights'), path: '/insights', icon: Lightbulb },
+    { label: t('nav.playbooks'), path: '/playbooks', icon: Play, badgeKey: 'playbooks' as const },
+    { label: t('nav.syncs'), path: '/syncs', icon: RefreshCw },
+  ], [t]);
   const { data: statsData } = useInsightStats();
 
   useSessionPing();
@@ -66,6 +71,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { totalCount: todayActionsCount } = useTodayActions();
   const { data: webhookConfig } = useWebhookConfig();
   const { data: pendingApprovalsCount = 0 } = usePendingApprovalsCount();
+  const { data: trialStatus } = useTrialStatus();
+
   const { data: lastSyncData } = useQuery({
     queryKey: ['sync-status', 'last-completed', user?.organization_id],
     queryFn: async () => {
@@ -156,7 +163,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname.startsWith('/settings') ? 'text-primary' : 'text-muted-foreground')} />
-          <span>{fr.nav.settings}</span>
+          <span>{t('nav.settings')}</span>
         </Link>
 
         {/* Playbook destinations */}
@@ -171,7 +178,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Zap className="h-[14px] w-[14px] shrink-0" />
-          <span>{fr.nav.playbookDestinations}</span>
+          <span>{t('nav.playbookDestinations')}</span>
         </Link>
 
         {/* Playbook approvals */}
@@ -186,7 +193,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Play className="h-[14px] w-[14px] shrink-0" />
-          <span>{fr.nav.playbookApprovals}</span>
+          <span>{t('nav.playbookApprovals')}</span>
           {pendingApprovalsCount > 0 && (
             <span className="ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
               {pendingApprovalsCount > 99 ? '99+' : pendingApprovalsCount}
@@ -206,7 +213,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Zap className="h-[14px] w-[14px] shrink-0" />
-          <span>{fr.nav.destinations}</span>
+          <span>{t('nav.destinations')}</span>
         </Link>
 
         {/* Webhook status indicator */}
@@ -264,7 +271,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             )}
           >
             <Activity className="h-[18px] w-[18px] shrink-0" />
-            {fr.nav.ops}
+            {t('nav.ops')}
           </Link>
         </div>
       )}
@@ -285,7 +292,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           aria-label="Se déconnecter"
         >
           <LogOut className="h-[18px] w-[18px] shrink-0" />
-          <span>{fr.nav.logout}</span>
+          <span>{t('nav.logout')}</span>
         </button>
       </div>
     </>
@@ -307,6 +314,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex flex-1 flex-col min-w-0">
+        {trialStatus && <TrialBanner trial={trialStatus} />}
         {onboardingStatus && <OnboardingProgressBar status={onboardingStatus} />}
 
         <header className="flex h-14 items-center gap-4 border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 lg:px-6">
@@ -331,6 +339,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex-1" />
+          <LanguageSwitcher />
         </header>
 
         <main className="flex-1 overflow-auto">{children}</main>

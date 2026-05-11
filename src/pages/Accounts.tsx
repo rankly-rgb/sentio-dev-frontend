@@ -4,6 +4,7 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { exportAccountsCsv } from '@/lib/exportCsv';
 import { fr } from '@/i18n/fr';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +24,7 @@ export default function Accounts() {
   const [exporting, setExporting] = useState(false);
   const [flagsOnly, setFlagsOnly] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
+  const { t } = useLanguage();
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
   const currentCursor = cursorStack[cursorStack.length - 1];
 
@@ -52,7 +54,7 @@ export default function Accounts() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{fr.accounts.title}</h1>
+        <h1 className="text-2xl font-bold">{t('accounts.title')}</h1>
         <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
           <Download className="h-4 w-4 mr-2" />
           {exporting ? fr.segmentDetail.exporting : fr.accounts.exportCsv}

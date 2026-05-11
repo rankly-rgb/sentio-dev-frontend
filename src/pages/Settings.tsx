@@ -3,6 +3,8 @@ import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
 import { fr } from '@/i18n/fr';
+import { useLanguage } from '@/lib/i18n/useLanguage';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { maskEmail } from '@/lib/queries/settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +15,7 @@ import { CheckCircle, XCircle, UserPlus, ExternalLink, Link2, Zap } from 'lucide
 
 export default function Settings() {
   const { organization, team, isLoading } = useOrganizationSettings();
+  const { t } = useLanguage();
   const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();
   const { hubspotStale, lastHubspotSyncHoursAgo } = useHubspotSyncFreshness();
 
@@ -39,7 +42,7 @@ export default function Settings() {
           <TabsTrigger value="team">{fr.settings.team}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="organization" className="mt-4">
+        <TabsContent value="organization" className="mt-4 space-y-4">
           <Card>
             <CardHeader><CardTitle>{fr.settings.orgName}</CardTitle></CardHeader>
             <CardContent>
@@ -48,6 +51,18 @@ export default function Settings() {
                 Creee le {organization?.created_at ? fr.format.date(organization.created_at) : '-'}
               </p>
             </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>{t('settings.language')}</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">{t('settings.languageDesc')}</p>
+                </div>
+                <LanguageSwitcher />
+              </div>
+            </CardHeader>
           </Card>
         </TabsContent>
 

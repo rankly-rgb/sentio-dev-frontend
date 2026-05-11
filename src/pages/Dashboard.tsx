@@ -8,6 +8,8 @@ import { useSegments } from '@/hooks/useSegments';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { fr } from '@/i18n/fr';
+import { useLanguage } from '@/lib/i18n/useLanguage';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +59,7 @@ export default function Dashboard() {
   const { data: integrationStatus } = useIntegrationStatus();
   const { data: segments } = useSegments();
   const { data: syncs } = useSyncStatus();
+  const { t } = useLanguage();
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
@@ -116,11 +119,12 @@ export default function Dashboard() {
       {/* Header + actions */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{fr.dashboard.title}</h1>
-          <p className="text-sm text-muted-foreground">{fr.dashboard.subtitle}</p>
+          <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('dashboard.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <LanguageSwitcher />
           <SyncProgressPanel />
 
           <Button

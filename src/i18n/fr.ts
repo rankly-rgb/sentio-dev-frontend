@@ -869,6 +869,19 @@ export const fr = {
     sessionExpired: "Session expirée, veuillez vous reconnecter",
   },
 
+  // Freemium / Trial
+  trial: {
+    bannerActive: (days: number) => `Essai gratuit — ${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`,
+    bannerExpired: "Votre essai est terminé",
+    bannerExpiredSub: "Passez à un plan payant pour continuer à utiliser Sentio.",
+    upgrade: "Mettre à niveau",
+    planFree: "Gratuit",
+    planStarter: "Starter",
+    planGrowth: "Growth",
+    planEnterprise: "Enterprise",
+    trialExpiredError: "Accès bloqué — essai expiré. Mettez à jour votre abonnement.",
+  },
+
   // Ops Admin
   ops: {
     title: "Ops Admin",

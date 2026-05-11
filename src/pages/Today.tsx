@@ -3,6 +3,7 @@ import { CheckCircle, CalendarCheck, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { fr } from '@/i18n/fr';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { supabase } from '@/lib/supabase';
 import { useTodayActions } from '@/hooks/useTodayActions';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
@@ -120,21 +121,24 @@ export default function Today() {
   return (
     <div className="p-4 lg:p-6 space-y-5 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <CalendarCheck className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-bold text-foreground">
-            {fr.todayActions.pageTitle} — {formatDateHeader()}
-          </h1>
-        </div>
-        {user?.full_name && (
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <CalendarCheck className="h-5 w-5 text-primary" />
+            <h1 className="text-xl font-bold text-foreground">
+              {fr.todayActions.pageTitle} — {formatDateHeader()}
+            </h1>
+          </div>
+          {user?.full_name && (
+            <p className="text-sm text-muted-foreground">
+              {fr.today.greeting(user.full_name)}
+            </p>
+          )}
           <p className="text-sm text-muted-foreground">
-            {fr.today.greeting(user.full_name)}
+            {fr.todayActions.actionCount(summary?.total ?? 0)}
           </p>
-        )}
-        <p className="text-sm text-muted-foreground">
-          {fr.todayActions.actionCount(summary?.total ?? 0)}
-        </p>
+        </div>
+        <LanguageSwitcher />
       </div>
 
       {/* Daily briefing — always shown */}

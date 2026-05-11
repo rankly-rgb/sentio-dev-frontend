@@ -1,6 +1,7 @@
 export interface OnboardingFlowStatus {
   stripe_connected: boolean;
   stripe_sync_completed: boolean;
+  stripe_sync_in_progress: boolean;
   hubspot_connected: boolean;
   first_win_seen: boolean;
   onboarding_completed: boolean;
