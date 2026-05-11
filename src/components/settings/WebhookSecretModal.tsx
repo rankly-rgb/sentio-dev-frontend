@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 
 interface Props {
   open: boolean;
@@ -84,6 +84,7 @@ const PAYLOAD_EXAMPLE = JSON.stringify(
 );
 
 export default function WebhookSecretModal({ open, onOpenChange, secret }: Props) {
+  const fr = useT();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

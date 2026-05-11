@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import EmailStepEditor from './EmailStepEditor';
 import { ActionConfigFields } from '@/components/playbooks/ActionEditor';
 import type { WorkflowStep, ActionType } from '@/lib/types/playbook';
@@ -44,6 +44,7 @@ interface Props {
 }
 
 export default function StepEditor({ steps, onChange }: Props) {
+  const fr = useT();
   const addStep = () => {
     const newStep: WorkflowStep = {
       step_order: steps.length + 1,

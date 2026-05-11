@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { ConditionGroup, Condition, ConditionField, ConditionOperator } from '@/lib/types/playbook';
 
 const FIELDS: ConditionField[] = [
@@ -51,6 +51,7 @@ interface Props {
 }
 
 export default function ConditionEditor({ conditionGroup, onChange }: Props) {
+  const fr = useT();
   const { operator, conditions } = conditionGroup;
 
   const setOperator = (op: 'AND' | 'OR') => {

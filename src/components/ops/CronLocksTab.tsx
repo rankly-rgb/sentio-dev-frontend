@@ -1,5 +1,5 @@
 import { useOpsCronLocks } from '@/hooks/useOpsCronLocks';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ function isExpired(expiresAt: string): boolean {
 }
 
 export default function CronLocksTab() {
+  const fr = useT();
   const { locks, isLoading, error, refetch, forceRelease } =
     useOpsCronLocks();
 

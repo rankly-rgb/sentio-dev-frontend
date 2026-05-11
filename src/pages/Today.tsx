@@ -2,7 +2,7 @@ import { useRef, useState, useMemo, useCallback } from 'react';
 import { CheckCircle, CalendarCheck, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { supabase } from '@/lib/supabase';
 import { useTodayActions } from '@/hooks/useTodayActions';
@@ -32,6 +32,7 @@ function formatDateHeader(): string {
 }
 
 export default function Today() {
+  const fr = useT();
   const { user } = useAuth();
   const [filters, setFilters] = useState<TodayActionsFilters>({});
   const [exporting, setExporting] = useState(false);

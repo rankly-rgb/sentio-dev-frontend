@@ -26,7 +26,7 @@ import { useWebhookConfig } from '@/hooks/useWebhook';
 import { useSessionPing } from '@/hooks/useSessionPing';
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
 import { usePendingApprovalsCount } from '@/hooks/usePlaybookDestinations';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
@@ -38,6 +38,7 @@ import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
+  const fr = useT();
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();

@@ -1,5 +1,5 @@
 import { Info, CheckCircle, Archive } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { PlaybookStatus, PlaybookAffectedAccountsSummary } from '@/lib/types/playbook';
 
 interface Props {
@@ -25,21 +25,18 @@ const bannerConfig: Record<
   },
 };
 
-function getBannerText(status: PlaybookStatus, total: number): string | null {
-  switch (status) {
-    case 'draft':
-      return fr.playbooks.bannerDraft(total);
-    case 'active':
-      return fr.playbooks.bannerActive(total);
-    case 'archived':
-      return fr.playbooks.bannerArchived;
-    default:
-      return null;
-  }
-}
-
 export default function PlaybookStatusBanner({ status, affectedSummary }: Props) {
+  const fr = useT();
   const key = status as 'draft' | 'active' | 'archived';
+
+  function getBannerText(s: PlaybookStatus, total: number): string | null {
+    switch (s) {
+      case 'draft': return fr.playbooks.bannerDraft(total);
+      case 'active': return fr.playbooks.bannerActive(total);
+      case 'archived': return fr.playbooks.bannerArchived;
+      default: return null;
+    }
+  }
   const config = bannerConfig[key];
   if (!config) return null;
 

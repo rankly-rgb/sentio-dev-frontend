@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useInsights, useInsightStats, useUpdateInsightStatus } from '@/hooks/useInsights';
 import InsightStatsCards from '@/components/insights/InsightStatsCards';
 import InsightFilters from '@/components/insights/InsightFilters';
@@ -14,6 +14,7 @@ import type { InsightsFilters as FiltersType } from '@/types/insights';
 type SortOption = 'created_at' | 'priority' | 'confidence_score' | 'mrr_impact_cents';
 
 export default function Insights() {
+  const fr = useT();
   const [insightType, setInsightType] = useState('');
   const [status, setStatus] = useState('active');
   const [sort, setSort] = useState<SortOption>('created_at');

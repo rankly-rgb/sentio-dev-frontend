@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Activity } from 'lucide-react';
 import SystemStatusTab from '@/components/ops/SystemStatusTab';
@@ -8,6 +8,7 @@ import CronLocksTab from '@/components/ops/CronLocksTab';
 import SyncsExtendedTab from '@/components/ops/SyncsExtendedTab';
 
 export default function Ops() {
+  const fr = useT();
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center gap-3">

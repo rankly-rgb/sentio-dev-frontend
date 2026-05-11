@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import ActionEditor from './ActionEditor';
 import ConditionEditor from './ConditionEditor';
 import StepEditor from '@/components/workflows/StepEditor';
@@ -51,6 +51,7 @@ interface Props {
 }
 
 export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflowProp, onSubmit, isSubmitting }: Props) {
+  const fr = useT();
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [playbookType, setPlaybookType] = useState<PlaybookType>(initialData?.playbook_type ?? 'manual');

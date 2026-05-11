@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getMrrMovementSummary, calculateNrr } from '@/lib/queries/mrr';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -12,6 +12,7 @@ function formatMonth(offset: number): string {
 }
 
 export default function MrrDashboard() {
+  const fr = useT();
   const [period] = useState({ from: formatMonth(-1), to: formatMonth(0) });
 
   const summaryQuery = useQuery({

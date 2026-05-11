@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import {
   LineChart,
   Line,
@@ -26,6 +26,7 @@ function formatChartData(history: ScoreHistoryItem[]) {
 }
 
 export default function AccountScoreHistory({ scoreHistory }: Props) {
+  const fr = useT();
   if (scoreHistory.length === 0) {
     return (
       <p className="text-xs text-muted-foreground text-center py-4">

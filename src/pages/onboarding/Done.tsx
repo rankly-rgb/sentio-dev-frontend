@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
 import { useOnboardingFirstWin, useMarkOnboardingField } from '@/hooks/useOnboardingFlow';
@@ -13,16 +13,17 @@ function scoreBadgeClass(score: number) {
   return 'bg-green-100 text-green-700';
 }
 
-function scoreBadgeLabel(score: number) {
-  if (score < 40) return fr.onboarding.done.criticalRisk;
-  if (score < 60) return fr.onboarding.done.moderateRisk;
-  return fr.onboarding.done.healthy;
+function scoreBadgeLabel(score: number, labels: { criticalRisk: string; moderateRisk: string; healthy: string }) {
+  if (score < 40) return labels.criticalRisk;
+  if (score < 60) return labels.moderateRisk;
+  return labels.healthy;
 }
 
 function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; index: number }) {
+  const fr = useT();
   const name = account.display_name ?? account.stripe_customer_id;
   const badgeClass = scoreBadgeClass(account.health_score);
-  const badgeLabel = scoreBadgeLabel(account.health_score);
+  const badgeLabel = scoreBadgeLabel(account.health_score, fr.onboarding.done);
 
   return (
     <div
@@ -64,6 +65,7 @@ function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; i
 }
 
 export default function Done() {
+  const fr = useT();
   const navigate = useNavigate();
   const { data: firstWin, isPending: isLoading } = useOnboardingFirstWin();
   const { mutate: markField, isPending: isMarking } = useMarkOnboardingField();

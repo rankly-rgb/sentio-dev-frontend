@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useDestinationLogs } from '@/hooks/useWebhookDestinations';
@@ -8,8 +8,8 @@ interface Props {
   destinationId: string;
 }
 
-function triggerLabel(t: LogTrigger): string {
-  return fr.destinations.logs.triggers[t];
+function triggerLabel(t: LogTrigger, labels: Record<LogTrigger, string>): string {
+  return labels[t];
 }
 
 function truncateAccountId(id: string): string {
@@ -17,6 +17,7 @@ function truncateAccountId(id: string): string {
 }
 
 export default function DestinationLogs({ destinationId }: Props) {
+  const fr = useT();
   const { data: logs, isLoading } = useDestinationLogs(destinationId);
 
   if (isLoading) {
@@ -67,7 +68,7 @@ export default function DestinationLogs({ destinationId }: Props) {
                 {truncateAccountId(log.account_id)}
               </td>
               <td className="py-2.5 pr-4 text-muted-foreground text-xs">
-                {triggerLabel(log.triggered_by)}
+                {triggerLabel(log.triggered_by, fr.destinations.logs.triggers)}
               </td>
               <td className="py-2.5 pr-4">
                 <span

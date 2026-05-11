@@ -1,8 +1,9 @@
 import { useSyncStatus } from '@/hooks/useSyncStatus';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Badge } from '@/components/ui/badge';
 
 export function SyncProgressPanel() {
+  const fr = useT();
   const { data: syncs } = useSyncStatus();
   const lastSync = syncs?.[0];
 

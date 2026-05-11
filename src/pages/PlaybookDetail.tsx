@@ -4,7 +4,7 @@ import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import {
   usePlaybookDetail,
   usePlaybook,
@@ -20,6 +20,7 @@ import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
 import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 
 export default function PlaybookDetail() {
+  const fr = useT();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 

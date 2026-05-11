@@ -10,7 +10,7 @@ import {
   ListChecks,
   Building2,
 } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookDetailAction, ActionType } from '@/lib/types/playbook';
@@ -38,6 +38,7 @@ interface Props {
 }
 
 export default function PlaybookActionsSection({ actions }: Props) {
+  const fr = useT();
   if (!Array.isArray(actions) || actions.length === 0) {
     return null;
   }

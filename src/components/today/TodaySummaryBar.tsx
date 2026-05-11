@@ -1,6 +1,6 @@
 import { AlertTriangle, AlertCircle, Info, CreditCard } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { cn } from '@/lib/utils';
 import type { TodayActionsSummary } from '@/lib/types/today-actions';
 
@@ -9,13 +9,13 @@ interface TodaySummaryBarProps {
   onScrollTo: (priority: 'P0' | 'P1' | 'P2') => void;
 }
 
-const CARDS = [
-  { key: 'P0' as const, label: fr.todayActions.critiques, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 hover:bg-red-100' },
-  { key: 'P1' as const, label: fr.todayActions.hautes, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50 hover:bg-amber-100' },
-  { key: 'P2' as const, label: fr.todayActions.normales, icon: Info, color: 'text-blue-600', bg: 'bg-blue-50 hover:bg-blue-100' },
-] as const;
-
 export default function TodaySummaryBar({ summary, onScrollTo }: TodaySummaryBarProps) {
+  const fr = useT();
+  const CARDS = [
+    { key: 'P0' as const, label: fr.todayActions.critiques, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 hover:bg-red-100' },
+    { key: 'P1' as const, label: fr.todayActions.hautes, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50 hover:bg-amber-100' },
+    { key: 'P2' as const, label: fr.todayActions.normales, icon: Info, color: 'text-blue-600', bg: 'bg-blue-50 hover:bg-blue-100' },
+  ] as const;
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {CARDS.map(({ key, label, icon: Icon, color, bg }) => (

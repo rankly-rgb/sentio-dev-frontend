@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { PlaybookExecutionRow, ExecutionCompletedAction } from '@/lib/types/playbook';
 
 function statusVariant(s: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -40,15 +40,8 @@ function ActionStatusIcon({ status }: { status: string }) {
   }
 }
 
-const statusLabels: Record<string, string> = {
-  pending: fr.actions.pending,
-  running: fr.actions.running,
-  completed: fr.actions.completed,
-  failed: fr.actions.failed,
-  cancelled: 'Annulée',
-};
-
 function ActionDetails({ actions }: { actions: ExecutionCompletedAction[] }) {
+  const fr = useT();
   return (
     <div className="space-y-1 pl-4 border-l-2 border-muted">
       {[...actions].sort((a, b) => a.order - b.order).map((action, i) => (
@@ -80,6 +73,14 @@ interface Props {
 }
 
 export default function ExecutionTimeline({ executions, isLoading }: Props) {
+  const fr = useT();
+  const statusLabels: Record<string, string> = {
+    pending: fr.actions.pending,
+    running: fr.actions.running,
+    completed: fr.actions.completed,
+    failed: fr.actions.failed,
+    cancelled: 'Annulée',
+  };
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const toggleRow = (id: string) => {

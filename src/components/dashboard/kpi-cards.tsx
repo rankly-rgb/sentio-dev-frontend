@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DashboardMetrics } from '@/types/dashboard';
@@ -9,6 +9,7 @@ interface KpiCardsProps {
 }
 
 export function KpiCards({ metrics }: KpiCardsProps) {
+  const fr = useT();
   const kpis = [
     {
       label: fr.dashboard.mrr,

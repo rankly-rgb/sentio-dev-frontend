@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { CronLock } from '@/types/ops';
 
 async function fetchCronLocks(): Promise<CronLock[]> {
@@ -16,6 +16,7 @@ async function fetchCronLocks(): Promise<CronLock[]> {
 }
 
 export function useOpsCronLocks() {
+  const fr = useT();
   const qc = useQueryClient();
 
   const locksQuery = useQuery({

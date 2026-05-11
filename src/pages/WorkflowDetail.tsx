@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import {
   usePlaybook,
   usePlaybookExecutions,
@@ -42,6 +42,7 @@ import StepTimeline from '@/components/workflows/StepTimeline';
 import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 
 export default function WorkflowDetail() {
+  const fr = useT();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

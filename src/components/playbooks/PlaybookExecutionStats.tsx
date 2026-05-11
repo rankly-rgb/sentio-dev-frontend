@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookDetailExecutionStats } from '@/lib/types/playbook';
 
@@ -29,6 +29,7 @@ interface Props {
 }
 
 export default function PlaybookExecutionStats({ stats }: Props) {
+  const fr = useT();
   const allZero =
     stats.total === 0 &&
     stats.completed === 0 &&

@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AccountDetail, InvoiceItem } from '@/lib/types/accounts';
@@ -60,14 +60,6 @@ function computeInvoiceTotals(invoices: InvoiceItem[]) {
   return { paid, paidCount, due, dueCount, overdue, overdueCount, total: paid + due + overdue };
 }
 
-const MOVEMENT_LABELS: Record<string, string> = {
-  new: fr.mrr.new,
-  expansion: fr.mrr.expansion,
-  contraction: fr.mrr.contraction,
-  churn: fr.mrr.churn,
-  reactivation: fr.mrr.reactivation,
-};
-
 const MOVEMENT_COLORS: Record<string, string> = {
   new: 'text-green-600',
   expansion: 'text-green-600',
@@ -81,6 +73,14 @@ interface Props {
 }
 
 export default function AccountFinancials({ account }: Props) {
+  const fr = useT();
+  const MOVEMENT_LABELS: Record<string, string> = {
+    new: fr.mrr.new,
+    expansion: fr.mrr.expansion,
+    contraction: fr.mrr.contraction,
+    churn: fr.mrr.churn,
+    reactivation: fr.mrr.reactivation,
+  };
   const { data: movements, isLoading: movementsLoading } = useMrrMovements(account.id);
   const invoiceTotals = computeInvoiceTotals(account.recent_invoices);
 

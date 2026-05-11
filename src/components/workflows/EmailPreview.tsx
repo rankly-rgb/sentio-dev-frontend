@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import { Card, CardContent } from '@/components/ui/card';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { EMAIL_PREVIEW_DATA } from '@/lib/types/playbook';
 
 interface Props {
@@ -15,6 +15,7 @@ function replaceVariables(text: string): string {
 }
 
 export default function EmailPreview({ subject, bodyHtml }: Props) {
+  const fr = useT();
   const previewSubject = replaceVariables(subject || '(aucun objet)');
   const previewBody = replaceVariables(bodyHtml || '<p style="color:#999">Aucun contenu</p>');
 

@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import PlaybookDestinationsList from '@/components/playbook-destinations/PlaybookDestinationsList';
 import PlaybookDestinationForm from '@/components/playbook-destinations/PlaybookDestinationForm';
 import type { DestinationFormPayload } from '@/components/playbook-destinations/PlaybookDestinationForm';
@@ -25,6 +25,7 @@ import {
 import type { PlaybookDestination, UpdatePlaybookDestinationPayload } from '@/lib/types/playbook-destination';
 
 export default function PlaybookDestinations() {
+  const fr = useT();
   const { data: destinations, isLoading, isError } = usePlaybookDestinations();
   const createMutation = useCreatePlaybookDestination();
   const updateMutation = useUpdatePlaybookDestination();

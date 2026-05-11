@@ -1,5 +1,5 @@
 import { useOpsSelfMonitor } from '@/hooks/useOpsSelfMonitor';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import {
   Card,
   CardContent,
@@ -20,6 +20,7 @@ import {
 import { Play, Loader2, CheckCircle } from 'lucide-react';
 
 export default function SelfMonitorTab() {
+  const fr = useT();
   const { mutate, isPending, data, error } = useOpsSelfMonitor();
 
   return (

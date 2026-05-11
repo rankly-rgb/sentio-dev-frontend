@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { maskEmail } from '@/lib/queries/settings';
@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle, XCircle, UserPlus, ExternalLink, Link2, Zap } from 'lucide-react';
 
 export default function Settings() {
+  const fr = useT();
   const { organization, team, isLoading } = useOrganizationSettings();
   const { t } = useLanguage();
   const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();

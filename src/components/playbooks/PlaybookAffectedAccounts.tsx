@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookDetailEligibleAccounts } from '@/lib/types/playbook';
 
@@ -20,6 +20,7 @@ interface Props {
 }
 
 export default function PlaybookAffectedAccounts({ eligible }: Props) {
+  const fr = useT();
   return (
     <Card>
       <CardHeader className="pb-3">

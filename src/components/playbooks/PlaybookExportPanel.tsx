@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { PRIORITY_OPTIONS, formatPriorityKey } from '@/lib/priority-labels';
@@ -68,6 +68,7 @@ function triggerBlobDownload(blob: Blob, filename: string) {
 }
 
 export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelProps) {
+  const fr = useT();
   const [filters, setFilters] = useState<ExportFilters>({});
   const [exportingCsv, setExportingCsv] = useState(false);
   const [exportingJson, setExportingJson] = useState(false);
@@ -119,7 +120,7 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
     } finally {
       setLoading(false);
     }
-  }, [playbookId, filters, summary]);
+  }, [playbookId, filters, summary, fr]);
 
   const updateFilter = (key: keyof ExportFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));

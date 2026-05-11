@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 import AccountName from '@/components/AccountName';
 import ScoreBadge from '@/components/ScoreBadge';
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function AhaMomentModal({ status, onClose }: Props) {
+  const fr = useT();
   const navigate = useNavigate();
   const account = status.top_risk_account;
 

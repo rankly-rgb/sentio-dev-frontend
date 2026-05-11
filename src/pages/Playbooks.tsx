@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { usePlaybooks, useWorkflows } from '@/hooks/usePlaybooks';
 import PlaybookCard from '@/components/playbooks/PlaybookCard';
 import WorkflowCard from '@/components/workflows/WorkflowCard';
@@ -30,6 +30,7 @@ const CATEGORIES: TemplateCategory[] = [
 const PER_PAGE = 12;
 
 export default function Playbooks() {
+  const fr = useT();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'playbooks' | 'workflows'>('playbooks');
 
@@ -184,6 +185,7 @@ function FilterBar({
   onTypeChange: (v: string) => void;
   onCategoryChange: (v: string) => void;
 }) {
+  const fr = useT();
   return (
     <div className="flex items-center gap-3 flex-wrap">
       <Select value={filterStatus} onValueChange={onStatusChange}>
@@ -244,6 +246,7 @@ function ContentGrid({
   createLabel: string;
   renderCard: (pb: Playbook) => React.ReactNode;
 }) {
+  const fr = useT();
   if (error) {
     return (
       <Card className="border-destructive">
@@ -301,6 +304,7 @@ function PaginationBar({
   perPage: number;
   onPageChange: (page: number) => void;
 }) {
+  const fr = useT();
   if (totalPages <= 1) return null;
 
   return (

@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useManualSync } from '@/hooks/useManualSync';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { DataSync, SyncStatus } from '@/types/database';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,15 +31,15 @@ function statusIcon(s: SyncStatus) {
   }
 }
 
-function formatDuration(s: number | null) {
+function formatDuration(s: number | null, seconds: string) {
   if (s === null) return '-';
-  if (s < 60) return `${s}${fr.syncs.seconds}`;
+  if (s < 60) return `${s}${seconds}`;
   return `${Math.floor(s / 60)}m${s % 60}s`;
 }
 
-function syncTypeLabel(t: string | null): string {
+function syncTypeLabel(t: string | null, labels: Record<string, string>) {
   if (!t) return '—';
-  return fr.syncs.syncTypeLabels[t] ?? t;
+  return labels[t] ?? t;
 }
 
 function syncTypeBadgeVariant(t: string | null): 'default' | 'secondary' | 'outline' {
@@ -65,6 +65,7 @@ async function fetchSyncs(orgId: string): Promise<DataSync[]> {
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function Syncs() {
+  const fr = useT();
   const { user } = useAuth();
   const qc = useQueryClient();
   const { triggerStripeSync, triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
@@ -196,7 +197,7 @@ export default function Syncs() {
                     <TableCell className="font-medium capitalize">{sync.sync_source}</TableCell>
                     <TableCell>
                       <Badge variant={syncTypeBadgeVariant(sync.sync_type)} className="text-xs">
-                        {syncTypeLabel(sync.sync_type)}
+                        {syncTypeLabel(sync.sync_type, fr.syncs.syncTypeLabels)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -217,7 +218,7 @@ export default function Syncs() {
                       {sync.started_at ? fr.format.dateTime(sync.started_at) : '-'}
                     </TableCell>
                     <TableCell className="text-right text-sm">
-                      {formatDuration(sync.duration_seconds)}
+                      {formatDuration(sync.duration_seconds, fr.syncs.seconds)}
                     </TableCell>
                     <TableCell className="text-right text-sm">{sync.records_processed ?? '-'}</TableCell>
                     <TableCell className="text-right text-sm text-success">{sync.records_created ?? '-'}</TableCell>

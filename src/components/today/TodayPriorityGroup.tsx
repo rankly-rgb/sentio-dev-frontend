@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { cn } from '@/lib/utils';
 import { PRIORITY_CONFIG } from '@/lib/types/today-actions';
 import type { TodayAction } from '@/lib/types/today-actions';
@@ -16,17 +16,6 @@ interface TodayPriorityGroupProps {
   onAccountClick?: (accountId: string) => void;
 }
 
-const COLUMN_HEADERS = [
-  { key: 'stripe', label: fr.todayActions.colStripeId },
-  { key: 'plan', label: fr.todayActions.colPlan },
-  { key: 'mrr', label: fr.todayActions.colMrr },
-  { key: 'health', label: fr.todayActions.colHealth },
-  { key: 'churn', label: fr.todayActions.colChurnRisk },
-  { key: 'reasons', label: fr.todayActions.colReasons },
-  { key: 'playbooks', label: fr.todayActions.colPlaybooks },
-  { key: 'renewal', label: fr.todayActions.colRenewal },
-] as const;
-
 export default function TodayPriorityGroup({
   priority,
   actions,
@@ -34,6 +23,17 @@ export default function TodayPriorityGroup({
   initialLimit = 5,
   onAccountClick,
 }: TodayPriorityGroupProps) {
+  const fr = useT();
+  const COLUMN_HEADERS = [
+    { key: 'stripe', label: fr.todayActions.colStripeId },
+    { key: 'plan', label: fr.todayActions.colPlan },
+    { key: 'mrr', label: fr.todayActions.colMrr },
+    { key: 'health', label: fr.todayActions.colHealth },
+    { key: 'churn', label: fr.todayActions.colChurnRisk },
+    { key: 'reasons', label: fr.todayActions.colReasons },
+    { key: 'playbooks', label: fr.todayActions.colPlaybooks },
+    { key: 'renewal', label: fr.todayActions.colRenewal },
+  ] as const;
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [showAll, setShowAll] = useState(false);
 

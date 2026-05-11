@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import EmailStepEditor from '@/components/workflows/EmailStepEditor';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
@@ -83,6 +83,7 @@ function PropertyEditor({
   onChange: (config: Record<string, unknown>) => void;
   hubspotConnected?: boolean;
 }) {
+  const fr = useT();
   const rawProperties = (config.properties ?? {}) as Record<string, string>;
   const [pairs, setPairs] = useState<{ key: string; value: string }[]>(() => {
     const entries = Object.entries(rawProperties);
@@ -177,6 +178,7 @@ export function ActionConfigFields({
   slackConnected?: boolean;
   hubspotConnected?: boolean;
 }) {
+  const fr = useT();
   const update = (key: string, value: unknown) => onChange({ ...config, [key]: value });
 
   switch (type) {
@@ -416,6 +418,7 @@ interface Props {
 }
 
 export default function ActionEditor({ actions, onChange }: Props) {
+  const fr = useT();
   const { data: integrationStatus } = useIntegrationStatus();
   const slackConnected = integrationStatus?.slack?.connected;
   const hubspotConnected = integrationStatus?.hubspot?.connected;

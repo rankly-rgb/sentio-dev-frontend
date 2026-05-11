@@ -5,7 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { EMAIL_VARIABLES } from '@/lib/types/playbook';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function VariableInserter({ onInsert }: Props) {
+  const fr = useT();
   const categories = Object.entries(EMAIL_VARIABLES) as [
     keyof typeof EMAIL_VARIABLES,
     readonly string[],

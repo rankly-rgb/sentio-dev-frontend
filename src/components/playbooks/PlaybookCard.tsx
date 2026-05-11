@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import PlaybookStatusBadge from './PlaybookStatusBadge';
 import PriorityBadge from './PriorityBadge';
 import type { Playbook } from '@/lib/types/playbook';
@@ -11,6 +11,7 @@ interface Props {
 }
 
 export default function PlaybookCard({ playbook }: Props) {
+  const fr = useT();
   const navigate = useNavigate();
 
   return (

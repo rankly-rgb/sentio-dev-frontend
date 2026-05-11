@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { WebhookProvider } from '@/lib/types/webhook-destinations';
 
 interface Props {
@@ -36,6 +36,7 @@ function DocSteps({ steps }: { steps: readonly string[] }) {
 }
 
 export default function DestinationDocPanel({ provider }: Props) {
+  const fr = useT();
   return (
     <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3 h-fit">
       <div className="flex items-center gap-2 text-sm font-semibold text-blue-800">

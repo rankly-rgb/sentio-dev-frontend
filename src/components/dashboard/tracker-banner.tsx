@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Lightbulb } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 
 const DISMISSED_KEY = 'sentio:tracker-banner-dismissed';
 
 export function TrackerBanner() {
+  const fr = useT();
   const [dismissed, setDismissed] = useState(() => {
     try {
       return localStorage.getItem(DISMISSED_KEY) === '1';

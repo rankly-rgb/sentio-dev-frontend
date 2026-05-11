@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import AccountName from '@/components/AccountName';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useDailyBriefing } from '@/hooks/useDailyBriefing';
 
 function parseBoldMarkdown(text: string): React.ReactNode[] {
@@ -16,6 +16,7 @@ function parseBoldMarkdown(text: string): React.ReactNode[] {
 }
 
 export default function DailyBriefing() {
+  const fr = useT();
   const { data, isLoading, error } = useDailyBriefing();
 
   if (error) return null;

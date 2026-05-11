@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useSegments } from '@/hooks/useSegments';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScoreBadge from '@/components/ScoreBadge';
 
 export default function Segments() {
+  const fr = useT();
   const { data: segments, isLoading, error } = useSegments();
 
   return (

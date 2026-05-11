@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import {
   Sheet,
@@ -65,6 +65,7 @@ interface Props {
 }
 
 export default function AccountDetailPanel({ isOpen, onClose, account, isLoading }: Props) {
+  const fr = useT();
   const { organization } = useOrganizationSettings();
   const trackerConnected = organization?.usage_tracker_connected ?? false;
 

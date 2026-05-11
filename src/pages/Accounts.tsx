@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { exportAccountsCsv } from '@/lib/exportCsv';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { Search, Download, Flag } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 
 export default function Accounts() {
+  const fr = useT();
   const [search, setSearch] = useState('');
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [exporting, setExporting] = useState(false);

@@ -1,6 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { SegmentType } from '@/lib/types/segments';
 import { isValidSegmentKey } from '@/lib/types/segments';
 import { useSegmentAccounts } from '@/hooks/useSegmentAccounts';
@@ -9,6 +9,7 @@ import SegmentDetailView from '@/components/segments/SegmentDetailView';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 
 export default function SegmentDetail() {
+  const fr = useT();
   const { segment: segmentParam } = useParams<{ segment: string }>();
   const validSegment: SegmentType | null =
     segmentParam && isValidSegmentKey(segmentParam) ? segmentParam : null;

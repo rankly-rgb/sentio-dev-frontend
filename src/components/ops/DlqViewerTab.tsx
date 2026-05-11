@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOpsDlq } from '@/hooks/useOpsDlq';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import { RefreshCw, CheckCircle, Inbox } from 'lucide-react';
 import type { DlqFilters } from '@/types/ops';
 
 export default function DlqViewerTab() {
+  const fr = useT();
   const [filters, setFilters] = useState<DlqFilters>({
     provider: 'all',
     event_type: 'all',

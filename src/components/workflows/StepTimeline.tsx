@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import StepDelayBadge from './StepDelayBadge';
 import type { WorkflowStep } from '@/lib/types/playbook';
 
@@ -7,6 +7,7 @@ interface Props {
 }
 
 export default function StepTimeline({ steps }: Props) {
+  const fr = useT();
   if (!steps || steps.length === 0) {
     return <p className="text-sm text-muted-foreground">{fr.workflows.noSteps}</p>;
   }

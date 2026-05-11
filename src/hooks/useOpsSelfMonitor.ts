@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { SelfMonitorResponse } from '@/types/ops';
 
 export function useOpsSelfMonitor() {
+  const fr = useT();
   const qc = useQueryClient();
 
   return useMutation<SelfMonitorResponse>({

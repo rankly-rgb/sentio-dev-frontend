@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Pencil, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { SEGMENT_COLORS, SEGMENT_LABELS } from '@/lib/types/segments';
 import { monthsSince } from '@/lib/account-detail-helpers';
 import { useUpdateDisplayName } from '@/hooks/useUpdateDisplayName';
@@ -20,6 +20,7 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 export default function AccountHeader({ account }: Props) {
+  const fr = useT();
   const primarySegment = account.segments[0]?.account_segments;
   const updateDisplayName = useUpdateDisplayName();
 

@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import DestinationTestResult from './DestinationTestResult';
 import {
   useTestDestination,
@@ -65,6 +65,7 @@ interface CardProps {
 }
 
 function DestinationCard({ destination, onEdit, onViewLogs }: CardProps) {
+  const fr = useT();
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showTestResult, setShowTestResult] = useState(false);
 

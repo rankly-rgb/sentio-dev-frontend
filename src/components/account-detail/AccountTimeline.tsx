@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -125,6 +125,7 @@ interface Props {
 }
 
 export default function AccountTimeline({ accountId, flags }: Props) {
+  const fr = useT();
   const { data: executions, isLoading: exLoading } = usePlaybookExecutions(accountId);
   const { data: notes, isLoading: notesLoading } = useAccountNotes(accountId);
 

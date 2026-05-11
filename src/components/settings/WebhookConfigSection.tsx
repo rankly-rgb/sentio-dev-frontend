@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { WEBHOOK_EVENT_TYPES } from '@/lib/types/webhook';
 import type { WebhookConfig, WebhookEventType } from '@/lib/types/webhook';
 import {
@@ -45,6 +45,7 @@ import WebhookSecretModal from './WebhookSecretModal';
 const SECRET_VISIBLE_TIMEOUT_MS = 30_000;
 
 function PrerequisiteBanner() {
+  const fr = useT();
   return (
     <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-4 space-y-2">
       <div className="flex items-start gap-2">
@@ -74,6 +75,7 @@ function PrerequisiteBanner() {
 }
 
 function ConfiguredState({ config }: { config: WebhookConfig }) {
+  const fr = useT();
   const [secretVisible, setSecretVisible] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
@@ -387,6 +389,7 @@ function ConfiguredState({ config }: { config: WebhookConfig }) {
 }
 
 function UnconfiguredState() {
+  const fr = useT();
   const [url, setUrl] = useState('');
   const [selectedEvents, setSelectedEvents] = useState<WebhookEventType[]>([...WEBHOOK_EVENT_TYPES]);
   const [secret, setSecret] = useState<string | null>(null);
@@ -474,6 +477,7 @@ function UnconfiguredState() {
 }
 
 export default function WebhookConfigSection() {
+  const fr = useT();
   const { data: config, isLoading } = useWebhookConfig();
 
   return (

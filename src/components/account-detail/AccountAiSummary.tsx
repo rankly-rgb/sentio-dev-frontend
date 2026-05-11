@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useAccountSummary } from '@/hooks/useAccountSummary';
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
 }
 
 export default function AccountAiSummary({ accountId }: Props) {
+  const fr = useT();
   const { data, isPending, isFetching } = useAccountSummary(accountId);
   const [showBadge, setShowBadge] = useState(false);
 

@@ -24,11 +24,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { usePendingApprovals, useApproveQueueItem } from '@/hooks/usePlaybookDestinations';
 import type { PlaybookApprovalQueueItem } from '@/lib/types/playbook-destination';
 
 export default function PlaybookApprovals() {
+  const fr = useT();
   const { data: items, isLoading, isError } = usePendingApprovals();
   const approveMutation = useApproveQueueItem();
 

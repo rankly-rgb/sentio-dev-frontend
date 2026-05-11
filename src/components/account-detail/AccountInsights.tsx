@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BrainCircuit } from 'lucide-react';
@@ -9,22 +9,21 @@ interface Props {
   accountId: string;
 }
 
-const PRIORITY_CONFIG: Record<InsightPriority, { label: string; className: string }> = {
-  critical: { label: fr.insights.priority.critical, className: 'bg-red-100 text-red-800' },
-  high: { label: fr.insights.priority.high, className: 'bg-orange-100 text-orange-800' },
-  medium: { label: fr.insights.priority.medium, className: 'bg-yellow-100 text-yellow-800' },
-  low: { label: fr.insights.priority.low, className: 'bg-gray-100 text-gray-600' },
-};
-
-const TYPE_LABELS: Record<InsightType, string> = {
-  churn_prediction: fr.insights.churnPrediction,
-  expansion_opportunity: fr.insights.expansionOpportunity,
-  renewal_alert: fr.insights.renewalAlert,
-  payment_risk: fr.insights.paymentRisk,
-  usage_drop: fr.insights.usageDecline,
-};
-
 export default function AccountInsights({ accountId }: Props) {
+  const fr = useT();
+  const PRIORITY_CONFIG: Record<InsightPriority, { label: string; className: string }> = {
+    critical: { label: fr.insights.priority.critical, className: 'bg-red-100 text-red-800' },
+    high: { label: fr.insights.priority.high, className: 'bg-orange-100 text-orange-800' },
+    medium: { label: fr.insights.priority.medium, className: 'bg-yellow-100 text-yellow-800' },
+    low: { label: fr.insights.priority.low, className: 'bg-gray-100 text-gray-600' },
+  };
+  const TYPE_LABELS: Record<InsightType, string> = {
+    churn_prediction: fr.insights.churnPrediction,
+    expansion_opportunity: fr.insights.expansionOpportunity,
+    renewal_alert: fr.insights.renewalAlert,
+    payment_risk: fr.insights.paymentRisk,
+    usage_drop: fr.insights.usageDecline,
+  };
   const { data, isLoading } = useInsights({
     account_id: accountId,
     per_page: 5,

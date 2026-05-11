@@ -17,7 +17,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import DestinationDocPanel from './DestinationDocPanel';
 import type {
   OutboundWebhookDestination,
@@ -70,10 +70,10 @@ const PROVIDER_ICONS: Record<WebhookProvider, string> = {
   custom: '🔗',
 };
 
-function urlPlaceholder(provider: WebhookProvider): string {
-  if (provider === 'brevo') return fr.destinations.form.urlPlaceholders.brevo;
-  if (provider === 'slack') return fr.destinations.form.urlPlaceholders.slack;
-  return fr.destinations.form.urlPlaceholders.default;
+function urlPlaceholder(provider: WebhookProvider, placeholders: { brevo: string; slack: string; default: string }): string {
+  if (provider === 'brevo') return placeholders.brevo;
+  if (provider === 'slack') return placeholders.slack;
+  return placeholders.default;
 }
 
 function initForm(dest?: OutboundWebhookDestination): FormState {
@@ -109,6 +109,7 @@ interface Props {
 }
 
 export default function DestinationForm({ destination, onSave, onCancel, isSaving }: Props) {
+  const fr = useT();
   const [form, setForm] = useState<FormState>(() => initForm(destination));
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -213,7 +214,7 @@ export default function DestinationForm({ destination, onSave, onCancel, isSavin
             id="dest-url"
             value={form.destination_url}
             onChange={(e) => setForm((f) => ({ ...f, destination_url: e.target.value }))}
-            placeholder={urlPlaceholder(form.provider)}
+            placeholder={urlPlaceholder(form.provider, fr.destinations.form.urlPlaceholders)}
           />
           {errors.destination_url && (
             <p className="text-xs text-red-500">{errors.destination_url}</p>

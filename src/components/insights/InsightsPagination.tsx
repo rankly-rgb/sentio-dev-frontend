@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { InsightsPagination as PaginationType } from '@/types/insights';
 
@@ -9,6 +9,7 @@ interface InsightsPaginationProps {
 }
 
 export default function InsightsPagination({ pagination, onPageChange }: InsightsPaginationProps) {
+  const fr = useT();
   const { page, total_pages, total } = pagination;
   if (total_pages <= 1) return null;
 

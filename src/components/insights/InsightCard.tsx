@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,30 +8,6 @@ import {
   CheckCircle2, X, ExternalLink, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import type { Insight, InsightType, InsightPriority, InsightStatus } from '@/types/insights';
-
-// ─── Config maps ────────────────────────────────────────────────────────────
-
-const PRIORITY_CONFIG: Record<InsightPriority, { label: string; className: string }> = {
-  critical: { label: fr.insights.priority.critical, className: 'bg-red-100 text-red-800' },
-  high: { label: fr.insights.priority.high, className: 'bg-orange-100 text-orange-800' },
-  medium: { label: fr.insights.priority.medium, className: 'bg-yellow-100 text-yellow-800' },
-  low: { label: fr.insights.priority.low, className: 'bg-gray-100 text-gray-600' },
-};
-
-const TYPE_CONFIG: Record<InsightType, { label: string; icon: typeof AlertTriangle; className: string }> = {
-  churn_prediction: { label: fr.insights.churnPrediction, icon: AlertTriangle, className: 'text-red-600' },
-  expansion_opportunity: { label: fr.insights.expansionOpportunity, icon: TrendingUp, className: 'text-green-600' },
-  renewal_alert: { label: fr.insights.renewalAlert, icon: Calendar, className: 'text-orange-600' },
-  payment_risk: { label: fr.insights.paymentRisk, icon: CreditCard, className: 'text-red-600' },
-  usage_drop: { label: fr.insights.usageDecline, icon: TrendingDown, className: 'text-yellow-600' },
-};
-
-const STATUS_CONFIG: Record<InsightStatus, { label: string; className: string }> = {
-  active: { label: fr.insights.status.active, className: 'bg-blue-100 text-blue-800' },
-  acknowledged: { label: fr.insights.status.acknowledged, className: 'bg-purple-100 text-purple-800' },
-  resolved: { label: fr.insights.status.resolved, className: 'bg-green-100 text-green-800' },
-  dismissed: { label: fr.insights.status.dismissed, className: 'bg-gray-100 text-gray-500' },
-};
 
 // ─── Relative time formatter ────────────────────────────────────────────────
 
@@ -57,6 +33,26 @@ interface InsightCardProps {
 }
 
 export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdating }: InsightCardProps) {
+  const fr = useT();
+  const PRIORITY_CONFIG: Record<InsightPriority, { label: string; className: string }> = {
+    critical: { label: fr.insights.priority.critical, className: 'bg-red-100 text-red-800' },
+    high: { label: fr.insights.priority.high, className: 'bg-orange-100 text-orange-800' },
+    medium: { label: fr.insights.priority.medium, className: 'bg-yellow-100 text-yellow-800' },
+    low: { label: fr.insights.priority.low, className: 'bg-gray-100 text-gray-600' },
+  };
+  const TYPE_CONFIG: Record<InsightType, { label: string; icon: typeof AlertTriangle; className: string }> = {
+    churn_prediction: { label: fr.insights.churnPrediction, icon: AlertTriangle, className: 'text-red-600' },
+    expansion_opportunity: { label: fr.insights.expansionOpportunity, icon: TrendingUp, className: 'text-green-600' },
+    renewal_alert: { label: fr.insights.renewalAlert, icon: Calendar, className: 'text-orange-600' },
+    payment_risk: { label: fr.insights.paymentRisk, icon: CreditCard, className: 'text-red-600' },
+    usage_drop: { label: fr.insights.usageDecline, icon: TrendingDown, className: 'text-yellow-600' },
+  };
+  const STATUS_CONFIG: Record<InsightStatus, { label: string; className: string }> = {
+    active: { label: fr.insights.status.active, className: 'bg-blue-100 text-blue-800' },
+    acknowledged: { label: fr.insights.status.acknowledged, className: 'bg-purple-100 text-purple-800' },
+    resolved: { label: fr.insights.status.resolved, className: 'bg-green-100 text-green-800' },
+    dismissed: { label: fr.insights.status.dismissed, className: 'bg-gray-100 text-gray-500' },
+  };
   const [expanded, setExpanded] = useState(false);
   const [showNewBadge, setShowNewBadge] = useState(insight.is_new === true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

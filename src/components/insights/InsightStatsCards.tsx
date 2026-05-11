@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { InsightStats } from '@/types/insights';
 import { AlertTriangle, TrendingUp, BrainCircuit, DollarSign } from 'lucide-react';
 
@@ -10,6 +10,7 @@ interface InsightStatsCardsProps {
 }
 
 export default function InsightStatsCards({ stats, isLoading }: InsightStatsCardsProps) {
+  const fr = useT();
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -17,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import PriorityBadge from './PriorityBadge';
 import type { Playbook, TemplateCategory } from '@/lib/types/playbook';
 
@@ -50,6 +50,7 @@ export default function TemplateSelector({
   onSelectTemplate,
   onCreateFromScratch,
 }: Props) {
+  const fr = useT();
   if (isLoading) {
     return (
       <div className="space-y-6">

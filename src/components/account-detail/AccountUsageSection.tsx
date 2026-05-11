@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { BarChart3 } from 'lucide-react';
 import type { UsageItem } from '@/lib/types/accounts';
 
@@ -28,6 +28,7 @@ function aggregateByType(events: UsageItem[]): { type: string; count: number }[]
 }
 
 export default function AccountUsageSection({ usageEvents, trackerConnected }: Props) {
+  const fr = useT();
   if (!trackerConnected) {
     return (
       <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-center">

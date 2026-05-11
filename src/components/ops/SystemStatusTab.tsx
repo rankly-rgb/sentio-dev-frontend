@@ -1,5 +1,5 @@
 import { useOpsHealthCheck } from '@/hooks/useOpsHealthCheck';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,11 +19,6 @@ import {
 } from 'lucide-react';
 import type { CheckStatus, HealthStatus } from '@/types/ops';
 
-const healthStatusLabel: Record<HealthStatus, string> = {
-  ok: fr.ops.healthy,
-  degraded: fr.ops.degraded,
-  unhealthy: fr.ops.unhealthy,
-};
 
 function checkBadgeVariant(
   status: CheckStatus,
@@ -50,6 +45,7 @@ function checkIcon(status: CheckStatus) {
 }
 
 function HealthBanner({ status }: { status: HealthStatus }) {
+  const fr = useT();
   if (status === 'unhealthy') {
     return (
       <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-center gap-3">
@@ -70,6 +66,12 @@ function HealthBanner({ status }: { status: HealthStatus }) {
 }
 
 export default function SystemStatusTab() {
+  const fr = useT();
+  const healthStatusLabel: Record<HealthStatus, string> = {
+    ok: fr.ops.healthy,
+    degraded: fr.ops.degraded,
+    unhealthy: fr.ops.unhealthy,
+  };
   const { data, isLoading, isFetching, error, dataUpdatedAt } = useOpsHealthCheck();
 
   if (isLoading) {

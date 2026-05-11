@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookDetailPlaybook } from '@/lib/types/playbook';
 
@@ -26,6 +26,7 @@ interface Props {
 }
 
 export default function PlaybookConfiguration({ playbook }: Props) {
+  const fr = useT();
   const categoryLabel =
     fr.playbooks.category[playbook.category as keyof typeof fr.playbooks.category] ??
     playbook.category ??

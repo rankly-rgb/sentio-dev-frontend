@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useExecutePlaybook } from '@/hooks/usePlaybooks';
 import type { ExecutePlaybookResponse } from '@/lib/types/playbook';
 
@@ -35,6 +35,7 @@ interface Props {
 }
 
 export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, lastExecutedAt, eligibleCount }: Props) {
+  const fr = useT();
   const [mode, setMode] = useState<'eligible' | 'segment' | 'accounts'>('eligible');
   const [segmentId, setSegmentId] = useState('');
   const [accountIdsRaw, setAccountIdsRaw] = useState('');

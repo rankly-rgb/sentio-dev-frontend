@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookFullDetailCondition } from '@/lib/types/playbook';
 
@@ -7,6 +7,7 @@ interface Props {
 }
 
 export default function PlaybookConditionsSection({ conditions }: Props) {
+  const fr = useT();
   if (!Array.isArray(conditions) || conditions.length === 0) {
     return null;
   }

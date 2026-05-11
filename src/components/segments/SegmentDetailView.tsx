@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import ScoreBadge from '@/components/ScoreBadge';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { supabase } from '@/lib/supabase';
 import type { SegmentType, SegmentAccount } from '@/lib/types/segments';
 import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
@@ -37,6 +37,7 @@ function comparePlanTier(a: string | null, b: string | null): number {
 }
 
 export default function SegmentDetailView({ segment, accounts, totalFetched, onAccountClick }: SegmentDetailViewProps) {
+  const fr = useT();
   const [sortField, setSortField] = useState<SortField>('mrr_cents');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [page, setPage] = useState(0);
@@ -113,7 +114,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
     } finally {
       setExporting(false);
     }
-  }, [segment]);
+  }, [segment, fr]);
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ChevronDown className="inline h-3 w-3 opacity-30" />;

@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/tooltip';
 import ScoreBadge from '@/components/ScoreBadge';
 import AccountName from '@/components/AccountName';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { TodayAction } from '@/lib/types/today-actions';
 
 interface TodayActionRowProps {
@@ -18,6 +18,7 @@ interface TodayActionRowProps {
 const MAX_VISIBLE_REASONS = 2;
 
 export default function TodayActionRow({ action, onAccountClick }: TodayActionRowProps) {
+  const fr = useT();
   const visibleReasons = action.trigger_reasons.slice(0, MAX_VISIBLE_REASONS);
   const hiddenReasonsCount = action.trigger_reasons.length - MAX_VISIBLE_REASONS;
 

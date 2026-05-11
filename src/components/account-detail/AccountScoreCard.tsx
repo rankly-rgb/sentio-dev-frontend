@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import ScoreBadge from '@/components/ScoreBadge';
 import { relativeTimeFr } from '@/lib/account-detail-helpers';
 import {
@@ -37,6 +37,7 @@ interface ScoreBarProps {
 }
 
 function ScoreBar({ label, score, tooltip, narrative, animate = true }: ScoreBarProps) {
+  const fr = useT();
   const isNull = score === null || score === undefined;
   const [displayWidth, setDisplayWidth] = useState(0);
   const animatedRef = useRef(false);
@@ -125,6 +126,7 @@ function ScoreBar({ label, score, tooltip, narrative, animate = true }: ScoreBar
 }
 
 export default function AccountScoreCard({ account, trackerConnected }: Props) {
+  const fr = useT();
   const healthScore = account.health_score;
 
   return (

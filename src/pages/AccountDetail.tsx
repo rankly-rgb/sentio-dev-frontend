@@ -7,7 +7,7 @@ import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useRemoveAccountFlag } from '@/hooks/useAccountFlags';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import AccountNotesSection from '@/components/accounts/AccountNotesSection';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -86,6 +86,7 @@ function ScoreBreakdown({ score, label, weight, healthScore }: {
   weight: string;
   healthScore: number | null;
 }) {
+  const fr = useT();
   const isNull = score === null || score === undefined;
   const hasHealthScore = healthScore !== null && healthScore !== undefined;
 
@@ -130,6 +131,7 @@ function ScoreBreakdown({ score, label, weight, healthScore }: {
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function AccountDetail() {
+  const fr = useT();
   const { accountId } = useParams();
   const navigate = useNavigate();
   const { data: account, isLoading, error } = useAccountDetail(accountId);

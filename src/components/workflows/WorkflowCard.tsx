@@ -3,7 +3,7 @@ import { Pencil } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
 import PriorityBadge from '@/components/playbooks/PriorityBadge';
 import type { Playbook } from '@/lib/types/playbook';
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function WorkflowCard({ playbook }: Props) {
+  const fr = useT();
   const navigate = useNavigate();
   const stepCount = playbook.steps?.length ?? 0;
 

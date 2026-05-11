@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { PlaybookDestination } from '@/lib/types/playbook-destination';
 
 interface Props {
@@ -43,6 +43,7 @@ export default function PlaybookDestinationsList({
   onTest,
   onViewLogs,
 }: Props) {
+  const fr = useT();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const t = fr.playbookDestinations;
 

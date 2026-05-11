@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useAccountNotes } from '@/hooks/useAccountNotes';
 import type { NoteType } from '@/lib/types/account-notes';
 
@@ -26,7 +26,7 @@ const NOTE_TYPE_LABELS: Record<NoteType, string> = {
   system: 'Système',
 };
 
-function relativeTime(dateStr: string): string {
+function relativeTime(dateStr: string, formatDate: (d: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
   if (minutes < 60) return `il y a ${Math.max(1, minutes)} min`;
@@ -34,7 +34,7 @@ function relativeTime(dateStr: string): string {
   if (hours < 24) return `il y a ${hours}h`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `il y a ${days}j`;
-  return fr.format.date(dateStr);
+  return formatDate(dateStr);
 }
 
 interface Props {
@@ -42,6 +42,7 @@ interface Props {
 }
 
 export default function AccountNotesSection({ accountId }: Props) {
+  const fr = useT();
   const [page, setPage] = useState(1);
   const { data, isLoading } = useAccountNotes(accountId, page);
 
@@ -105,7 +106,7 @@ export default function AccountNotesSection({ accountId }: Props) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <p className="text-[10px] text-muted-foreground mt-1 cursor-help w-fit">
-                          {relativeTime(note.created_at)}
+                          {relativeTime(note.created_at, fr.format.date)}
                         </p>
                       </TooltipTrigger>
                       <TooltipContent>

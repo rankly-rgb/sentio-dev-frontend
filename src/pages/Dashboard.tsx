@@ -7,7 +7,7 @@ import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useSegments } from '@/hooks/useSegments';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +41,7 @@ import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
 export default function Dashboard() {
+  const fr = useT();
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingFlowStatus();
 
@@ -338,6 +339,7 @@ function TopAccountsCard({
   borderClass: string;
   onAccountClick?: (id: string) => void;
 }) {
+  const fr = useT();
   return (
     <Card className={borderClass}>
       <CardHeader className="pb-2">
@@ -400,6 +402,7 @@ function ExpansionCard({
   topAccounts: TopAccountsResult | null;
   onAccountClick?: (id: string) => void;
 }) {
+  const fr = useT();
   const accounts = topAccounts?.expansion || [];
   const totalCount = topAccounts?.expansionTotalCount ?? 0;
   const totalMrrCents = topAccounts?.expansionTotalMrrCents ?? 0;

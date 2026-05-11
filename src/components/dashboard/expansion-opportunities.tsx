@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent } from '@/components/ui/card';
 import { Target } from 'lucide-react';
 
@@ -7,6 +7,7 @@ interface Props {
 }
 
 export function ExpansionOpportunities({ count }: Props) {
+  const fr = useT();
   if (count === 0) return null;
 
   return (

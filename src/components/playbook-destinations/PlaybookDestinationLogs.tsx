@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { usePlaybookExecutionLogs } from '@/hooks/usePlaybookDestinations';
 
 interface Props {
@@ -17,6 +17,7 @@ interface Props {
 }
 
 export default function PlaybookDestinationLogs({ destinationId }: Props) {
+  const fr = useT();
   const { data: logs, isLoading, isError } = usePlaybookExecutionLogs(destinationId);
   const t = fr.playbookDestinations.logs;
 

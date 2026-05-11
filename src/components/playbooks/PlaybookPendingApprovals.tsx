@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import {
   usePlaybookExecutions,
   useApproveExecution,
@@ -28,6 +28,7 @@ interface Props {
 
 /** Execution status badge with color */
 function ExecutionStatusBadge({ status }: { status: string }) {
+  const fr = useT();
   const label = fr.playbooks.executionStatusLabels[status] ?? status;
 
   const variantMap: Record<string, 'outline' | 'secondary' | 'default' | 'destructive'> = {
@@ -64,6 +65,7 @@ function PendingExecutionCard({
   execution: PlaybookExecutionRow;
   playbookId: string;
 }) {
+  const fr = useT();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -173,6 +175,7 @@ function PendingExecutionCard({
  * Also displays execution history as a simple table.
  */
 export default function PlaybookPendingApprovals({ playbookId, automationType, requiresApproval }: Props) {
+  const fr = useT();
   const { data: executions } = usePlaybookExecutions(playbookId);
 
   // Only show for semi_automated playbooks that require approval

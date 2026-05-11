@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { PRIORITY_CODES } from '@/lib/priority-labels';
 import type { PriorityCode } from '@/lib/priority-labels';
 import { SEGMENT_KEYS, SEGMENT_LABELS } from '@/lib/types/segments';
@@ -23,6 +23,7 @@ interface TodayFiltersProps {
 }
 
 export default function TodayFilters({ filters, onFiltersChange, availableCategories }: TodayFiltersProps) {
+  const fr = useT();
   const hasActiveFilters = !!(filters.priority || filters.segment || filters.category || (filters.mrrMin && filters.mrrMin > 0));
 
   const updateFilter = <K extends keyof TodayActionsFilters>(key: K, value: TodayActionsFilters[K]) => {

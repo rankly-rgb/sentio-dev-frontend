@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOpsSyncsExtended } from '@/hooks/useOpsSyncsExtended';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -60,15 +60,16 @@ function statusIcon(s: SyncStatus) {
   }
 }
 
-function formatDuration(s: number | null) {
+function formatDuration(s: number | null, seconds: string) {
   if (s === null) return '–';
-  if (s < 60) return `${s}${fr.syncs.seconds}`;
+  if (s < 60) return `${s}${seconds}`;
   return `${Math.floor(s / 60)}m${s % 60}s`;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────
 
 export default function SyncsExtendedTab() {
+  const fr = useT();
   const [filters, setFilters] = useState<SyncsExtendedFilters>({
     status: 'all',
     source: 'all',
@@ -192,7 +193,7 @@ export default function SyncsExtendedTab() {
                         : '–'}
                     </TableCell>
                     <TableCell className="text-right text-sm">
-                      {formatDuration(sync.duration_seconds)}
+                      {formatDuration(sync.duration_seconds, fr.syncs.seconds)}
                     </TableCell>
                     <TableCell className="text-right text-sm">
                       {sync.records_processed ?? '–'}

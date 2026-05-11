@@ -1,5 +1,5 @@
 import { AlertTriangle, XCircle, ExternalLink } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { cn } from '@/lib/utils';
 import type { TrialStatus } from '@/lib/types/trial';
 
@@ -8,6 +8,7 @@ interface TrialBannerProps {
 }
 
 export default function TrialBanner({ trial }: TrialBannerProps) {
+  const fr = useT();
   if (trial.plan_type !== 'free') return null;
 
   const expired = trial.is_trial_expired;

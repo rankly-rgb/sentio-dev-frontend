@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
 import { useOnboardingFlowStatus } from '@/hooks/useOnboardingFlow';
 
 export default function HubSpot() {
+  const fr = useT();
   const navigate = useNavigate();
   const { data: status, isPending: statusLoading } = useOnboardingFlowStatus();
 

@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 
 type SortOption = 'created_at' | 'priority' | 'confidence_score' | 'mrr_impact_cents';
@@ -12,29 +12,6 @@ interface InsightFiltersProps {
   onSortChange: (sort: SortOption) => void;
 }
 
-const TYPE_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: '', label: fr.common.all },
-  { value: 'churn_prediction', label: fr.insights.churnPrediction },
-  { value: 'expansion_opportunity', label: fr.insights.expansionOpportunity },
-  { value: 'renewal_alert', label: fr.insights.renewalAlert },
-  { value: 'payment_risk', label: fr.insights.paymentRisk },
-  { value: 'usage_drop', label: fr.insights.usageDecline },
-];
-
-const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'active', label: fr.insights.status.active },
-  { value: 'acknowledged', label: fr.insights.status.acknowledged },
-  { value: 'resolved', label: fr.insights.status.resolved },
-  { value: 'dismissed', label: fr.insights.status.dismissed },
-];
-
-const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
-  { value: 'created_at', label: fr.insights.sort.date },
-  { value: 'priority', label: fr.insights.sort.priority },
-  { value: 'confidence_score', label: fr.insights.sort.confidence },
-  { value: 'mrr_impact_cents', label: fr.insights.sort.mrrImpact },
-];
-
 export default function InsightFilters({
   insightType,
   onTypeChange,
@@ -43,6 +20,27 @@ export default function InsightFilters({
   sort,
   onSortChange,
 }: InsightFiltersProps) {
+  const fr = useT();
+  const TYPE_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: '', label: fr.common.all },
+    { value: 'churn_prediction', label: fr.insights.churnPrediction },
+    { value: 'expansion_opportunity', label: fr.insights.expansionOpportunity },
+    { value: 'renewal_alert', label: fr.insights.renewalAlert },
+    { value: 'payment_risk', label: fr.insights.paymentRisk },
+    { value: 'usage_drop', label: fr.insights.usageDecline },
+  ];
+  const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: 'active', label: fr.insights.status.active },
+    { value: 'acknowledged', label: fr.insights.status.acknowledged },
+    { value: 'resolved', label: fr.insights.status.resolved },
+    { value: 'dismissed', label: fr.insights.status.dismissed },
+  ];
+  const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
+    { value: 'created_at', label: fr.insights.sort.date },
+    { value: 'priority', label: fr.insights.sort.priority },
+    { value: 'confidence_score', label: fr.insights.sort.confidence },
+    { value: 'mrr_impact_cents', label: fr.insights.sort.mrrImpact },
+  ];
   return (
     <div className="space-y-3">
       {/* Type filter */}

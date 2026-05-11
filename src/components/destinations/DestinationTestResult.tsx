@@ -1,5 +1,5 @@
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { TestDestinationResponse } from '@/lib/types/webhook-destinations';
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default function DestinationTestResult({ isPending, data, error }: Props) {
+  const fr = useT();
   if (isPending) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2 p-2 rounded-md bg-muted/50">

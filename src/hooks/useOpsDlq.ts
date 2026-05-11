@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { WebhookDeadLetter, DlqFilters } from '@/types/ops';
 
 const PAGE_SIZE = 20;
@@ -35,6 +35,7 @@ async function fetchDlq(
 }
 
 export function useOpsDlq(filters: DlqFilters) {
+  const fr = useT();
   const qc = useQueryClient();
 
   const dlqQuery = useQuery({

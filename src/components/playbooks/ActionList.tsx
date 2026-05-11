@@ -10,7 +10,7 @@ import {
   ListChecks,
   Building2,
 } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { PlaybookAction, ActionType } from '@/lib/types/playbook';
 
 const actionIcons: Record<ActionType, React.ElementType> = {
@@ -64,6 +64,7 @@ interface Props {
 }
 
 export default function ActionList({ actions }: Props) {
+  const fr = useT();
   if (!actions || actions.length === 0) {
     return <p className="text-sm text-muted-foreground">Aucune action définie</p>;
   }

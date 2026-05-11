@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
 import { useOnboardingFlowStatus } from '@/hooks/useOnboardingFlow';
-
-const SYNC_STEPS = [
-  fr.onboarding.sync.step0,
-  fr.onboarding.sync.step1,
-  fr.onboarding.sync.step2,
-  fr.onboarding.sync.step3,
-];
 
 const STEP_THRESHOLDS_MS = [0, 3_000, 8_000, 15_000];
 const TIMEOUT_MS = 3 * 60_000;
 const POLL_INTERVAL_MS = 3_000;
 
 export default function SyncWait() {
+  const fr = useT();
+  const SYNC_STEPS = [
+    fr.onboarding.sync.step0,
+    fr.onboarding.sync.step1,
+    fr.onboarding.sync.step2,
+    fr.onboarding.sync.step3,
+  ];
   const navigate = useNavigate();
   const { data: status, refetch } = useOnboardingFlowStatus();
 

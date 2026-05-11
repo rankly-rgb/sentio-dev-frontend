@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { BenchmarkResponse, BenchmarkMetricKey, BenchmarkRating, MetricBenchmark, BenchmarkPeers, PeerPercentiles } from '@/lib/types/benchmark';
 
 const RATING_CLASSES: Record<BenchmarkRating, string> = {
@@ -9,29 +9,6 @@ const RATING_CLASSES: Record<BenchmarkRating, string> = {
   bon: 'bg-blue-100 text-blue-700',
   correct: 'bg-amber-100 text-amber-700',
   mediocre: 'bg-red-100 text-red-700',
-};
-
-const RATING_LABELS: Record<BenchmarkRating, string> = {
-  excellent: fr.benchmark.excellent,
-  bon: fr.benchmark.bon,
-  correct: fr.benchmark.correct,
-  mediocre: fr.benchmark.mediocre,
-};
-
-const METRIC_CONFIG: Record<BenchmarkMetricKey, { label: string; formatValue: (v: number) => string }> = {
-  nrr: {
-    label: fr.benchmark.nrr,
-    formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
-  },
-  churn_rate: {
-    label: fr.benchmark.churnRate,
-    formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
-  },
-  mrr_growth: {
-    label: fr.benchmark.mrrGrowth,
-    formatValue: (v) =>
-      `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
-  },
 };
 
 // --- Cursor position calculation ---
@@ -68,6 +45,7 @@ function computeCursorPosition(
 // --- Range bar ---
 
 function RangeBar({ benchmark }: { benchmark: MetricBenchmark }) {
+  const fr = useT();
   const { value, thresholds, higher_is_better } = benchmark;
   if (value === null) return null;
 
@@ -106,7 +84,7 @@ function RangeBar({ benchmark }: { benchmark: MetricBenchmark }) {
 
 // --- Peer comparison ---
 
-function peerPositionLabel(value: number, percentiles: PeerPercentiles, higherIsBetter: boolean): string {
+function peerPositionLabel(value: number, percentiles: PeerPercentiles, higherIsBetter: boolean, fr: ReturnType<typeof useT>): string {
   const { p50 } = percentiles;
   const aboveMedian = value > p50;
   const atMedian = value === p50;
@@ -128,6 +106,7 @@ function PeerComparison({
   higherIsBetter: boolean;
   peers: BenchmarkPeers;
 }) {
+  const fr = useT();
   if (!peers.available) {
     return (
       <p className="text-xs text-muted-foreground italic">
@@ -138,7 +117,7 @@ function PeerComparison({
 
   const percentiles = peers[metricKey];
   const { p25, p50, p75 } = percentiles;
-  const positionLabel = value !== null ? peerPositionLabel(value, percentiles, higherIsBetter) : '—';
+  const positionLabel = value !== null ? peerPositionLabel(value, percentiles, higherIsBetter, fr) : '—';
 
   return (
     <div className="space-y-1.5">
@@ -166,6 +145,28 @@ function BenchmarkCard({
   benchmark: MetricBenchmark;
   peers: BenchmarkPeers;
 }) {
+  const fr = useT();
+  const RATING_LABELS: Record<BenchmarkRating, string> = {
+    excellent: fr.benchmark.excellent,
+    bon: fr.benchmark.bon,
+    correct: fr.benchmark.correct,
+    mediocre: fr.benchmark.mediocre,
+  };
+  const METRIC_CONFIG: Record<BenchmarkMetricKey, { label: string; formatValue: (v: number) => string }> = {
+    nrr: {
+      label: fr.benchmark.nrr,
+      formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
+    },
+    churn_rate: {
+      label: fr.benchmark.churnRate,
+      formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
+    },
+    mrr_growth: {
+      label: fr.benchmark.mrrGrowth,
+      formatValue: (v) =>
+        `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
+    },
+  };
   const config = METRIC_CONFIG[metricKey];
   const { value, rating, sources, higher_is_better } = benchmark;
 
@@ -259,6 +260,7 @@ interface BenchmarkSectionProps {
 }
 
 export function BenchmarkSection({ data, isLoading, error }: BenchmarkSectionProps) {
+  const fr = useT();
   if (isLoading) return <BenchmarkSkeleton />;
 
   if (error) {

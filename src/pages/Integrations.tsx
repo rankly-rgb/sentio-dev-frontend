@@ -37,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import {
   useIntegrationStatus,
   useAuthorize,
@@ -62,6 +62,7 @@ function StripeCard({
   summary: IntegrationSummary | undefined;
   isLoading: boolean;
 }) {
+  const fr = useT();
   const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [connectionMethod, setConnectionMethod] = useState<'oauth' | 'api_key'>('oauth');
   const [apiKey, setApiKey] = useState('');
@@ -304,6 +305,7 @@ function StripeCard({
 
 /** HubSpot sync freshness badge */
 function HubSpotSyncBadge({ hubspotStale, lastHoursAgo }: { hubspotStale: boolean | null; lastHoursAgo: number | null }) {
+  const fr = useT();
   if (hubspotStale === null) return null;
   if (hubspotStale && lastHoursAgo === null) {
     return (
@@ -343,6 +345,7 @@ function HubSpotCard({
   hubspotStale: boolean | null;
   lastHubspotSyncHoursAgo: number | null;
 }) {
+  const fr = useT();
   const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [connectionMethod, setConnectionMethod] = useState<'oauth' | 'api_key'>('oauth');
   const [apiKey, setApiKey] = useState('');
@@ -604,6 +607,7 @@ function formatRelativeTime(dateStr: string): string {
 
 /** Usage tracker section for Integrations page */
 function UsageTrackerCard({ organization }: { organization: OrganizationDetail | null }) {
+  const fr = useT();
   const [copied, setCopied] = useState(false);
 
   const isConnected = organization?.usage_tracker_connected ?? false;
@@ -698,6 +702,7 @@ function SlackCard({
   summary: IntegrationSummary | undefined;
   isLoading: boolean;
 }) {
+  const fr = useT();
   const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [token, setToken] = useState('');
   const [showToken, setShowToken] = useState(false);
@@ -900,6 +905,7 @@ function UpcomingCard({ name, date }: { name: string; date: string }) {
 }
 
 export default function Integrations() {
+  const fr = useT();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: status, isLoading, refetch } = useIntegrationStatus();
   const { organization } = useOrganizationSettings();

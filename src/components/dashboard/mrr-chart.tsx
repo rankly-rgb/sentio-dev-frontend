@@ -10,19 +10,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { fetchMrrTrend } from '@/lib/queries/mrr';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { MrrTrendPoint, MrrTrendSummary } from '@/types/dashboard';
-
-const PERIODS = [
-  { label: fr.mrr.period7d, days: 7 },
-  { label: fr.mrr.period30d, days: 30 },
-  { label: fr.mrr.period90d, days: 90 },
-] as const;
 
 function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr);
@@ -66,6 +60,7 @@ interface ChartPoint {
 }
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: ChartPoint }> }) {
+  const fr = useT();
   if (!active || !payload || payload.length === 0) return null;
   const point = payload[0].payload;
   return (
@@ -78,6 +73,12 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
 }
 
 export function MrrChart() {
+  const fr = useT();
+  const PERIODS = [
+    { label: fr.mrr.period7d, days: 7 },
+    { label: fr.mrr.period30d, days: 30 },
+    { label: fr.mrr.period90d, days: 90 },
+  ] as const;
   const [periodDays, setPeriodDays] = useState(30);
 
   const { startDate, endDate } = useMemo(() => getDateRange(periodDays), [periodDays]);

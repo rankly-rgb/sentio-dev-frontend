@@ -1,11 +1,12 @@
 import { Badge } from '@/components/ui/badge';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 
 interface Props {
   delayDays: number;
 }
 
 export default function StepDelayBadge({ delayDays }: Props) {
+  const fr = useT();
   const colorClass = delayDays === 0
     ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
     : 'text-blue-600 bg-blue-50 border-blue-200';

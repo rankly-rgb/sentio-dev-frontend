@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import WebhookConfigSection from '@/components/settings/WebhookConfigSection';
 
 export default function Webhook() {
+  const fr = useT();
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center gap-4">

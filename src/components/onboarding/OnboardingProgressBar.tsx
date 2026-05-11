@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Circle } from 'lucide-react';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { OnboardingStatus } from '@/hooks/useOnboardingStatus';
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
 }
 
 export default function OnboardingProgressBar({ status }: Props) {
+  const fr = useT();
   const allConnected = status.stripe_connected && status.hubspot_connected;
   if (allConnected) return null;
 

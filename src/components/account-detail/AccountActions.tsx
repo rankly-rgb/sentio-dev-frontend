@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Eye } from 'lucide-react';
 import type { AccountDetail } from '@/lib/types/accounts';
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default function AccountActions({ account }: Props) {
+  const fr = useT();
   const stripeUrl = `https://dashboard.stripe.com/customers/${account.stripe_customer_id}`;
 
   return (

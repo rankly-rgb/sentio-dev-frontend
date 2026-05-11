@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import VariableInserter from './VariableInserter';
 import EmailPreview from './EmailPreview';
 
@@ -22,6 +22,7 @@ interface Props {
 }
 
 export default function EmailStepEditor({ config, onChange }: Props) {
+  const fr = useT();
   const [showPreview, setShowPreview] = useState(false);
 
   const update = (key: string, value: unknown) => onChange({ ...config, [key]: value });

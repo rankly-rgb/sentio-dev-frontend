@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Users, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useSuggestedPlaybook } from '@/hooks/useSuggestedPlaybook';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -19,6 +19,7 @@ function PlaybookIllustration() {
 }
 
 export default function SuggestedPlaybook() {
+  const fr = useT();
   const navigate = useNavigate();
   const { data, isLoading, error, ignore } = useSuggestedPlaybook();
 

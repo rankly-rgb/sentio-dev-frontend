@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type { AccountFlag } from '@/types/database';
 
 const FLAG_STYLES: Record<string, { bg: string; text: string }> = {
@@ -35,6 +35,7 @@ interface Props {
 }
 
 export default function AccountFlagsBadges({ flags, onRemove, isRemoving, compact }: Props) {
+  const fr = useT();
   if (!flags || flags.length === 0) return null;
 
   return (

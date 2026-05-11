@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import DestinationsList from '@/components/destinations/DestinationsList';
 import DestinationForm from '@/components/destinations/DestinationForm';
 import type { DestinationFormPayload } from '@/components/destinations/DestinationForm';
@@ -22,6 +22,7 @@ import {
 import type { OutboundWebhookDestination } from '@/lib/types/webhook-destinations';
 
 export default function WebhookDestinations() {
+  const fr = useT();
   const { data: destinations, isLoading, isError } = useDestinations();
   const createMutation = useCreateDestination();
   const updateMutation = useUpdateDestination();

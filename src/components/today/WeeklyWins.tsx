@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Trophy, ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import AccountName from '@/components/AccountName';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useWeeklyWins } from '@/hooks/useWeeklyWins';
 
 function ScoreArrow({ before, after }: { before: number; after: number }) {
@@ -28,6 +28,7 @@ function ScoreArrow({ before, after }: { before: number; after: number }) {
 }
 
 export default function WeeklyWins() {
+  const fr = useT();
   const { data, isLoading, error } = useWeeklyWins();
 
   if (error) return null;

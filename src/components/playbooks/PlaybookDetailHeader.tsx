@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
 import { useArchivePlaybook, useTransitionPlaybookStatus } from '@/hooks/usePlaybooks';
 import type { PlaybookDetailPlaybook } from '@/lib/types/playbook';
@@ -44,6 +44,7 @@ export default function PlaybookDetailHeader({
   onEdit,
   onExecute,
 }: Props) {
+  const fr = useT();
   const navigate = useNavigate();
   const transitionMutation = useTransitionPlaybookStatus();
   const archiveMutation = useArchivePlaybook();

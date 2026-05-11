@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreatePlaybook, usePlaybookTemplates } from '@/hooks/usePlaybooks';
 import TemplateSelector from '@/components/playbooks/TemplateSelector';
@@ -10,6 +10,7 @@ import PlaybookForm from '@/components/playbooks/PlaybookForm';
 import type { Playbook, CreatePlaybookPayload } from '@/lib/types/playbook';
 
 export default function PlaybookNew() {
+  const fr = useT();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();

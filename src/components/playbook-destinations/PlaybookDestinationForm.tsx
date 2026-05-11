@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import type {
   PlaybookDestination,
   PlaybookConnector,
@@ -84,6 +84,7 @@ function initState(dest?: PlaybookDestination): FormState {
 }
 
 export default function PlaybookDestinationForm({ destination, onSave, onCancel, isSaving }: Props) {
+  const fr = useT();
   const [form, setForm] = useState<FormState>(() => initState(destination));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const t = fr.playbookDestinations;

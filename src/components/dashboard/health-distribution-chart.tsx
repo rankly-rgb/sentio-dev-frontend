@@ -1,4 +1,4 @@
-import { fr } from '@/i18n/fr';
+import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { HealthDistribution } from '@/types/dashboard';
 
@@ -7,6 +7,7 @@ interface Props {
 }
 
 export function HealthDistributionChart({ distribution }: Props) {
+  const fr = useT();
   const segments = [
     { label: fr.segments.champions, count: distribution.champions, color: 'bg-success' },
     { label: fr.segments.expanding, count: distribution.expanding, color: 'bg-primary' },
