@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
+import { supabase } from '@/lib/supabase';
+import { useCreateOrganization } from '@/hooks/useOnboardingV2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 export default function Signup() {
   const fr = useT();
@@ -15,8 +17,9 @@ export default function Signup() {
   const [errors, setErrors] = useState<{ email?: string; password?: string; company?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
 
-  const { signUp, user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const createOrg = useCreateOrganization();
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -46,12 +49,36 @@ export default function Signup() {
     setLoading(true);
     setErrors({});
 
-    const result = await signUp(email, password, company.trim());
-    if (result.error) {
-      setErrors({ general: result.error });
+    const emailValue = email;
+    const companyValue = company.trim();
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email: emailValue, password });
+
+    if (authError) {
+      setErrors({ general: authError.message });
       setLoading(false);
-    } else {
-      navigate('/onboarding/stripe');
+      return;
+    }
+
+    // Clear email from state immediately after use (Zero-PII)
+    setEmail('');
+
+    const userId = authData.user?.id;
+    const accessToken = authData.session?.access_token;
+
+    if (!userId || !accessToken) {
+      // Email confirmation required — user must confirm before continuing
+      setErrors({ general: "Vérifiez vos emails pour confirmer votre compte avant de continuer." });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken });
+      navigate('/onboarding');
+    } catch (err) {
+      setErrors({ general: err instanceof Error ? err.message : "Erreur lors de la création de l'organisation" });
+      setLoading(false);
     }
   };
 
@@ -66,10 +93,8 @@ export default function Signup() {
             </div>
             <span className="text-xl font-bold text-[#111827]">Sentio AI</span>
           </div>
-          <h1 className="text-2xl font-serif font-bold text-[#111827]">
-            {fr.onboarding.signup.title}
-          </h1>
-          <p className="mt-1 text-sm text-[#6b7280]">{fr.onboarding.signup.subtitle}</p>
+          <h1 className="text-2xl font-serif font-bold text-[#111827]">Commencez gratuitement</h1>
+          <p className="mt-1 text-sm text-[#6b7280]">Aucune carte bancaire · RGPD by design · Résultats en 5 minutes</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -80,13 +105,11 @@ export default function Signup() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder={fr.onboarding.signup.emailPlaceholder}
+              placeholder="Email professionnel"
               autoComplete="email"
               aria-invalid={!!errors.email}
             />
-            {errors.email && (
-              <p className="text-xs text-[#ef4444]">{errors.email}</p>
-            )}
+            {errors.email && <p className="text-xs text-[#ef4444]">{errors.email}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -96,13 +119,11 @@ export default function Signup() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder={fr.onboarding.signup.passwordPlaceholder}
+              placeholder="Mot de passe (8 car. min.)"
               autoComplete="new-password"
               aria-invalid={!!errors.password}
             />
-            {errors.password && (
-              <p className="text-xs text-[#ef4444]">{errors.password}</p>
-            )}
+            {errors.password && <p className="text-xs text-[#ef4444]">{errors.password}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -112,25 +133,21 @@ export default function Signup() {
               type="text"
               value={company}
               onChange={e => setCompany(e.target.value)}
-              placeholder={fr.onboarding.signup.companyPlaceholder}
+              placeholder="Nom de votre entreprise"
               autoComplete="organization"
               aria-invalid={!!errors.company}
             />
-            {errors.company && (
-              <p className="text-xs text-[#ef4444]">{errors.company}</p>
-            )}
+            {errors.company && <p className="text-xs text-[#ef4444]">{errors.company}</p>}
           </div>
 
-          {errors.general && (
-            <p className="text-sm text-[#ef4444]">{errors.general}</p>
-          )}
+          {errors.general && <p className="text-sm text-[#ef4444]">{errors.general}</p>}
 
           <Button
             type="submit"
             className="w-full bg-[#3b5bdb] hover:bg-[#3451c7] text-white"
             disabled={loading}
           >
-            {loading ? fr.onboarding.signup.loading : fr.onboarding.signup.cta}
+            {loading ? fr.onboarding.signup.loading : "Créer mon compte →"}
           </Button>
         </form>
 
@@ -142,8 +159,8 @@ export default function Signup() {
         </p>
 
         <div className="mt-6 pt-5 border-t border-[#e5e7eb] flex items-center justify-center gap-1.5 text-xs text-[#6b7280]">
-          <Lock className="h-3 w-3" />
-          <span>{fr.onboarding.signup.zeroPii}</span>
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+          <span>Zero-PII · aucune donnée personnelle stockée</span>
         </div>
       </div>
     </div>

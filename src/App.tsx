@@ -41,6 +41,7 @@ import Ops from '@/pages/admin/Ops';
 
 // Onboarding
 import Signup from '@/pages/onboarding/Signup';
+import OnboardingV2 from '@/pages/onboarding/OnboardingV2';
 import StripeConnect from '@/pages/onboarding/StripeConnect';
 import SyncWait from '@/pages/onboarding/SyncWait';
 import HubSpot from '@/pages/onboarding/HubSpot';
@@ -109,7 +110,10 @@ export default function App() {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
-                {/* Flux onboarding (authentifié, sans AppLayout) */}
+                {/* Flux onboarding V2 (authentifié, sans AppLayout) */}
+                <Route path="/onboarding" element={<ProtectedRoute><OnboardingV2 /></ProtectedRoute>} />
+
+                {/* Flux onboarding V1 (legacy, sans AppLayout) */}
                 <Route path="/onboarding/stripe" element={<ProtectedRoute><StripeConnect /></ProtectedRoute>} />
                 <Route path="/onboarding/sync" element={<ProtectedRoute><SyncWait /></ProtectedRoute>} />
                 <Route path="/onboarding/hubspot" element={<ProtectedRoute><HubSpot /></ProtectedRoute>} />

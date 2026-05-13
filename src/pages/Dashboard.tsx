@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useOnboardingFlowStatus } from '@/hooks/useOnboardingFlow';
+import { useOnboardingStatusV2 } from '@/hooks/useOnboardingV2';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
@@ -30,6 +31,8 @@ import {
   ChevronRight,
   AlertTriangle,
   TrendingUp,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
@@ -40,10 +43,122 @@ import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
+const STEP_ORDER = ['promise', 'stripe', 'revelation', 'invested', 'hubspot', 'completed'] as const;
+function stepIndex(step: string): number {
+  return STEP_ORDER.indexOf(step as (typeof STEP_ORDER)[number]);
+}
+
+// ── Demo banner ───────────────────────────────────────────────────
+function DemoBanner() {
+  const fr = useT();
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm text-amber-800">
+      <span>{fr.onboardingV2.dashboard.demoBanner}</span>
+      <Link to="/onboarding?resume=stripe" className="font-medium underline underline-offset-2 whitespace-nowrap">
+        {fr.onboardingV2.dashboard.demoConnectStripe}
+      </Link>
+    </div>
+  );
+}
+
+// ── Setup progression widget ──────────────────────────────────────
+function SetupWidget({ onboardingStep }: { onboardingStep: string }) {
+  const fr = useT();
+  const [expanded, setExpanded] = useState(false);
+  const idx = stepIndex(onboardingStep);
+
+  const stripeConnected = idx > 1;
+  const personalizationDone = idx > 3;
+  const progressPct = Math.round((idx / (STEP_ORDER.length - 1)) * 100);
+
+  return (
+    <div className="fixed bottom-6 right-6 z-40 w-52 shadow-lg rounded-xl overflow-hidden border border-gray-200 bg-white">
+      <button
+        type="button"
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-white hover:bg-gray-50 transition-colors"
+      >
+        <span className="text-xs font-medium text-gray-700">{fr.onboardingV2.dashboard.setupTitle} {progressPct}%</span>
+        {expanded ? <ChevronDown className="h-3.5 w-3.5 text-gray-400" /> : <ChevronUp className="h-3.5 w-3.5 text-gray-400" />}
+      </button>
+      <div className="h-1 bg-gray-100">
+        <div className="h-full bg-[#3b5bdb] transition-all" style={{ width: `${progressPct}%` }} />
+      </div>
+      {expanded && (
+        <div className="p-3 space-y-2 text-xs border-t border-gray-100">
+          {[
+            { label: fr.onboardingV2.dashboard.setupStep1, done: true },
+            {
+              label: stripeConnected ? fr.onboardingV2.dashboard.setupStep2Done : fr.onboardingV2.dashboard.setupStep2Todo,
+              done: stripeConnected,
+              href: stripeConnected ? undefined : '/onboarding',
+            },
+            {
+              label: personalizationDone ? fr.onboardingV2.dashboard.setupStep3Done : fr.onboardingV2.dashboard.setupStep3Todo,
+              done: personalizationDone,
+              href: personalizationDone ? undefined : '/onboarding',
+            },
+            {
+              label: fr.onboardingV2.dashboard.setupStep4Todo,
+              done: false,
+              href: '/settings/integrations',
+            },
+          ].map(({ label, done, href }, i) => (
+            <div key={i} className={`flex items-center gap-2 ${done ? 'text-gray-500' : 'text-[#3b5bdb]'}`}>
+              <CheckCircle className={`h-3.5 w-3.5 flex-shrink-0 ${done ? 'text-emerald-500' : 'text-gray-200'}`} />
+              {href && !done ? (
+                <Link to={href} className="hover:underline truncate">{label}</Link>
+              ) : (
+                <span className="truncate">{label}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Re-visit tooltip ──────────────────────────────────────────────
+function RevisitTooltip() {
+  const fr = useT();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const already = localStorage.getItem('sentio_v2_revisit_shown');
+    if (already) return;
+
+    const isSecondSession = localStorage.getItem('sentio_v2_visited');
+    if (!isSecondSession) {
+      localStorage.setItem('sentio_v2_visited', '1');
+      return;
+    }
+
+    const timer = setTimeout(() => setVisible(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    localStorage.setItem('sentio_v2_revisit_shown', '1');
+    const dismiss = setTimeout(() => setVisible(false), 6000);
+    return () => clearTimeout(dismiss);
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed bottom-6 left-6 z-40 max-w-xs bg-[#1a1f3e] text-white text-sm rounded-xl px-4 py-3 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+      {fr.onboardingV2.dashboard.revisitTooltip}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const fr = useT();
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingFlowStatus();
+  const { data: v2Status } = useOnboardingStatusV2();
 
   useEffect(() => {
     if (
@@ -112,10 +227,23 @@ export default function Dashboard() {
 
   const recentSyncs = (syncs || []).slice(0, 3);
 
+  const showDemoBanner = v2Status?.has_demo_data === true && v2Status?.onboarding_completed === false;
+  const showSetupWidget = v2Status?.onboarding_completed === false;
+  const showRevisitTooltip = v2Status?.first_revelation_done === true;
+
   return (
     <div className="space-y-6 p-6">
+      {/* V2 demo banner */}
+      {showDemoBanner && <DemoBanner />}
+
       {/* Tracker banner */}
       {!trackerConnected && <TrackerBanner />}
+
+      {/* V2 setup progression widget */}
+      {showSetupWidget && v2Status && <SetupWidget onboardingStep={v2Status.onboarding_step} />}
+
+      {/* V2 re-visit tooltip */}
+      {showRevisitTooltip && <RevisitTooltip />}
 
       {/* Header + actions */}
       <div className="flex items-center justify-between flex-wrap gap-3">
