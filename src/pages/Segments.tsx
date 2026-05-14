@@ -31,7 +31,7 @@ export default function Segments() {
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold">{segment.count}</span>
-                    <span className="text-sm text-muted-foreground">comptes</span>
+                    <span className="text-sm text-muted-foreground">{fr.segmentDetail.accountCount}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">MRR</span>

@@ -20,7 +20,7 @@ export default function ConditionDisplay({ conditionGroup }: Props) {
     return `${field} ${op} ${formatValue(c.value)}`;
   }
   if (!conditionGroup || !conditionGroup.conditions || conditionGroup.conditions.length === 0) {
-    return <p className="text-sm text-muted-foreground">Aucune condition définie</p>;
+    return <p className="text-sm text-muted-foreground">{fr.playbooks.noConditionsMsg}</p>;
   }
 
   return (

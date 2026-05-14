@@ -66,7 +66,7 @@ interface Props {
 export default function ActionList({ actions }: Props) {
   const fr = useT();
   if (!actions || actions.length === 0) {
-    return <p className="text-sm text-muted-foreground">Aucune action définie</p>;
+    return <p className="text-sm text-muted-foreground">{fr.playbooks.noActionsMsg}</p>;
   }
 
   const sorted = [...actions].sort((a, b) => a.order - b.order);

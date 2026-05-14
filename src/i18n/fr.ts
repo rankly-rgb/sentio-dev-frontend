@@ -439,6 +439,18 @@ export const fr = {
       cancelled: "Annulé",
     } as Record<string, string>,
     executionHistory: "Historique des exécutions",
+    noActionsMsg: "Aucune action définie",
+    noConditionsMsg: "Aucune condition définie",
+    execTable: {
+      status: "Statut",
+      account: "Compte",
+      actions: "Actions",
+      start: "Début",
+      end: "Fin",
+      error: "Erreur",
+    },
+    actionsSummary: "Actions",
+    stepsCompleted: (completed: number, steps: number) => `${completed}/${steps} étapes`,
     // KPIs
     kpi: {
       eligible: "Éligibles",

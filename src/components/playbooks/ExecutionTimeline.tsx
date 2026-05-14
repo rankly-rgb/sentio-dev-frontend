@@ -114,12 +114,12 @@ export default function ExecutionTimeline({ executions, isLoading }: Props) {
       <TableHeader>
         <TableRow>
           <TableHead className="w-8" />
-          <TableHead>Statut</TableHead>
-          <TableHead>Compte</TableHead>
-          <TableHead>Actions</TableHead>
-          <TableHead>Début</TableHead>
-          <TableHead>Fin</TableHead>
-          <TableHead>Erreur</TableHead>
+          <TableHead>{fr.playbooks.execTable.status}</TableHead>
+          <TableHead>{fr.playbooks.execTable.account}</TableHead>
+          <TableHead>{fr.playbooks.execTable.actions}</TableHead>
+          <TableHead>{fr.playbooks.execTable.start}</TableHead>
+          <TableHead>{fr.playbooks.execTable.end}</TableHead>
+          <TableHead>{fr.playbooks.execTable.error}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

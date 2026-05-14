@@ -86,7 +86,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Session expirée, veuillez vous reconnecter');
+        throw new Error(fr.auth.sessionExpired);
       }
       const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
       const res = await fetch(

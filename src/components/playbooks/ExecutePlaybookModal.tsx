@@ -142,7 +142,7 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
             {/* Actions summary (webhook, slack, hubspot, email) */}
             {result.actions_summary && result.actions_summary.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium">Actions :</p>
+                <p className="text-sm font-medium">{fr.playbooks.actionsSummary}</p>
                 <div className="space-y-1.5">
                   {result.actions_summary.map((action, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
@@ -184,14 +184,14 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
                     )}
                     <span className="font-mono">{r.account_id.slice(0, 8)}…</span>
                     <span className="text-muted-foreground">
-                      {r.completed}/{r.steps} étapes
+                      {fr.playbooks.stepsCompleted(r.completed, r.steps)}
                     </span>
                   </div>
                 ))}
               </div>
             )}
             <DialogFooter>
-              <Button onClick={handleClose}>Fermer</Button>
+              <Button onClick={handleClose}>{fr.common.close}</Button>
             </DialogFooter>
           </div>
         ) : (

@@ -419,6 +419,18 @@ export const en: Translations = {
       cancelled: 'Cancelled',
     } as Record<string, string>,
     executionHistory: 'Execution history',
+    noActionsMsg: 'No actions defined',
+    noConditionsMsg: 'No conditions defined',
+    execTable: {
+      status: 'Status',
+      account: 'Account',
+      actions: 'Actions',
+      start: 'Start',
+      end: 'End',
+      error: 'Error',
+    },
+    actionsSummary: 'Actions',
+    stepsCompleted: (completed: number, steps: number) => `${completed}/${steps} steps`,
     kpi: {
       eligible: 'Eligible',
       targeted: 'Targeted',
