@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Plus } from 'lucide-react';
+import { BookOpen, Plus, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,10 +13,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useT } from '@/lib/i18n/useT';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 import { usePlaybooks, useWorkflows } from '@/hooks/usePlaybooks';
 import PlaybookCard from '@/components/playbooks/PlaybookCard';
 import WorkflowCard from '@/components/workflows/WorkflowCard';
 import SuggestedPlaybook from '@/components/playbooks/SuggestedPlaybook';
+import { PlaybookTranslationsDialog } from '@/components/playbooks/PlaybookTranslationsDialog';
 import type { Playbook, PlaybookStatus, PlaybookType, TemplateCategory, PlaybookFilters } from '@/lib/types/playbook';
 
 const STATUSES: PlaybookStatus[] = ['draft', 'active', 'paused', 'completed', 'archived'];
@@ -31,8 +33,10 @@ const PER_PAGE = 12;
 
 export default function Playbooks() {
   const fr = useT();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'playbooks' | 'workflows'>('playbooks');
+  const [translationsOpen, setTranslationsOpen] = useState(false);
 
   // Playbooks filters
   const [pbFilterStatus, setPbFilterStatus] = useState<string>('all');
@@ -90,11 +94,21 @@ export default function Playbooks() {
           <BookOpen className="h-7 w-7 text-primary/60" />
           <h1 className="text-2xl font-bold">{fr.playbooks.title}</h1>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          {activeTab === 'workflows' ? fr.workflows.create : fr.playbooks.create}
-        </Button>
+        <div className="flex items-center gap-2">
+          {language === 'en' && (
+            <Button variant="outline" size="sm" onClick={() => setTranslationsOpen(true)}>
+              <Languages className="h-4 w-4 mr-2" />
+              {fr.playbooks.manageTranslations}
+            </Button>
+          )}
+          <Button onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            {activeTab === 'workflows' ? fr.workflows.create : fr.playbooks.create}
+          </Button>
+        </div>
       </div>
+
+      <PlaybookTranslationsDialog open={translationsOpen} onClose={() => setTranslationsOpen(false)} />
 
       {/* Suggested playbook */}
       <SuggestedPlaybook />
