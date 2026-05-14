@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { translations, type Language } from './translations';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,57 +38,54 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // Read localStorage once on mount — used as placeholder while server responds
-  const storedLang = useMemo(() => readStoredLang(), []);
+  // useState is the source of truth for the UI — always reactive, never blocked by network
+  const [language, setLang] = useState<Language>(() => readStoredLang() ?? 'fr');
 
+  // Server query: cross-device sync only, fires after auth is ready
   const { data: serverLang } = useQuery<Language>({
     queryKey: LANGUAGE_QUERY_KEY,
     queryFn: async () => {
       const res = await fetchWithUserJwt<OrgSettingsResponse>('org-settings');
       return res.data.language;
     },
-    enabled: !!user,          // Never fire before the user is authenticated
-    placeholderData: storedLang, // Show stored preference instantly while fetching
+    enabled: !!user,
     staleTime: Infinity,
     retry: false,
   });
 
-  // When server confirms a language, persist it so the next session loads instantly
+  // When server responds with a confirmed preference, adopt it (cross-device sync)
   useEffect(() => {
-    if (serverLang) writeStoredLang(serverLang);
+    if (serverLang) {
+      setLang(serverLang);
+      writeStoredLang(serverLang);
+    }
   }, [serverLang]);
 
-  // Resolution order: server (confirmed) → localStorage snapshot → safe default
-  const language: Language = serverLang ?? storedLang ?? 'fr';
-
+  // Best-effort server PATCH — failure is silent, local state is already applied
   const { mutate } = useMutation({
     mutationFn: (lang: Language) =>
       fetchWithUserJwt<{ success: boolean }>('org-settings', {
         method: 'PATCH',
         body: { language: lang },
       }),
-    onMutate: async (lang) => {
-      // Cancel in-flight language queries so they don't overwrite the optimistic value
-      await queryClient.cancelQueries({ queryKey: LANGUAGE_QUERY_KEY });
-      // Snapshot the current cache value for rollback on error
-      const previous = queryClient.getQueryData<Language>(LANGUAGE_QUERY_KEY);
-      // Apply optimistic update to both cache and localStorage immediately
+    onSuccess: (_, lang) => {
+      // Confirm the server accepted it — update cache so cross-device sync is correct
       queryClient.setQueryData<Language>(LANGUAGE_QUERY_KEY, lang);
-      writeStoredLang(lang);
-      return { previous };
-    },
-    onError: (err, _lang, ctx) => {
-      // Determine what to roll back to: previous cache value, or last known stored lang
-      const revert: Language = ctx?.previous ?? storedLang ?? 'fr';
-      queryClient.setQueryData<Language>(LANGUAGE_QUERY_KEY, revert);
-      writeStoredLang(revert);
-      // Show exact backend error to help diagnose
-      const detail = err instanceof Error ? err.message : String(err);
-      toast.error(`[lang toggle] ${detail}`);
     },
   });
 
-  const setLanguage = useCallback((lang: Language) => mutate(lang), [mutate]);
+  const setLanguage = useCallback(
+    (lang: Language) => {
+      // 1. Update UI immediately — no network dependency
+      setLang(lang);
+      writeStoredLang(lang);
+      // 2. Cancel any in-flight language queries to avoid overwriting our choice
+      queryClient.cancelQueries({ queryKey: LANGUAGE_QUERY_KEY }).catch(() => null);
+      // 3. Fire PATCH best-effort (needed for cross-device persistence)
+      mutate(lang);
+    },
+    [mutate, queryClient],
+  );
 
   const t = useCallback(
     (key: string): string => translations[language][key] ?? translations['fr'][key] ?? key,
