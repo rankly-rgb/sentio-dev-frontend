@@ -78,17 +78,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       writeStoredLang(lang);
       return { previous };
     },
-    onError: (_err, _lang, ctx) => {
+    onError: (err, _lang, ctx) => {
       // Determine what to roll back to: previous cache value, or last known stored lang
       const revert: Language = ctx?.previous ?? storedLang ?? 'fr';
       queryClient.setQueryData<Language>(LANGUAGE_QUERY_KEY, revert);
       writeStoredLang(revert);
-      // Notify the user that the preference wasn't saved to the server
-      toast.error(
-        language === 'en'
-          ? "Language preference couldn't be saved to your account"
-          : "La préférence de langue n'a pas pu être sauvegardée",
-      );
+      // Show exact backend error to help diagnose
+      const detail = err instanceof Error ? err.message : String(err);
+      toast.error(`[lang toggle] ${detail}`);
     },
   });
 
