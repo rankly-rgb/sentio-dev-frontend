@@ -102,6 +102,7 @@ export const en: Translations = {
 
   segments: {
     title: 'Customer segments',
+    distribution: 'Segment breakdown',
     champions: 'Champions',
     expanding: 'Expanding',
     stable: 'Stable',

@@ -105,6 +105,7 @@ export const fr = {
   // Segments (section 4.3)
   segments: {
     title: "Segments clients",
+    distribution: "Répartition des segments",
     champions: "Champions",
     expanding: "En expansion",
     stable: "Stables",

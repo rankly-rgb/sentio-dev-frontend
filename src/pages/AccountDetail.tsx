@@ -28,7 +28,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import type { ScoreHistoryItem } from '@/lib/types/accounts';
-import { SEGMENT_COLORS, SEGMENT_LABELS } from '@/lib/types/segments';
+import { SEGMENT_COLORS } from '@/lib/types/segments';
+import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -132,6 +133,7 @@ function ScoreBreakdown({ score, label, weight, healthScore }: {
 
 export default function AccountDetail() {
   const fr = useT();
+  const segmentLabels = useSegmentLabels();
   const { accountId } = useParams();
   const navigate = useNavigate();
   const { data: account, isLoading, error } = useAccountDetail(accountId);
@@ -196,7 +198,7 @@ export default function AccountDetail() {
               {/* Segment badge */}
               {primarySegment && (
                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${SEGMENT_COLORS[primarySegment.segment_type]?.text ?? 'text-gray-700'} ${SEGMENT_COLORS[primarySegment.segment_type]?.bg ?? 'bg-gray-100'}`}>
-                  {SEGMENT_LABELS[primarySegment.segment_type] ?? primarySegment.segment_name}
+                  {segmentLabels[primarySegment.segment_type] ?? primarySegment.segment_name}
                 </span>
               )}
               {/* Subscription status */}
@@ -428,7 +430,7 @@ export default function AccountDetail() {
                           key={seg.segment_id}
                           className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${SEGMENT_COLORS[st]?.text ?? 'text-gray-700'} ${SEGMENT_COLORS[st]?.bg ?? 'bg-gray-100'}`}
                         >
-                          {SEGMENT_LABELS[st] ?? seg.account_segments.segment_name}
+                          {segmentLabels[st] ?? seg.account_segments.segment_name}
                         </span>
                       );
                     })}

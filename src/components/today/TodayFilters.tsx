@@ -9,9 +9,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useT } from '@/lib/i18n/useT';
+import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { PRIORITY_CODES } from '@/lib/priority-labels';
 import type { PriorityCode } from '@/lib/priority-labels';
-import { SEGMENT_KEYS, SEGMENT_LABELS } from '@/lib/types/segments';
+import { SEGMENT_KEYS } from '@/lib/types/segments';
 import { categoryLabel } from '@/lib/types/today-actions';
 import type { TodayActionsFilters } from '@/lib/types/today-actions';
 import type { TemplateCategory } from '@/lib/types/playbook';
@@ -24,6 +25,7 @@ interface TodayFiltersProps {
 
 export default function TodayFilters({ filters, onFiltersChange, availableCategories }: TodayFiltersProps) {
   const fr = useT();
+  const segmentLabels = useSegmentLabels();
   const hasActiveFilters = !!(filters.priority || filters.segment || filters.category || (filters.mrrMin && filters.mrrMin > 0));
 
   const updateFilter = <K extends keyof TodayActionsFilters>(key: K, value: TodayActionsFilters[K]) => {
@@ -67,7 +69,7 @@ export default function TodayFilters({ filters, onFiltersChange, availableCatego
         <SelectContent>
           <SelectItem value="__all__">{fr.todayActions.allSegments}</SelectItem>
           {SEGMENT_KEYS.map((key) => (
-            <SelectItem key={key} value={key}>{SEGMENT_LABELS[key]}</SelectItem>
+            <SelectItem key={key} value={key}>{segmentLabels[key]}</SelectItem>
           ))}
         </SelectContent>
       </Select>

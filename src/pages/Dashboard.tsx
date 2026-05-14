@@ -38,7 +38,8 @@ import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
 import { BenchmarkSection } from '@/components/dashboard/BenchmarkSection';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
-import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
+import { SEGMENT_COLORS } from '@/lib/types/segments';
+import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
@@ -156,6 +157,7 @@ function RevisitTooltip() {
 
 export default function Dashboard() {
   const fr = useT();
+  const segmentLabels = useSegmentLabels();
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingFlowStatus();
   const { data: v2Status } = useOnboardingStatusV2();
@@ -351,7 +353,7 @@ export default function Dashboard() {
               <Link key={key} to={`/segments/${key}`}>
                 <Card className={`hover:shadow-md transition-shadow cursor-pointer border ${colors.bg}`}>
                   <CardContent className="p-4">
-                    <p className={`text-xs font-medium ${colors.text}`}>{SEGMENT_LABELS[key]}</p>
+                    <p className={`text-xs font-medium ${colors.text}`}>{segmentLabels[key]}</p>
                     <p className={`text-2xl font-bold ${colors.text}`}>{fr.format.number(count)}</p>
                     <p className="text-xs text-muted-foreground">{fr.segmentDetail.accountCount}</p>
                   </CardContent>

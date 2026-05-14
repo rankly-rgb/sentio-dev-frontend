@@ -4,7 +4,8 @@ import { Pencil, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import { useT } from '@/lib/i18n/useT';
-import { SEGMENT_COLORS, SEGMENT_LABELS } from '@/lib/types/segments';
+import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
+import { SEGMENT_COLORS } from '@/lib/types/segments';
 import { monthsSince } from '@/lib/account-detail-helpers';
 import { useUpdateDisplayName } from '@/hooks/useUpdateDisplayName';
 import type { AccountDetail } from '@/lib/types/accounts';
@@ -21,6 +22,7 @@ const PLAN_COLORS: Record<string, string> = {
 
 export default function AccountHeader({ account }: Props) {
   const fr = useT();
+  const segmentLabels = useSegmentLabels();
   const primarySegment = account.segments[0]?.account_segments;
   const updateDisplayName = useUpdateDisplayName();
 
@@ -86,7 +88,7 @@ export default function AccountHeader({ account }: Props) {
               SEGMENT_COLORS[primarySegment.segment_type]?.text ?? 'text-gray-700'
             } ${SEGMENT_COLORS[primarySegment.segment_type]?.bg ?? 'bg-gray-100'}`}
           >
-            {SEGMENT_LABELS[primarySegment.segment_type] ?? primarySegment.segment_name}
+            {segmentLabels[primarySegment.segment_type] ?? primarySegment.segment_name}
           </span>
         )}
       </div>

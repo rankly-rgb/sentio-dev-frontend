@@ -15,9 +15,10 @@ import {
 } from '@/components/ui/breadcrumb';
 import ScoreBadge from '@/components/ScoreBadge';
 import { useT } from '@/lib/i18n/useT';
+import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { supabase } from '@/lib/supabase';
 import type { SegmentType, SegmentAccount } from '@/lib/types/segments';
-import { SEGMENT_LABELS, SEGMENT_COLORS } from '@/lib/types/segments';
+import { SEGMENT_COLORS } from '@/lib/types/segments';
 
 type SortField = 'mrr_cents' | 'health_score' | 'churn_risk_score' | 'expansion_score' | 'plan_tier';
 type SortOrder = 'asc' | 'desc';
@@ -38,6 +39,7 @@ function comparePlanTier(a: string | null, b: string | null): number {
 
 export default function SegmentDetailView({ segment, accounts, totalFetched, onAccountClick }: SegmentDetailViewProps) {
   const fr = useT();
+  const segmentLabels = useSegmentLabels();
   const [sortField, setSortField] = useState<SortField>('mrr_cents');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [page, setPage] = useState(0);
@@ -148,13 +150,13 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>{SEGMENT_LABELS[segment]}</BreadcrumbPage>
+                <BreadcrumbPage>{segmentLabels[segment]}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">{SEGMENT_LABELS[segment]}</h1>
-            <Badge className={`${colors.bg} ${colors.text} border-0`}>{SEGMENT_LABELS[segment]}</Badge>
+            <h1 className="text-2xl font-bold">{segmentLabels[segment]}</h1>
+            <Badge className={`${colors.bg} ${colors.text} border-0`}>{segmentLabels[segment]}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             {accounts.length} {fr.segmentDetail.accountCount} · MRR {fr.format.currency(totalMrr)} · {fr.segmentDetail.avgHealth} {avgHealth !== null ? avgHealth : '—'}

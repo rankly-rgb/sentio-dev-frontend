@@ -22,7 +22,7 @@ export function HealthDistributionChart({ distribution }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Répartition des segments</CardTitle>
+        <CardTitle>{fr.segments.distribution}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Barre empilée */}

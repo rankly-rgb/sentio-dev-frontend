@@ -2,12 +2,14 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useSegments } from '@/hooks/useSegments';
 import { useT } from '@/lib/i18n/useT';
+import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScoreBadge from '@/components/ScoreBadge';
 
 export default function Segments() {
   const fr = useT();
+  const segmentLabels = useSegmentLabels();
   const { data: segments, isLoading, error } = useSegments();
 
   return (
@@ -26,7 +28,7 @@ export default function Segments() {
             <Link key={segment.name} to={`/segments/${segment.name}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{segment.label}</CardTitle>
+                  <CardTitle className="text-base">{segmentLabels[segment.name]}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between">
