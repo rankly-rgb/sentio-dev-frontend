@@ -328,8 +328,13 @@ export const fr = {
     form: {
       title: "Titre",
       titlePlaceholder: "Ex : Prévention churn comptes critiques",
+      titleEn: "Titre (EN)",
+      titleEnPlaceholder: "English title…",
       description: "Description",
       descriptionPlaceholder: "Décrivez l'objectif de ce playbook…",
+      descriptionEn: "Description (EN)",
+      descriptionEnPlaceholder: "English description…",
+      translationSection: "Traduction anglaise",
       type: "Type",
       category: "Catégorie",
       priority: "Priorité",

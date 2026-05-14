@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useT } from '@/lib/i18n/useT';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 import PlaybookStatusBadge from '@/components/playbooks/PlaybookStatusBadge';
 import { useArchivePlaybook, useTransitionPlaybookStatus } from '@/hooks/usePlaybooks';
 import type { PlaybookDetailPlaybook } from '@/lib/types/playbook';
@@ -45,6 +46,7 @@ export default function PlaybookDetailHeader({
   onExecute,
 }: Props) {
   const fr = useT();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const transitionMutation = useTransitionPlaybookStatus();
   const archiveMutation = useArchivePlaybook();
@@ -99,7 +101,7 @@ export default function PlaybookDetailHeader({
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold">{playbook.name}</h1>
+            <h1 className="text-2xl font-bold">{language === 'en' ? (playbook.name_en || playbook.name) : playbook.name}</h1>
             <PlaybookStatusBadge status={playbook.status} />
             {playbook.category && (
               <Badge variant="secondary" className={categoryColor}>
@@ -107,9 +109,9 @@ export default function PlaybookDetailHeader({
               </Badge>
             )}
           </div>
-          {playbook.description && (
+          {(playbook.description || playbook.description_en) && (
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              {playbook.description}
+              {language === 'en' ? (playbook.description_en || playbook.description) : playbook.description}
             </p>
           )}
         </div>

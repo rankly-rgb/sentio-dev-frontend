@@ -111,7 +111,9 @@ export interface Playbook {
   id: string;
   organization_id: string;
   title: string;
+  title_en: string | null;
   description: string | null;
+  description_en: string | null;
   status: PlaybookStatus;
   playbook_type: PlaybookType;
   priority: PlaybookPriority;
@@ -168,7 +170,9 @@ export interface CreatePlaybookPayload {
 
 export interface UpdatePlaybookPayload {
   title?: string;
+  title_en?: string;
   description?: string;
+  description_en?: string;
   status?: PlaybookStatus;
   playbook_type?: PlaybookType;
   priority?: PlaybookPriority;
@@ -315,7 +319,9 @@ export interface PlaybookFullDetail {
 export interface PlaybookDetailPlaybook {
   id: string;
   name: string;
+  name_en: string | null;
   description: string;
+  description_en: string | null;
   status: PlaybookStatus;
   category: string;
   is_automated: boolean;

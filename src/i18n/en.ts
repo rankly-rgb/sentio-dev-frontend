@@ -311,8 +311,13 @@ export const en: Translations = {
     form: {
       title: 'Title',
       titlePlaceholder: 'e.g. Churn prevention — critical accounts',
+      titleEn: 'Title (EN)',
+      titleEnPlaceholder: 'English title…',
       description: 'Description',
       descriptionPlaceholder: 'Describe the goal of this playbook…',
+      descriptionEn: 'Description (EN)',
+      descriptionEnPlaceholder: 'English description…',
+      translationSection: 'English translation',
       type: 'Type',
       category: 'Category',
       priority: 'Priority',

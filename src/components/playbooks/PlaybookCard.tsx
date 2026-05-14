@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useT } from '@/lib/i18n/useT';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 import PlaybookStatusBadge from './PlaybookStatusBadge';
 import PriorityBadge from './PriorityBadge';
 import type { Playbook } from '@/lib/types/playbook';
@@ -12,6 +13,7 @@ interface Props {
 
 export default function PlaybookCard({ playbook }: Props) {
   const fr = useT();
+  const { language } = useLanguage();
   const navigate = useNavigate();
 
   return (
@@ -41,13 +43,13 @@ export default function PlaybookCard({ playbook }: Props) {
 
         {/* Title */}
         <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-          {playbook.title}
+          {language === 'en' ? (playbook.title_en || playbook.title) : playbook.title}
         </h3>
 
         {/* Description */}
-        {playbook.description && (
+        {(playbook.description || playbook.description_en) && (
           <p className="text-xs text-muted-foreground line-clamp-2">
-            {playbook.description}
+            {language === 'en' ? (playbook.description_en || playbook.description) : playbook.description}
           </p>
         )}
 

@@ -53,7 +53,9 @@ interface Props {
 export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflowProp, onSubmit, isSubmitting }: Props) {
   const fr = useT();
   const [title, setTitle] = useState(initialData?.title ?? '');
+  const [titleEn, setTitleEn] = useState(initialData?.title_en ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
+  const [descriptionEn, setDescriptionEn] = useState(initialData?.description_en ?? '');
   const [playbookType, setPlaybookType] = useState<PlaybookType>(initialData?.playbook_type ?? 'manual');
   const [priority, setPriority] = useState<PlaybookPriority>(initialData?.priority ?? 'medium');
   const [templateCategory, setTemplateCategory] = useState<TemplateCategory | ''>(initialData?.template_category ?? '');
@@ -74,7 +76,9 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
 
     const payload: CreatePlaybookPayload | UpdatePlaybookPayload = {
       title,
+      title_en: titleEn || undefined,
       description: description || undefined,
+      description_en: descriptionEn || undefined,
       playbook_type: playbookType,
       priority,
       template_category: templateCategory || undefined,
@@ -120,6 +124,32 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
               rows={3}
             />
           </div>
+
+          {mode === 'edit' && (
+            <div className="border-t pt-4 space-y-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {fr.playbooks.form.translationSection}
+              </p>
+              <div>
+                <label className="text-sm font-medium">{fr.playbooks.form.titleEn}</label>
+                <Input
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                  placeholder={fr.playbooks.form.titleEnPlaceholder}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{fr.playbooks.form.descriptionEn}</label>
+                <Textarea
+                  value={descriptionEn}
+                  onChange={(e) => setDescriptionEn(e.target.value)}
+                  placeholder={fr.playbooks.form.descriptionEnPlaceholder}
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">{fr.playbooks.form.type}</label>
