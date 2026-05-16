@@ -105,7 +105,7 @@ export function PlaybookTranslationsDialog({ open, onClose }: Props) {
       {
         id: pb.id,
         payload: {
-          title_en: row.titleEn.trim(),
+          name_en: row.titleEn.trim(),
           description_en: row.descriptionEn.trim() || undefined,
         },
       },

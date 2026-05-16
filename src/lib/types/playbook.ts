@@ -110,10 +110,18 @@ export const EMAIL_PREVIEW_DATA: Record<string, string> = {
 export interface Playbook {
   id: string;
   organization_id: string;
+  // Locale-resolved by the backend — always use these for display
+  display_name: string;
+  display_description: string;
+  // Bilingual raw fields (for edit form)
+  name_fr: string | null;
+  name_en: string | null;
+  description_fr: string | null;
+  description_en: string | null;
+  // Legacy fields — kept for backward compat (buildFullDetailFromPlaybook etc.)
   title: string;
   title_en: string | null;
   description: string | null;
-  description_en: string | null;
   status: PlaybookStatus;
   playbook_type: PlaybookType;
   priority: PlaybookPriority;
@@ -152,8 +160,10 @@ export interface Playbook {
 // --- API payloads ---
 export interface CreatePlaybookPayload {
   organization_id: string;
-  title: string;
-  description?: string;
+  name_fr?: string;
+  name_en?: string;
+  description_fr?: string;
+  description_en?: string;
   playbook_type: PlaybookType;
   priority: PlaybookPriority;
   template_category?: TemplateCategory;
@@ -169,9 +179,9 @@ export interface CreatePlaybookPayload {
 }
 
 export interface UpdatePlaybookPayload {
-  title?: string;
-  title_en?: string;
-  description?: string;
+  name_fr?: string;
+  name_en?: string;
+  description_fr?: string;
   description_en?: string;
   status?: PlaybookStatus;
   playbook_type?: PlaybookType;
@@ -318,6 +328,9 @@ export interface PlaybookFullDetail {
 
 export interface PlaybookDetailPlaybook {
   id: string;
+  display_name: string;
+  display_description: string;
+  // Raw bilingual fields (needed for edit form)
   name: string;
   name_en: string | null;
   description: string;
