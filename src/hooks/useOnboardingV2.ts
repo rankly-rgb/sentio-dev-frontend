@@ -86,11 +86,13 @@ export function useCreateOrganization() {
       email,
       company_name,
       access_token,
+      locale,
     }: {
       user_id: string;
       email: string;
       company_name: string;
       access_token: string;
+      locale?: 'fr' | 'en';
     }) => {
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
       return fetch(`${SUPABASE_URL}/functions/v1/create-organization-with-invitation`, {
@@ -99,7 +101,7 @@ export function useCreateOrganization() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${access_token}`,
         },
-        body: JSON.stringify({ user_id, email, company_name }),
+        body: JSON.stringify({ user_id, email, company_name, locale: locale ?? 'fr' }),
       }).then(async (res) => {
         const data: CreateOrganizationResponse & { error?: string } = await res.json();
         if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);

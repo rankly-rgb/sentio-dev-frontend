@@ -28,7 +28,6 @@ import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
 import { usePendingApprovalsCount } from '@/hooks/usePlaybookDestinations';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import AhaMomentModal from '@/components/onboarding/AhaMomentModal';
@@ -340,7 +339,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex-1" />
-          <LanguageSwitcher />
         </header>
 
         <main className="flex-1 overflow-auto">{children}</main>

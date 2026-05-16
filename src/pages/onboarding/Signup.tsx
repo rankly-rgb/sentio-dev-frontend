@@ -2,18 +2,23 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 import { supabase } from '@/lib/supabase';
 import { useCreateOrganization } from '@/hooks/useOnboardingV2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShieldCheck } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { Language } from '@/lib/i18n/translations';
 
 export default function Signup() {
   const fr = useT();
+  const { setLanguage } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
+  const [locale, setLocale] = useState<Language>('fr');
   const [errors, setErrors] = useState<{ email?: string; password?: string; company?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
 
@@ -74,7 +79,8 @@ export default function Signup() {
     }
 
     try {
-      await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken });
+      await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken, locale });
+      setLanguage(locale);
       navigate('/onboarding');
     } catch (err) {
       setErrors({ general: err instanceof Error ? err.message : "Erreur lors de la création de l'organisation" });
@@ -141,6 +147,27 @@ export default function Signup() {
           </div>
 
           {errors.general && <p className="text-sm text-[#ef4444]">{errors.general}</p>}
+
+          <div className="space-y-1.5">
+            <Label>{locale === 'fr' ? 'Langue de l\'interface' : 'Interface language'}</Label>
+            <div className="flex gap-2">
+              {(['fr', 'en'] as const).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setLocale(lang)}
+                  className={cn(
+                    'flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-all',
+                    locale === lang
+                      ? 'border-[#3b5bdb] bg-[#3b5bdb]/10 text-[#3b5bdb]'
+                      : 'border-[#e5e7eb] text-[#6b7280] hover:border-[#9ca3af]',
+                  )}
+                >
+                  {lang === 'fr' ? '🇫🇷 Français' : '🇬🇧 English'}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <Button
             type="submit"

@@ -5,8 +5,8 @@ import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { translations, type Language } from './translations';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface OrgSettingsResponse {
-  data: { language: Language };
+interface GetLocaleResponse {
+  locale: Language;
 }
 
 export interface LanguageContextValue {
@@ -17,7 +17,7 @@ export interface LanguageContextValue {
 
 export const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-export const LANGUAGE_QUERY_KEY = ['org-settings', 'language'] as const;
+export const LANGUAGE_QUERY_KEY = ['org-locale'] as const;
 
 const STORAGE_KEY = 'sentio-lang';
 
@@ -45,8 +45,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const { data: serverLang } = useQuery<Language>({
     queryKey: LANGUAGE_QUERY_KEY,
     queryFn: async () => {
-      const res = await fetchWithUserJwt<OrgSettingsResponse>('org-settings');
-      return res.data.language;
+      const res = await fetchWithUserJwt<GetLocaleResponse>('get-organization-locale');
+      return res.locale;
     },
     enabled: !!user,
     staleTime: Infinity,
@@ -64,9 +64,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   // Best-effort server PATCH — failure is silent, local state is already applied
   const { mutate } = useMutation({
     mutationFn: (lang: Language) =>
-      fetchWithUserJwt<{ success: boolean }>('org-settings', {
+      fetchWithUserJwt<{ success: boolean; locale: Language }>('update-organization-locale', {
         method: 'PATCH',
-        body: { language: lang },
+        body: { locale: lang },
       }),
     onSuccess: (_, lang) => {
       // Confirm the server accepted it — update cache so cross-device sync is correct

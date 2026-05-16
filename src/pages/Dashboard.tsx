@@ -10,7 +10,6 @@ import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -255,7 +254,6 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <LanguageSwitcher />
           <SyncProgressPanel />
 
           <Button
