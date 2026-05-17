@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { useCreateOrganization } from '@/hooks/useOnboardingV2';
+import { useCreateOrganization, useOnUserSignup } from '@/hooks/useOnboardingV2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +25,7 @@ export default function Signup() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const createOrg = useCreateOrganization();
+  const onUserSignup = useOnUserSignup();
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -73,17 +74,19 @@ export default function Signup() {
 
     if (!userId || !accessToken) {
       // Email confirmation required — user must confirm before continuing
-      setErrors({ general: "Vérifiez vos emails pour confirmer votre compte avant de continuer." });
+      setErrors({ general: fr.onboarding.signup.errorConfirmEmail });
       setLoading(false);
       return;
     }
 
     try {
       await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken, locale });
+      // on-user-signup : fire-and-forget, session déjà établie
+      void onUserSignup.mutateAsync();
       setLanguage(locale);
-      navigate('/onboarding');
+      navigate('/onboarding/promise');
     } catch (err) {
-      setErrors({ general: err instanceof Error ? err.message : "Erreur lors de la création de l'organisation" });
+      setErrors({ general: err instanceof Error ? err.message : fr.onboarding.signup.errorCreateOrg });
       setLoading(false);
     }
   };
@@ -111,7 +114,7 @@ export default function Signup() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="Email professionnel"
+              placeholder={fr.onboarding.signup.emailPlaceholder}
               autoComplete="email"
               aria-invalid={!!errors.email}
             />
@@ -125,7 +128,7 @@ export default function Signup() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Mot de passe (8 car. min.)"
+              placeholder={fr.onboarding.signup.passwordPlaceholder}
               autoComplete="new-password"
               aria-invalid={!!errors.password}
             />
@@ -139,7 +142,7 @@ export default function Signup() {
               type="text"
               value={company}
               onChange={e => setCompany(e.target.value)}
-              placeholder="Nom de votre entreprise"
+              placeholder={fr.onboarding.signup.companyPlaceholder}
               autoComplete="organization"
               aria-invalid={!!errors.company}
             />
@@ -174,7 +177,7 @@ export default function Signup() {
             className="w-full bg-[#3b5bdb] hover:bg-[#3451c7] text-white"
             disabled={loading}
           >
-            {loading ? fr.onboarding.signup.loading : "Créer mon compte →"}
+            {loading ? fr.onboarding.signup.loading : fr.onboarding.signup.cta}
           </Button>
         </form>
 

@@ -1,6 +1,7 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { logger } from '@/utils/productionLogger'; // TEMP DEBUG
+import { logger } from '@/utils/productionLogger';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -10,42 +11,47 @@ import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import AdminRoute from '@/components/layout/AdminRoute';
 
-// Pages
+// Pages critiques — chargées immédiatement (chemin initial de l'utilisateur)
 import Index from '@/pages/Index';
 import Login from '@/pages/Login';
 import AuthCallback from '@/pages/AuthCallback';
-import Dashboard from '@/pages/Dashboard';
-import Accounts from '@/pages/Accounts';
-import AccountDetail from '@/pages/AccountDetail';
-import Segments from '@/pages/Segments';
-import SegmentDetail from '@/pages/SegmentDetail';
-import Insights from '@/pages/Insights';
-import Syncs from '@/pages/Syncs';
-import Settings from '@/pages/Settings';
 import NotFound from '@/pages/NotFound';
-import Today from '@/pages/Today';
-import Playbooks from '@/pages/Playbooks';
-import PlaybookNew from '@/pages/PlaybookNew';
-import PlaybookDetail from '@/pages/PlaybookDetail';
-import WorkflowDetail from '@/pages/WorkflowDetail';
-import Integrations from '@/pages/Integrations';
-import Webhook from '@/pages/Webhook';
-import WebhookDestinations from '@/pages/WebhookDestinations';
-import PlaybookDestinations from '@/pages/PlaybookDestinations';
-import PlaybookApprovals from '@/pages/PlaybookApprovals';
 
-// Admin
-import Organizations from '@/pages/admin/Organizations';
-import NewOrganization from '@/pages/admin/NewOrganization';
-import Ops from '@/pages/admin/Ops';
+// Pages lazy — chargées à la demande (code splitting)
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Today = lazy(() => import('@/pages/Today'));
+const Accounts = lazy(() => import('@/pages/Accounts'));
+const AccountDetail = lazy(() => import('@/pages/AccountDetail'));
+const Segments = lazy(() => import('@/pages/Segments'));
+const SegmentDetail = lazy(() => import('@/pages/SegmentDetail'));
+const Insights = lazy(() => import('@/pages/Insights'));
+const Syncs = lazy(() => import('@/pages/Syncs'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const Playbooks = lazy(() => import('@/pages/Playbooks'));
+const PlaybookNew = lazy(() => import('@/pages/PlaybookNew'));
+const PlaybookDetail = lazy(() => import('@/pages/PlaybookDetail'));
+const PlaybookApprovals = lazy(() => import('@/pages/PlaybookApprovals'));
+const PlaybookDestinations = lazy(() => import('@/pages/PlaybookDestinations'));
+const WorkflowDetail = lazy(() => import('@/pages/WorkflowDetail'));
+const Integrations = lazy(() => import('@/pages/Integrations'));
+const Webhook = lazy(() => import('@/pages/Webhook'));
+const WebhookDestinations = lazy(() => import('@/pages/WebhookDestinations'));
 
-// Onboarding
-import Signup from '@/pages/onboarding/Signup';
-import OnboardingV2 from '@/pages/onboarding/OnboardingV2';
-import StripeConnect from '@/pages/onboarding/StripeConnect';
-import SyncWait from '@/pages/onboarding/SyncWait';
-import HubSpot from '@/pages/onboarding/HubSpot';
-import Done from '@/pages/onboarding/Done';
+// Admin (lazy — routes admin uniquement)
+const Organizations = lazy(() => import('@/pages/admin/Organizations'));
+const NewOrganization = lazy(() => import('@/pages/admin/NewOrganization'));
+const Ops = lazy(() => import('@/pages/admin/Ops'));
+
+// Onboarding (lazy — flux one-shot)
+const Signup = lazy(() => import('@/pages/onboarding/Signup'));
+const OnboardingV2 = lazy(() => import('@/pages/onboarding/OnboardingV2'));
+const Promise = lazy(() => import('@/pages/onboarding/Promise'));
+const StripeConnect = lazy(() => import('@/pages/onboarding/StripeConnect'));
+const Revelation = lazy(() => import('@/pages/onboarding/Revelation'));
+const Invested = lazy(() => import('@/pages/onboarding/Invested'));
+const SyncWait = lazy(() => import('@/pages/onboarding/SyncWait'));
+const HubSpot = lazy(() => import('@/pages/onboarding/HubSpot'));
+const Done = lazy(() => import('@/pages/onboarding/Done'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,30 +75,23 @@ const queryClient = new QueryClient({
     },
     mutations: {
       retry: false,
-      onError: (error: Error) => {
-        // TEMP DEBUG — log toutes les erreurs de mutation
-        logger.error('ReactQuery', 'Mutation failed', {
-          message: error.message,
-          stack: error.stack,
-        });
-      },
     },
   },
 });
 
-// TEMP DEBUG — log global pour chaque erreur de query
-queryClient.getQueryCache().subscribe((event) => {
-  if (event.type === 'updated' && event.action.type === 'error') {
-    const error = event.action.error;
-    const msg = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
-    logger.error('ReactQuery', `Query failed: [${event.query.queryKey}]`, {
-      message: msg,
-      stack,
-      queryKey: event.query.queryKey,
-    });
-  }
-});
+// TODO: retirer après résolution du freeze — date audit: 2026-05-17
+if (import.meta.env.DEV) {
+  queryClient.getQueryCache().subscribe((event) => {
+    if (event.type === 'updated' && event.action.type === 'error') {
+      const error = event.action.error;
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.error('ReactQuery', `Query failed: [${event.query.queryKey}]`, {
+        message: msg,
+        queryKey: event.query.queryKey,
+      });
+    }
+  });
+}
 
 export default function App() {
   return (
@@ -103,6 +102,7 @@ export default function App() {
           <AuthProvider>
             <LanguageProvider>
             <ErrorBoundary>
+              <Suspense fallback={null}>
               <Routes>
                 {/* Routes publiques */}
                 <Route path="/" element={<Index />} />
@@ -114,7 +114,10 @@ export default function App() {
                 <Route path="/onboarding" element={<ProtectedRoute><OnboardingV2 /></ProtectedRoute>} />
 
                 {/* Flux onboarding V1 (legacy, sans AppLayout) */}
+                <Route path="/onboarding/promise" element={<ProtectedRoute><Promise /></ProtectedRoute>} />
                 <Route path="/onboarding/stripe" element={<ProtectedRoute><StripeConnect /></ProtectedRoute>} />
+                <Route path="/onboarding/revelation" element={<ProtectedRoute><Revelation /></ProtectedRoute>} />
+                <Route path="/onboarding/invested" element={<ProtectedRoute><Invested /></ProtectedRoute>} />
                 <Route path="/onboarding/sync" element={<ProtectedRoute><SyncWait /></ProtectedRoute>} />
                 <Route path="/onboarding/hubspot" element={<ProtectedRoute><HubSpot /></ProtectedRoute>} />
                 <Route path="/onboarding/done" element={<ProtectedRoute><Done /></ProtectedRoute>} />
@@ -146,6 +149,7 @@ export default function App() {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
             </ErrorBoundary>
             </LanguageProvider>
           </AuthProvider>

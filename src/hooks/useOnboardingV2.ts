@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
@@ -75,6 +77,41 @@ export function useSaveOrgPreferences() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ONBOARDING_V2_KEY, user?.organization_id] });
     },
+    retry: false,
+  });
+}
+
+const STEP_TO_PATH: Record<OnboardingStep, string> = {
+  promise: '/onboarding/promise',
+  stripe: '/onboarding/stripe',
+  revelation: '/onboarding/revelation',
+  invested: '/onboarding/invested',
+  hubspot: '/onboarding/hubspot',
+  completed: '/dashboard',
+};
+
+/** Vérifie l'étape courante et redirige si nécessaire. */
+export function useOnboardingGuard(expectedStep: OnboardingStep) {
+  const { data: status, isLoading } = useOnboardingStatusV2();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!status) return;
+    if (status.onboarding_completed) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+    if (status.onboarding_step !== expectedStep) {
+      navigate(STEP_TO_PATH[status.onboarding_step], { replace: true });
+    }
+  }, [status, expectedStep, navigate]);
+
+  return { isGuarding: isLoading, status };
+}
+
+export function useOnUserSignup() {
+  return useMutation({
+    mutationFn: () => fetchWithUserJwt<{ success: boolean }>('on-user-signup', { method: 'POST', body: {} }),
     retry: false,
   });
 }
