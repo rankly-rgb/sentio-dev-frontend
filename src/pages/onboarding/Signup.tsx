@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
@@ -13,12 +13,16 @@ import { cn } from '@/lib/utils';
 import type { Language } from '@/lib/i18n/translations';
 
 export default function Signup() {
-  const fr = useT();
+  const t = useT();
   const { setLanguage } = useLanguage();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
-  const [locale, setLocale] = useState<Language>('fr');
+  const [locale, setLocale] = useState<Language>(() => {
+    const param = searchParams.get('locale');
+    return param === 'en' ? 'en' : 'fr';
+  });
   const [errors, setErrors] = useState<{ email?: string; password?: string; company?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
 
@@ -33,16 +37,21 @@ export default function Signup() {
     }
   }, [authLoading, user, navigate]);
 
+  // Keep language context in sync with the toggle so useT() reflects the selection immediately
+  useEffect(() => {
+    setLanguage(locale);
+  }, [locale, setLanguage]);
+
   const validate = () => {
     const next: typeof errors = {};
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      next.email = fr.onboarding.signup.errorEmail;
+      next.email = t.onboarding.signup.errorEmail;
     }
     if (!password || password.length < 8) {
-      next.password = fr.onboarding.signup.errorPassword;
+      next.password = t.onboarding.signup.errorPassword;
     }
     if (!company.trim()) {
-      next.company = fr.onboarding.signup.errorCompany;
+      next.company = t.onboarding.signup.errorCompany;
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -74,7 +83,7 @@ export default function Signup() {
 
     if (!userId || !accessToken) {
       // Email confirmation required — user must confirm before continuing
-      setErrors({ general: fr.onboarding.signup.errorConfirmEmail });
+      setErrors({ general: t.onboarding.signup.errorConfirmEmail });
       setLoading(false);
       return;
     }
@@ -83,10 +92,9 @@ export default function Signup() {
       await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken, locale });
       // on-user-signup : fire-and-forget, session déjà établie
       void onUserSignup.mutateAsync();
-      setLanguage(locale);
       navigate('/onboarding/promise');
     } catch (err) {
-      setErrors({ general: err instanceof Error ? err.message : fr.onboarding.signup.errorCreateOrg });
+      setErrors({ general: err instanceof Error ? err.message : t.onboarding.signup.errorCreateOrg });
       setLoading(false);
     }
   };
@@ -102,19 +110,19 @@ export default function Signup() {
             </div>
             <span className="text-xl font-bold text-[#111827]">Sentio AI</span>
           </div>
-          <h1 className="text-2xl font-serif font-bold text-[#111827]">Commencez gratuitement</h1>
-          <p className="mt-1 text-sm text-[#6b7280]">Aucune carte bancaire · RGPD by design · Résultats en 5 minutes</p>
+          <h1 className="text-2xl font-serif font-bold text-[#111827]">{t.onboarding.signup.title}</h1>
+          <p className="mt-1 text-sm text-[#6b7280]">{t.onboarding.signup.subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-1.5">
-            <Label htmlFor="email">{fr.onboarding.signup.emailLabel}</Label>
+            <Label htmlFor="email">{t.onboarding.signup.emailLabel}</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder={fr.onboarding.signup.emailPlaceholder}
+              placeholder={t.onboarding.signup.emailPlaceholder}
               autoComplete="email"
               aria-invalid={!!errors.email}
             />
@@ -122,13 +130,13 @@ export default function Signup() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password">{fr.onboarding.signup.passwordLabel}</Label>
+            <Label htmlFor="password">{t.onboarding.signup.passwordLabel}</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder={fr.onboarding.signup.passwordPlaceholder}
+              placeholder={t.onboarding.signup.passwordPlaceholder}
               autoComplete="new-password"
               aria-invalid={!!errors.password}
             />
@@ -136,13 +144,13 @@ export default function Signup() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="company">{fr.onboarding.signup.companyLabel}</Label>
+            <Label htmlFor="company">{t.onboarding.signup.companyLabel}</Label>
             <Input
               id="company"
               type="text"
               value={company}
               onChange={e => setCompany(e.target.value)}
-              placeholder={fr.onboarding.signup.companyPlaceholder}
+              placeholder={t.onboarding.signup.companyPlaceholder}
               autoComplete="organization"
               aria-invalid={!!errors.company}
             />
@@ -152,7 +160,7 @@ export default function Signup() {
           {errors.general && <p className="text-sm text-[#ef4444]">{errors.general}</p>}
 
           <div className="space-y-1.5">
-            <Label>{locale === 'fr' ? 'Langue de l\'interface' : 'Interface language'}</Label>
+            <Label>{locale === 'fr' ? 'Langue de l’interface' : 'Interface language'}</Label>
             <div className="flex gap-2">
               {(['fr', 'en'] as const).map((lang) => (
                 <button
@@ -177,20 +185,20 @@ export default function Signup() {
             className="w-full bg-[#3b5bdb] hover:bg-[#3451c7] text-white"
             disabled={loading}
           >
-            {loading ? fr.onboarding.signup.loading : fr.onboarding.signup.cta}
+            {loading ? t.onboarding.signup.loading : t.onboarding.signup.cta}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-[#6b7280]">
-          {fr.onboarding.signup.loginLink}{' '}
+          {t.onboarding.signup.loginLink}{' '}
           <Link to="/login" className="text-[#3b5bdb] hover:underline">
-            {fr.onboarding.signup.loginLinkAnchor}
+            {t.onboarding.signup.loginLinkAnchor}
           </Link>
         </p>
 
         <div className="mt-6 pt-5 border-t border-[#e5e7eb] flex items-center justify-center gap-1.5 text-xs text-[#6b7280]">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-          <span>Zero-PII · aucune donnée personnelle stockée</span>
+          <span>{t.onboarding.signup.zeroPii}</span>
         </div>
       </div>
     </div>
