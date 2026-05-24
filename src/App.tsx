@@ -52,6 +52,7 @@ const Invested = lazy(() => import('@/pages/onboarding/Invested'));
 const SyncWait = lazy(() => import('@/pages/onboarding/SyncWait'));
 const HubSpot = lazy(() => import('@/pages/onboarding/HubSpot'));
 const Done = lazy(() => import('@/pages/onboarding/Done'));
+const StripeCallback = lazy(() => import('@/pages/onboarding/StripeCallback'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -114,6 +115,7 @@ export default function App() {
                 <Route path="/onboarding" element={<ProtectedRoute><OnboardingV2 /></ProtectedRoute>} />
 
                 {/* Flux onboarding V1 (legacy, sans AppLayout) */}
+                <Route path="/onboarding/stripe-callback" element={<ProtectedRoute><StripeCallback /></ProtectedRoute>} />
                 <Route path="/onboarding/promise" element={<ProtectedRoute><Promise /></ProtectedRoute>} />
                 <Route path="/onboarding/stripe" element={<ProtectedRoute><StripeConnect /></ProtectedRoute>} />
                 <Route path="/onboarding/revelation" element={<ProtectedRoute><Revelation /></ProtectedRoute>} />

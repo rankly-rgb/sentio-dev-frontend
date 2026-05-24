@@ -1,0 +1,94 @@
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
+
+interface VerifyStripeTokenResponse {
+  success: boolean;
+  mode: 'live' | 'test';
+  error?: string;
+}
+
+interface StripeOAuthInitiateResponse {
+  url: string;
+}
+
+interface SyncStatusSteps {
+  behavioral: boolean;
+  cohorts: boolean;
+  scores: boolean;
+}
+
+interface SyncStatusResponse {
+  status: 'pending' | 'running' | 'completed' | 'error';
+  steps: SyncStatusSteps;
+}
+
+export interface ChurnRiskAccount {
+  masked_id: string;
+  health_score: number;
+  churn_risk_score: number;
+}
+
+interface TopChurnRisksResponse {
+  accounts: ChurnRiskAccount[];
+}
+
+interface HubspotConnectResponse {
+  success: boolean;
+  error?: string;
+}
+
+export function useVerifyStripeToken() {
+  return useMutation({
+    mutationFn: (stripe_api_key: string) =>
+      fetchWithUserJwt<VerifyStripeTokenResponse>('verify-stripe-token', {
+        method: 'POST',
+        body: { stripe_api_key },
+      }),
+    retry: false,
+  });
+}
+
+export function useStripeOAuthInitiate() {
+  return useMutation({
+    mutationFn: () =>
+      fetchWithUserJwt<StripeOAuthInitiateResponse>('stripe-oauth-initiate'),
+    retry: false,
+  });
+}
+
+export function useSyncStatus(enabled: boolean) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['wizard', 'sync-status', user?.organization_id],
+    queryFn: () => fetchWithUserJwt<SyncStatusResponse>('get-sync-status'),
+    enabled: enabled && !!user?.organization_id,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'completed' || status === 'error' ? false : 3_000;
+    },
+    staleTime: 0,
+    gcTime: 0,
+  });
+}
+
+export function useTopChurnRisks() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['wizard', 'top-churn-risks', user?.organization_id],
+    queryFn: () => fetchWithUserJwt<TopChurnRisksResponse>('get-top-churn-risks'),
+    enabled: !!user?.organization_id,
+    staleTime: 60_000,
+  });
+}
+
+export function useHubspotConnect() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      fetchWithUserJwt<HubspotConnectResponse>('hubspot-connect', {
+        method: 'POST',
+        body: { token },
+      }),
+    retry: false,
+  });
+}
