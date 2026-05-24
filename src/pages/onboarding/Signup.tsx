@@ -67,7 +67,14 @@ export default function Signup() {
     const emailValue = email;
     const companyValue = company.trim();
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email: emailValue, password });
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: emailValue,
+      password,
+      options: {
+        data: { locale },
+        emailRedirectTo: 'https://app.sentioapp.io/auth/callback',
+      },
+    });
 
     if (authError) {
       setErrors({ general: authError.message });
