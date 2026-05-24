@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BenchmarkSection } from '../BenchmarkSection';
 import type { BenchmarkResponse } from '@/lib/types/benchmark';
+import { fr } from '@/i18n/fr';
+
+vi.mock('@/lib/i18n/useT', () => ({ useT: () => fr }));
 
 function makeBenchmarkData(overrides?: Partial<BenchmarkResponse>): BenchmarkResponse {
   return {

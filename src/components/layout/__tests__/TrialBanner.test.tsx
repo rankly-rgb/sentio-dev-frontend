@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import TrialBanner from '../TrialBanner';
 import type { TrialStatus } from '@/lib/types/trial';
+import { fr } from '@/i18n/fr';
+
+vi.mock('@/lib/i18n/useT', () => ({ useT: () => fr }));
 
 function makeTrialStatus(overrides?: Partial<TrialStatus>): TrialStatus {
   return {

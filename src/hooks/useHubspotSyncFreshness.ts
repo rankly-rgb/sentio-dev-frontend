@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import type { HealthCheckResponse } from '@/types/ops';
 
 /**
@@ -10,7 +10,7 @@ export function useHubspotSyncFreshness() {
   const query = useQuery<HealthCheckResponse>({
     queryKey: ['hubspot-sync-freshness'],
     queryFn: () =>
-      invokeWithServiceRole<HealthCheckResponse>('health-check', undefined, 'GET'),
+      fetchWithUserJwt<HealthCheckResponse>('health-check', { method: 'GET' }),
     staleTime: 60_000,
     refetchIntervalInBackground: false,
   });

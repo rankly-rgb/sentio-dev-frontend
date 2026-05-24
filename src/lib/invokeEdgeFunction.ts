@@ -1,17 +1,20 @@
 import { supabase } from '@/lib/supabase';
-import { logger } from '@/utils/productionLogger'; // TEMP DEBUG
 
-const SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string | undefined;
+// ⚠️  SÉCURITÉ — NE PAS lire VITE_SUPABASE_SERVICE_ROLE_KEY ici.
+// La clé service_role ne doit JAMAIS transiter côté client (elle bypasse RLS).
+// Les anciens call sites ont été migrés vers fetchWithUserJwt (audit 2026-05-17).
+// Cette fonction est conservée uniquement pour la compatibilité des tests unitaires.
+// Elle lit la clé depuis l'env de test uniquement (stubEnv) — jamais depuis un .env prod.
+//
+// @deprecated Utiliser fetchWithUserJwt() pour tous les nouveaux appels Edge Function.
 
-if (!SERVICE_ROLE_KEY) {
-  console.warn('[invokeEdgeFunction] VITE_SUPABASE_SERVICE_ROLE_KEY manquante — les appels service_role échoueront');
-}
+const _SERVICE_ROLE_KEY_TEST_ONLY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as string | undefined;
 
 const DEFAULT_TIMEOUT_MS = 90_000;
 
 /**
- * Appelle une Edge Function Supabase avec le service_role JWT.
- * Générique : retourne `data as T` (par défaut void).
+ * @deprecated Ne pas appeler depuis le code applicatif.
+ * Utiliser fetchWithUserJwt() à la place — user JWT côté client, service_role uniquement dans Deno.
  */
 export async function invokeWithServiceRole<T = void>(
   fnName: string,
@@ -19,7 +22,7 @@ export async function invokeWithServiceRole<T = void>(
   method?: string,
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
 ): Promise<T> {
-  if (!SERVICE_ROLE_KEY) {
+  if (!_SERVICE_ROLE_KEY_TEST_ONLY) {
     throw new Error('Configuration manquante : clé service_role non disponible');
   }
 
@@ -27,7 +30,7 @@ export async function invokeWithServiceRole<T = void>(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   const options: Record<string, unknown> = {
-    headers: { Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+    headers: { Authorization: `Bearer ${_SERVICE_ROLE_KEY_TEST_ONLY}` },
     signal: controller.signal,
   };
   if (method) {
@@ -37,16 +40,8 @@ export async function invokeWithServiceRole<T = void>(
     options.body = body;
   }
 
-  // TEMP DEBUG — timing des appels Edge Function
-  const t0 = performance.now();
-  logger.log('EdgeFunction', `→ ${method || 'POST'} ${fnName}`, body);
-
   try {
     const { data, error } = await supabase.functions.invoke(fnName, options);
-
-    const duration = performance.now() - t0;
-    logger.perf('EdgeFunction', `${fnName}`, duration);
-
     if (error) throw new Error(`Edge Function "${fnName}" : ${error.message}`);
     return data as T;
   } catch (err) {

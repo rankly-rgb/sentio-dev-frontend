@@ -2,7 +2,6 @@ import { useRef, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 
 export function useManualSync() {
@@ -15,10 +14,13 @@ export function useManualSync() {
     mutationFn: async (syncType: 'incremental' | 'full_sync') => {
       const orgId = userRef.current?.organization_id;
       if (!orgId) throw new Error('Utilisateur non connecté');
-      await invokeWithServiceRole('sync-stripe', {
-        organization_id: orgId,
-        sync_type: syncType,
-        is_manual: true,
+      await fetchWithUserJwt('sync-stripe', {
+        method: 'POST',
+        body: {
+          organization_id: orgId,
+          sync_type: syncType,
+          is_manual: true,
+        },
       });
     },
     onSuccess: () => {
@@ -64,8 +66,9 @@ export function useManualSync() {
     mutationFn: async () => {
       const orgId = userRef.current?.organization_id;
       if (!orgId) throw new Error('Utilisateur non connecté');
-      await invokeWithServiceRole('calculate-scores', {
-        organization_id: orgId,
+      await fetchWithUserJwt('calculate-scores', {
+        method: 'POST',
+        body: { organization_id: orgId },
       });
     },
     onSuccess: () => {

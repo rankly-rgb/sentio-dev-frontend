@@ -48,6 +48,7 @@ describe('productionLogger', () => {
   });
 
   it('logger.perf logs timing with correct level', async () => {
+    vi.stubEnv('DEV', true);
     vi.resetModules();
     const { logger } = await import('../productionLogger');
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

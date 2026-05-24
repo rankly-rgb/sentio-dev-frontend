@@ -1,10 +1,5 @@
-/**
- * Lightweight logger that works in both dev and production.
- * In production, all levels are now logged (with structured context) to make
- * freezes and silent errors visible.
- */
+// TODO: retirer les appels logger.log() après résolution du freeze — date audit: 2026-05-17
 
-// TEMP DEBUG — log() enabled in production to diagnose intermittent freezes
 function meta(): { ts: string; url: string } {
   return {
     ts: new Date().toISOString(),
@@ -14,7 +9,7 @@ function meta(): { ts: string; url: string } {
 
 export const logger = {
   log(context: string, message: string, data?: unknown) {
-    // TEMP DEBUG — was dev-only, now always logs for freeze diagnosis
+    if (!import.meta.env.DEV) return;
     console.log(`[${context}] ${message}`, data !== undefined ? data : '', meta());
   },
 
@@ -26,7 +21,6 @@ export const logger = {
     console.error(`[${context}] ${message}`, data !== undefined ? data : '', meta());
   },
 
-  /** TEMP DEBUG — Log performance timing for slow operations */
   perf(context: string, label: string, durationMs: number) {
     const level = durationMs > 10_000 ? 'error' : durationMs > 3_000 ? 'warn' : 'log';
     const msg = `${label} took ${durationMs.toFixed(0)}ms`;
@@ -35,6 +29,7 @@ export const logger = {
     } else if (level === 'warn') {
       console.warn(`[${context}] SLOW ${msg}`, meta());
     } else {
+      if (!import.meta.env.DEV) return;
       console.log(`[${context}] ${msg}`, meta());
     }
   },

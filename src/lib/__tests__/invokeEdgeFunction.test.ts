@@ -33,10 +33,10 @@ describe('invokeWithServiceRole', () => {
     const { invokeWithServiceRole } = await import('../invokeEdgeFunction');
     const result = await invokeWithServiceRole<{ result: string }>('my-fn', { key: 'val' });
 
-    expect(mockInvoke).toHaveBeenCalledWith('my-fn', {
+    expect(mockInvoke).toHaveBeenCalledWith('my-fn', expect.objectContaining({
       headers: { Authorization: 'Bearer test-key-123' },
       body: { key: 'val' },
-    });
+    }));
     expect(result).toEqual({ result: 'ok' });
   });
 
@@ -63,9 +63,9 @@ describe('invokeWithServiceRole', () => {
     const { invokeWithServiceRole } = await import('../invokeEdgeFunction');
     await invokeWithServiceRole('fn', undefined, 'GET');
 
-    expect(mockInvoke).toHaveBeenCalledWith('fn', {
+    expect(mockInvoke).toHaveBeenCalledWith('fn', expect.objectContaining({
       headers: { Authorization: 'Bearer test-key-123' },
       method: 'GET',
-    });
+    }));
   });
 });

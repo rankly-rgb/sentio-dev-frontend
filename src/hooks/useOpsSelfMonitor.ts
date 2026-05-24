@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { invokeWithServiceRole } from '@/lib/invokeEdgeFunction';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useT } from '@/lib/i18n/useT';
 import type { SelfMonitorResponse } from '@/types/ops';
 
@@ -10,7 +10,7 @@ export function useOpsSelfMonitor() {
 
   return useMutation<SelfMonitorResponse>({
     mutationFn: () =>
-      invokeWithServiceRole<SelfMonitorResponse>('self-monitor'),
+      fetchWithUserJwt<SelfMonitorResponse>('self-monitor', { method: 'POST' }),
     onSuccess: (data) => {
       toast.success(
         fr.ops.selfMonitorSuccess.replace('{count}', String(data.actions_taken)),
