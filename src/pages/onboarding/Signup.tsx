@@ -33,7 +33,7 @@ export default function Signup() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/dashboard', { replace: true });
+      navigate('/onboarding/promise', { replace: true });
     }
   }, [authLoading, user, navigate]);
 

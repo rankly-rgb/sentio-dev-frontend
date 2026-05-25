@@ -162,12 +162,8 @@ export default function Dashboard() {
   const { data: v2Status } = useOnboardingStatusV2();
 
   useEffect(() => {
-    if (
-      onboardingStatus &&
-      onboardingStatus.onboarding_completed === false &&
-      onboardingStatus.stripe_sync_completed === true
-    ) {
-      navigate('/onboarding/done', { replace: true });
+    if (onboardingStatus && onboardingStatus.onboarding_completed === false) {
+      navigate('/onboarding/promise', { replace: true });
     }
   }, [onboardingStatus, navigate]);
 
