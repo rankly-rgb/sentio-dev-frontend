@@ -14,7 +14,10 @@ const STEP_TO_PATH: Record<CurrentStep, string> = {
 /** Entry point after email confirmation — reads status and redirects to the correct step. */
 export default function Promise() {
   const navigate = useNavigate();
-  const { data: statusData, isLoading } = useOnboardingStatusFull();
+  const { data: statusData, isLoading, isError, refetch } = useOnboardingStatusFull({
+    retry: 3,
+    retryDelay: 1_000,
+  });
 
   useEffect(() => {
     if (!statusData) return;
@@ -26,9 +29,31 @@ export default function Promise() {
     navigate(STEP_TO_PATH[current_step] ?? '/onboarding/stripe', { replace: true });
   }, [statusData, navigate]);
 
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center px-4">
+          <p className="text-sm text-[#94a3b8]">Impossible de charger votre espace.</p>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="text-sm text-indigo-400 hover:text-indigo-300 underline"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
-      {isLoading && <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />}
+      {isLoading && (
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
+          <p className="text-sm text-[#94a3b8]">Chargement de votre espace…</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Loader2, AlertTriangle } from 'lucide-react';
+import { Check, Loader2, AlertTriangle, Info } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import WizardLayout from '@/components/onboarding/WizardLayout';
@@ -24,6 +24,8 @@ export default function OnboardingImport() {
   const [item1, setItem1] = useState<ItemState>('active');
   const [item2, setItem2] = useState<ItemState>('pending');
   const [item3, setItem3] = useState<ItemState>('pending');
+  const [showSlowHelp, setShowSlowHelp] = useState(false);
+  const slowHelpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Step 1 completes after 2s
   useEffect(() => {
@@ -34,10 +36,21 @@ export default function OnboardingImport() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Show help message if step 1 hasn't progressed after 90s
+  useEffect(() => {
+    slowHelpTimerRef.current = setTimeout(() => setShowSlowHelp(true), 90_000);
+    return () => {
+      if (slowHelpTimerRef.current) clearTimeout(slowHelpTimerRef.current);
+    };
+  }, []);
+
   // Advance steps based on sync status
   useEffect(() => {
     if (!syncStatus) return;
-    if (syncStatus.steps.behavioral) setItem1('done');
+    if (syncStatus.steps.behavioral) {
+      setItem1('done');
+      setShowSlowHelp(false);
+    }
     if (syncStatus.steps.cohorts) { setItem1('done'); setItem2('done'); setItem3('active'); }
     if (syncStatus.status === 'completed' && syncStatus.steps.scores) {
       setItem1('done'); setItem2('done'); setItem3('done');
@@ -120,6 +133,13 @@ export default function OnboardingImport() {
               </li>
             ))}
           </ul>
+        )}
+
+        {showSlowHelp && !isError && (
+          <div className="flex items-start gap-2 text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+            <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <p className="text-xs">{w.slowHelp}</p>
+          </div>
         )}
 
         <p className="text-xs text-center text-[#475569]">{w.footer}</p>

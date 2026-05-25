@@ -45,7 +45,7 @@ interface StripeOAuthCallbackResponse {
   error?: string;
 }
 
-export function useOnboardingStatusFull() {
+export function useOnboardingStatusFull(options?: { retry?: number | boolean; retryDelay?: number }) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['onboarding-status-full', user?.organization_id],
@@ -53,6 +53,7 @@ export function useOnboardingStatusFull() {
     enabled: !!user?.organization_id,
     staleTime: 0,
     retry: false,
+    ...options,
   });
 }
 

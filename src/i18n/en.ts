@@ -959,6 +959,7 @@ export const en: Translations = {
       footer: 'Import takes 30 to 90 seconds. You can leave this page.',
       errorMsg: 'An error occurred during import.',
       retry: 'Retry',
+      slowHelp: 'Import is taking longer than expected. If the issue persists, check that your Stripe permissions are correct.',
     },
     firstWin: {
       title: 'Your workspace is ready 🎉',

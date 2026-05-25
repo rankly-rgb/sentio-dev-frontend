@@ -999,6 +999,7 @@ export const fr = {
       footer: "L'import prend 30 à 90 secondes. Vous pouvez quitter cette page.",
       errorMsg: "Une erreur est survenue lors de l'import.",
       retry: "Réessayer",
+      slowHelp: "L'import prend plus de temps que prévu. Si le problème persiste, vérifiez que vos permissions Stripe sont correctes.",
     },
     firstWin: {
       title: "Votre espace est prêt 🎉",
