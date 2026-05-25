@@ -16,29 +16,30 @@ export default function StripeCallback() {
       return;
     }
 
+    const oauthState = searchParams.get('state') ?? undefined;
     fetchWithUserJwt<{ success: boolean }>('stripe-oauth-callback', {
       method: 'POST',
-      body: { code },
+      body: { code, state: oauthState },
     })
       .then((result) => {
         if (result.success) {
           try {
             const raw = localStorage.getItem(LS_KEY);
-            const state = raw ? JSON.parse(raw) : {};
+            const parsed = raw ? JSON.parse(raw) : {};
             localStorage.setItem(
               LS_KEY,
-              JSON.stringify({ ...state, currentStep: 2, stripeConnected: true, stripeMethod: 'oauth' }),
+              JSON.stringify({ ...parsed, currentStep: 2, stripeConnected: true, stripeMethod: 'oauth' }),
             );
           } catch {
             // ignore
           }
-          navigate('/onboarding', { replace: true });
+          navigate('/onboarding/promise', { replace: true });
         } else {
-          navigate('/onboarding', { replace: true });
+          navigate('/onboarding/promise', { replace: true });
         }
       })
       .catch(() => {
-        navigate('/onboarding', { replace: true });
+        navigate('/onboarding/promise', { replace: true });
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

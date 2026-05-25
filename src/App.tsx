@@ -50,6 +50,8 @@ const StripeConnect = lazy(() => import('@/pages/onboarding/StripeConnect'));
 const Revelation = lazy(() => import('@/pages/onboarding/Revelation'));
 const Invested = lazy(() => import('@/pages/onboarding/Invested'));
 const SyncWait = lazy(() => import('@/pages/onboarding/SyncWait'));
+const OnboardingImport = lazy(() => import('@/pages/onboarding/OnboardingImport'));
+const OnboardingFirstWin = lazy(() => import('@/pages/onboarding/OnboardingFirstWin'));
 const HubSpot = lazy(() => import('@/pages/onboarding/HubSpot'));
 const Done = lazy(() => import('@/pages/onboarding/Done'));
 const StripeCallback = lazy(() => import('@/pages/onboarding/StripeCallback'));
@@ -121,6 +123,8 @@ export default function App() {
                 <Route path="/onboarding/revelation" element={<ProtectedRoute><Revelation /></ProtectedRoute>} />
                 <Route path="/onboarding/invested" element={<ProtectedRoute><Invested /></ProtectedRoute>} />
                 <Route path="/onboarding/sync" element={<ProtectedRoute><SyncWait /></ProtectedRoute>} />
+                <Route path="/onboarding/import" element={<ProtectedRoute><OnboardingImport /></ProtectedRoute>} />
+                <Route path="/onboarding/first-win" element={<ProtectedRoute><OnboardingFirstWin /></ProtectedRoute>} />
                 <Route path="/onboarding/hubspot" element={<ProtectedRoute><HubSpot /></ProtectedRoute>} />
                 <Route path="/onboarding/done" element={<ProtectedRoute><Done /></ProtectedRoute>} />
 

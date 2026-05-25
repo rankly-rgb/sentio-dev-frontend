@@ -1,118 +1,168 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Check, ShieldCheck, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
-import { Button } from '@/components/ui/button';
-import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
-import { useOnboardingFlowStatus, useMarkOnboardingField } from '@/hooks/useOnboardingFlow';
-import { useOnboardingGuard, useUpdateOnboardingStep } from '@/hooks/useOnboardingV2';
+import { useLanguage } from '@/lib/i18n/useLanguage';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import WizardLayout from '@/components/onboarding/WizardLayout';
+import { useOnboardingStatusFull, useHubspotConnect } from '@/hooks/useOnboardingWizard';
+import { useMarkOnboardingField } from '@/hooks/useOnboardingFlow';
+import { cn } from '@/lib/utils';
+import type { WizardStep } from '@/lib/types/onboarding-wizard';
+
+type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
 export default function HubSpot() {
-  const fr = useT();
+  const t = useT();
+  const w = t.onboardingWizard.hubspot;
+  const { language } = useLanguage();
   const navigate = useNavigate();
-  const { isGuarding } = useOnboardingGuard('hubspot');
-  const { data: status } = useOnboardingFlowStatus();
+
+  const { data: statusData } = useOnboardingStatusFull();
+  const connect = useHubspotConnect();
   const markField = useMarkOnboardingField();
-  const updateStep = useUpdateOnboardingStep();
 
-  const handleConnect = () => {
-    window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hubspot-oauth-init`;
-  };
+  const [token, setToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
+  const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const [error, setError] = useState('');
 
-  const handleSkip = async () => {
-    await updateStep.mutateAsync('completed');
+  const steps: WizardStep[] = statusData?.data.wizard_steps ?? [];
+
+  const finishOnboarding = async () => {
     await markField.mutateAsync('onboarding_completed');
     navigate('/dashboard', { replace: true });
   };
 
-  const isSubmitting = updateStep.isPending || markField.isPending;
-  const accountsCount = status?.accounts_count ?? 0;
+  const handleConnect = async () => {
+    if (!token.startsWith('pat-')) {
+      setError(w.tokenError);
+      return;
+    }
+    setError('');
+    setSubmitState('loading');
+    try {
+      await connect.mutateAsync(token);
+      setSubmitState('success');
+      setTimeout(() => void finishOnboarding(), 800);
+    } catch {
+      setError(w.tokenError);
+      setSubmitState('error');
+    }
+  };
 
-  if (isGuarding) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <Loader2 className="h-8 w-8 animate-spin text-[#3b5bdb]" />
-      </div>
-    );
-  }
+  const handleSkip = async () => {
+    await finishOnboarding();
+  };
+
+  const syncItems = [w.sync1, w.sync2];
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
-      <OnboardingHeader step={5} totalSteps={5} />
-
-      <div className="mx-auto max-w-5xl px-4 py-10 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <WizardLayout steps={steps} locale={language}>
+      <div className="space-y-6">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-[#111827] mb-2">
-              {fr.onboarding.hubspot.title}
-            </h1>
-            <p className="text-[#6b7280] mb-5">{fr.onboarding.hubspot.subtitle}</p>
+            <h2 className="text-2xl font-semibold text-[#f8fafc]">{w.title}</h2>
+            <p className="mt-1 text-sm text-[#94a3b8]">{w.subtitle}</p>
+          </div>
+          <span className="flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            {w.optionalBadge}
+          </span>
+        </div>
 
-            {accountsCount > 0 && (
-              <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full mb-8">
-                <CheckCircle className="h-3.5 w-3.5" />
-                {fr.onboarding.hubspot.stripeBadge(accountsCount)}
-              </div>
-            )}
+        {/* Instructions */}
+        <div className="bg-[#0f172a] rounded-xl p-4 text-sm space-y-2">
+          <p className="font-medium text-[#94a3b8]">{w.instructionsTitle}</p>
+          <ol className="space-y-1 text-[#64748b] list-decimal list-inside">
+            {[w.instrStep1, w.instrStep2, w.instrStep3, w.instrStep4].map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
 
-            <ol className="space-y-4 mb-8">
-              {[fr.onboarding.hubspot.step1, fr.onboarding.hubspot.step2, fr.onboarding.hubspot.step3].map((text, i) => (
-                <li key={i} className="flex gap-4">
-                  <span className="flex-shrink-0 h-7 w-7 rounded-full bg-[#3b5bdb] text-white text-xs font-semibold flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <span className="text-sm text-[#111827] pt-1">{text}</span>
-                </li>
-              ))}
-            </ol>
-
-            <Button
-              onClick={handleConnect}
-              className="w-full bg-[#3b5bdb] hover:bg-[#3451c7] text-white mb-4"
+        {/* Token input */}
+        <div className="space-y-1.5">
+          <Label htmlFor="hubspot-token" className="text-sm text-[#94a3b8]">{w.tokenLabel}</Label>
+          <div className="relative">
+            <Input
+              id="hubspot-token"
+              type={showToken ? 'text' : 'password'}
+              value={token}
+              onChange={(e) => { setToken(e.target.value); setError(''); if (submitState === 'error') setSubmitState('idle'); }}
+              placeholder={w.tokenPlaceholder}
+              className="pr-10 bg-[#0f172a] border-[#334155] text-[#f8fafc] placeholder:text-[#475569] focus-visible:ring-indigo-500"
+            />
+            <button
+              type="button"
+              onClick={() => setShowToken((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#94a3b8]"
+              tabIndex={-1}
             >
-              {fr.onboarding.hubspot.cta}
-            </Button>
-
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleSkip}
-                disabled={isSubmitting}
-                className="text-sm text-[#6b7280] hover:text-[#111827] flex items-center gap-1 mx-auto disabled:opacity-50"
-              >
-                {isSubmitting
-                  ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {fr.onboardingV2.hubspot.completing}</>
-                  : <>{fr.onboardingV2.hubspot.skip} <ArrowRight className="h-3.5 w-3.5" /></>
-                }
-              </button>
-            </div>
+              {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
+          {error && <p className="text-xs text-red-400">{error}</p>}
+        </div>
 
-          <div>
-            <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-6">
-              <h2 className="text-base font-semibold text-[#111827] mb-4">{fr.onboarding.hubspot.withTitle}</h2>
-              <ul className="space-y-3 mb-6">
-                {[fr.onboarding.hubspot.with1, fr.onboarding.hubspot.with2, fr.onboarding.hubspot.with3, fr.onboarding.hubspot.with4].map(text => (
-                  <li key={text} className="flex items-center gap-2 text-sm text-[#111827]">
-                    <CheckCircle className="h-4 w-4 text-[#22c55e] flex-shrink-0" />
-                    {text}
-                  </li>
-                ))}
-              </ul>
-              <div className="border-t border-[#e5e7eb] pt-5">
-                <h3 className="text-sm font-semibold text-[#111827] mb-3">{fr.onboarding.hubspot.withoutTitle}</h3>
-                <ul className="space-y-2">
-                  {[fr.onboarding.hubspot.without1, fr.onboarding.hubspot.without2, fr.onboarding.hubspot.without3].map(text => (
-                    <li key={text} className="flex items-center gap-2 text-sm text-[#6b7280]">
-                      <ArrowRight className="h-4 w-4 flex-shrink-0" />
-                      {text}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
+        {/* Connect CTA */}
+        <button
+          type="button"
+          onClick={handleConnect}
+          disabled={submitState === 'loading' || submitState === 'success' || !token}
+          className={cn(
+            'w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50',
+            submitState === 'success' ? 'bg-green-600' : 'bg-indigo-500 hover:bg-indigo-600',
+          )}
+        >
+          {submitState === 'loading' && (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />{w.ctaLoading}
+            </span>
+          )}
+          {submitState === 'success' && (
+            <span className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />{w.ctaSuccess}
+            </span>
+          )}
+          {(submitState === 'idle' || submitState === 'error') && w.cta}
+        </button>
+
+        {/* Skip */}
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={handleSkip}
+            disabled={markField.isPending}
+            className="text-sm text-[#475569] hover:text-[#94a3b8] transition-colors inline-flex items-center gap-1 disabled:opacity-50"
+          >
+            {markField.isPending
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {w.ctaLoading}</>
+              : <>{w.skip} <ArrowRight className="h-3.5 w-3.5" /></>
+            }
+          </button>
+        </div>
+
+        {/* What HubSpot adds */}
+        <div className="border-t border-[#334155] pt-5">
+          <p className="text-xs font-medium text-[#64748b] uppercase tracking-wide mb-3">{w.syncTitle}</p>
+          <ul className="space-y-2">
+            {syncItems.map((item) => (
+              <li key={item} className="flex items-center gap-2 text-sm text-[#94a3b8]">
+                <Check className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-emerald-400 mt-3">{w.pushBadge}</p>
+        </div>
+
+        {/* Zero PII badge */}
+        <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-900/30 border border-emerald-500/20 rounded-lg px-3 py-2">
+          <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0" />
+          {w.zeroPiiBadge}
         </div>
       </div>
-    </div>
+    </WizardLayout>
   );
 }

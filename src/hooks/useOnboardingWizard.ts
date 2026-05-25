@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
+import type { OnboardingStatusResponse } from '@/lib/types/onboarding-wizard';
 
 interface VerifyStripeTokenResponse {
   success: boolean;
@@ -18,9 +19,10 @@ interface SyncStatusSteps {
   scores: boolean;
 }
 
-interface SyncStatusResponse {
+export interface SyncStatusResponse {
   status: 'pending' | 'running' | 'completed' | 'error';
   steps: SyncStatusSteps;
+  error_message?: string;
 }
 
 export interface ChurnRiskAccount {
@@ -38,6 +40,22 @@ interface HubspotConnectResponse {
   error?: string;
 }
 
+interface StripeOAuthCallbackResponse {
+  success: boolean;
+  error?: string;
+}
+
+export function useOnboardingStatusFull() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['onboarding-status-full', user?.organization_id],
+    queryFn: () => fetchWithUserJwt<OnboardingStatusResponse>('onboarding-status'),
+    enabled: !!user?.organization_id,
+    staleTime: 0,
+    retry: false,
+  });
+}
+
 export function useVerifyStripeToken() {
   return useMutation({
     mutationFn: (stripe_api_key: string) =>
@@ -53,6 +71,17 @@ export function useStripeOAuthInitiate() {
   return useMutation({
     mutationFn: () =>
       fetchWithUserJwt<StripeOAuthInitiateResponse>('stripe-oauth-initiate'),
+    retry: false,
+  });
+}
+
+export function useStripeOAuthCallback() {
+  return useMutation({
+    mutationFn: ({ code, state }: { code: string; state: string }) =>
+      fetchWithUserJwt<StripeOAuthCallbackResponse>('stripe-oauth-callback', {
+        method: 'POST',
+        body: { code, state },
+      }),
     retry: false,
   });
 }
@@ -84,10 +113,10 @@ export function useTopChurnRisks() {
 
 export function useHubspotConnect() {
   return useMutation({
-    mutationFn: (token: string) =>
+    mutationFn: (hubspot_api_key: string) =>
       fetchWithUserJwt<HubspotConnectResponse>('hubspot-connect', {
         method: 'POST',
-        body: { token },
+        body: { hubspot_api_key },
       }),
     retry: false,
   });

@@ -28,7 +28,7 @@ export default function AuthCallback() {
         }
 
         if (type === 'signup') {
-          navigate('/onboarding', { replace: true });
+          navigate('/onboarding/promise', { replace: true });
           return;
         }
 

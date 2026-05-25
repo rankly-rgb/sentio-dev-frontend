@@ -1,55 +1,34 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useT } from '@/lib/i18n/useT';
-import { Button } from '@/components/ui/button';
-import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
-import { useOnboardingGuard, useUpdateOnboardingStep } from '@/hooks/useOnboardingV2';
+import { useOnboardingStatusFull } from '@/hooks/useOnboardingWizard';
+import type { CurrentStep } from '@/lib/types/onboarding-wizard';
 
+const STEP_TO_PATH: Record<CurrentStep, string> = {
+  stripe: '/onboarding/stripe',
+  first_win: '/onboarding/first-win',
+  hubspot: '/onboarding/hubspot',
+  done: '/dashboard',
+};
+
+/** Entry point after email confirmation — reads status and redirects to the correct step. */
 export default function Promise() {
-  const fr = useT();
   const navigate = useNavigate();
-  const { isGuarding } = useOnboardingGuard('promise');
-  const updateStep = useUpdateOnboardingStep();
+  const { data: statusData, isLoading } = useOnboardingStatusFull();
 
-  const handleCta = async () => {
-    await updateStep.mutateAsync('stripe');
-    navigate('/onboarding/stripe');
-  };
-
-  if (isGuarding) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <Loader2 className="h-8 w-8 animate-spin text-[#3b5bdb]" />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!statusData) return;
+    const { current_step, onboarding_completed } = statusData.data;
+    if (onboarding_completed) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+    navigate(STEP_TO_PATH[current_step] ?? '/onboarding/stripe', { replace: true });
+  }, [statusData, navigate]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <OnboardingHeader step={1} totalSteps={5} />
-
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)] px-6 text-center">
-        <div className="max-w-xl">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#111827] leading-snug mb-5">
-            {fr.onboardingV2.promise.mainText}
-          </h1>
-          <p className="text-lg text-[#6b7280] mb-12">
-            {fr.onboardingV2.promise.subText}
-          </p>
-          <Button
-            size="lg"
-            className="bg-[#3b5bdb] hover:bg-[#3451c7] text-white px-10 py-6 text-lg"
-            onClick={handleCta}
-            disabled={updateStep.isPending}
-          >
-            {updateStep.isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              fr.onboardingV2.promise.cta
-            )}
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+      {isLoading && <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />}
     </div>
   );
 }
