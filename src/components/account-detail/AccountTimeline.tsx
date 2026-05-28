@@ -105,6 +105,8 @@ function ExecutionStatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'completed':
       return <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />;
+    case 'partially_completed':
+      return <CheckCircle2 className="h-3.5 w-3.5 text-amber-500" />;
     case 'failed':
       return <XCircle className="h-3.5 w-3.5 text-red-600" />;
     case 'pending_approval':

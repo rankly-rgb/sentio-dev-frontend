@@ -456,6 +456,7 @@ export const fr = {
       pending_approval: "En attente",
       running: "En cours",
       completed: "Terminé",
+      partially_completed: "Partiel",
       failed: "Échoué",
       cancelled: "Annulé",
     } as Record<string, string>,

@@ -22,9 +22,15 @@ function statusVariant(s: string): 'default' | 'secondary' | 'destructive' | 'ou
   }
 }
 
+function statusExtraClass(s: string): string {
+  if (s === 'partially_completed') return 'border-amber-400 text-amber-700 bg-amber-50 hover:bg-amber-50';
+  return '';
+}
+
 function StatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'completed': return <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />;
+    case 'partially_completed': return <CheckCircle className="h-3.5 w-3.5 text-amber-500" />;
     case 'running': return <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />;
     case 'failed': return <XCircle className="h-3.5 w-3.5 text-destructive" />;
     default: return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
@@ -78,6 +84,7 @@ export default function ExecutionTimeline({ executions, isLoading }: Props) {
     pending: fr.actions.pending,
     running: fr.actions.running,
     completed: fr.actions.completed,
+    partially_completed: fr.playbooks.executionStatusLabels.partially_completed,
     failed: fr.actions.failed,
     cancelled: 'Annulée',
   };
@@ -146,7 +153,7 @@ export default function ExecutionTimeline({ executions, isLoading }: Props) {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusVariant(exec.status)} className="flex w-fit items-center gap-1">
+                  <Badge variant={statusVariant(exec.status)} className={`flex w-fit items-center gap-1 ${statusExtraClass(exec.status)}`}>
                     <StatusIcon status={exec.status} />
                     {statusLabels[exec.status] ?? exec.status}
                   </Badge>

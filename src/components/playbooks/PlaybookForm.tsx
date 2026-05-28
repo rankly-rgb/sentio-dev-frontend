@@ -229,7 +229,7 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
           {isWorkflow ? (
             <StepEditor steps={steps} onChange={setSteps} />
           ) : (
-            <ActionEditor actions={actions} onChange={setActions} />
+            <ActionEditor actions={actions} onChange={setActions} isWorkflow={isWorkflow} />
           )}
         </CardContent>
       </Card>

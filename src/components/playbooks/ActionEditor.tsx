@@ -415,9 +415,10 @@ export function ActionConfigFields({
 interface Props {
   actions: PlaybookAction[];
   onChange: (actions: PlaybookAction[]) => void;
+  isWorkflow?: boolean;
 }
 
-export default function ActionEditor({ actions, onChange }: Props) {
+export default function ActionEditor({ actions, onChange, isWorkflow = false }: Props) {
   const fr = useT();
   const { data: integrationStatus } = useIntegrationStatus();
   const slackConnected = integrationStatus?.slack?.connected;
@@ -469,7 +470,7 @@ export default function ActionEditor({ actions, onChange }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ACTION_TYPES.map((t) => (
+                  {ACTION_TYPES.filter((t) => t !== 'send_email' || isWorkflow).map((t) => (
                     <SelectItem key={t} value={t}>
                       {fr.playbooks.actionType[t]}
                     </SelectItem>
