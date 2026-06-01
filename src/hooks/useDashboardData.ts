@@ -7,6 +7,7 @@ import type { DashboardMetrics, HealthDistribution } from '@/types/dashboard';
 export interface TopAccount {
   id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   mrr_cents: number;
   churn_risk_score: number | null;
   expansion_score: number | null;
@@ -81,7 +82,7 @@ export interface TopAccountsResult {
 async function fetchTopAccounts(organizationId: string): Promise<TopAccountsResult> {
   const { data: accounts, error } = await supabase
     .from('accounts')
-    .select('id, stripe_customer_id, mrr_cents, churn_risk_score, expansion_score, health_score, seat_count, seat_limit, plan_tier')
+    .select('id, stripe_customer_id, display_name, mrr_cents, churn_risk_score, expansion_score, health_score, seat_count, seat_limit, plan_tier')
     .eq('organization_id', organizationId);
 
   if (error) throw error;

@@ -5,6 +5,7 @@ import type { SegmentAccount } from '@/lib/types/segments';
 type AccountRow = {
   id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   hubspot_company_id: string | null;
   plan_tier: string | null;
   billing_interval: string | null;
@@ -64,7 +65,7 @@ export function getSegmentFilter(segment: SegmentType): (a: Pick<AccountRow, 'he
 }
 
 const ACCOUNT_SELECT =
-  'id, stripe_customer_id, hubspot_company_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, contract_end_date, health_score, churn_risk_score, expansion_score, product_usage_score, created_at' as const;
+  'id, stripe_customer_id, display_name, hubspot_company_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, contract_end_date, health_score, churn_risk_score, expansion_score, product_usage_score, created_at' as const;
 
 export async function getSegmentAccounts(segment: SegmentType, organizationId: string): Promise<SegmentAccount[]> {
   const { data, error } = await supabase
@@ -80,6 +81,7 @@ export async function getSegmentAccounts(segment: SegmentType, organizationId: s
   return rows.filter(filter).map((a) => ({
     id: a.id,
     stripe_customer_id: a.stripe_customer_id,
+    display_name: a.display_name ?? null,
     hubspot_company_id: a.hubspot_company_id,
     plan_tier: a.plan_tier,
     billing_interval: a.billing_interval,

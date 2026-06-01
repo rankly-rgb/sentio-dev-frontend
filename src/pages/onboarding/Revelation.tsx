@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { getAccountLabel } from '@/lib/account-display';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
 import { Button } from '@/components/ui/button';
@@ -92,7 +93,7 @@ export default function Revelation() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-medium text-[#111827] truncate">
-                      {acc.display_name ?? acc.stripe_customer_id}
+                      {getAccountLabel(acc)}
                     </p>
                     {acc.top_risk_reason && (
                       <p className="text-xs text-[#6b7280] flex items-center gap-1 mt-0.5">

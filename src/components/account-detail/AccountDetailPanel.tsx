@@ -1,4 +1,5 @@
 import { useT } from '@/lib/i18n/useT';
+import { getAccountLabel } from '@/lib/account-display';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import {
   Sheet,
@@ -77,7 +78,7 @@ export default function AccountDetailPanel({ isOpen, onClose, account, isLoading
       >
         <SheetHeader className="sr-only">
           <SheetTitle>
-            {account ? account.stripe_customer_id : fr.common.loading}
+            {account ? getAccountLabel(account) : fr.common.loading}
           </SheetTitle>
           <SheetDescription>
             {fr.accountDetail.overview}

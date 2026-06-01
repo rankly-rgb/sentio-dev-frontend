@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getAccountLabel } from '@/lib/account-display';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
@@ -21,7 +22,7 @@ function scoreBadgeLabel(score: number, labels: { criticalRisk: string; moderate
 
 function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; index: number }) {
   const fr = useT();
-  const name = account.display_name ?? account.stripe_customer_id;
+  const name = getAccountLabel(account);
   const badgeClass = scoreBadgeClass(account.health_score);
   const badgeLabel = scoreBadgeLabel(account.health_score, fr.onboarding.done);
 

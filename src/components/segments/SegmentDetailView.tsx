@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { getAccountLabel } from '@/lib/account-display';
 import { Link } from 'react-router-dom';
 import { Download, ChevronUp, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -223,18 +224,18 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
           <tbody>
             {pageData.map((a) => (
               <tr key={a.id} className="border-t hover:bg-muted/30">
-                <td className="px-3 py-2 font-mono text-xs">
+                <td className="px-3 py-2 text-xs">
                   {onAccountClick ? (
                     <button
                       type="button"
                       onClick={() => onAccountClick(a.id)}
-                      className="hover:underline text-primary text-left"
+                      className="hover:underline text-primary text-left font-medium"
                     >
-                      {a.stripe_customer_id}
+                      {getAccountLabel(a)}
                     </button>
                   ) : (
-                    <Link to={`/accounts/${a.id}`} className="hover:underline text-primary">
-                      {a.stripe_customer_id}
+                    <Link to={`/accounts/${a.id}`} className="hover:underline text-primary font-medium">
+                      {getAccountLabel(a)}
                     </Link>
                   )}
                 </td>

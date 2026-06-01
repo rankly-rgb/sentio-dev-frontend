@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getAccountLabel } from '@/lib/account-display';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, XCircle, ClipboardList } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -140,8 +141,8 @@ export default function PlaybookApprovals() {
               const isProcessing = processingId === item.id;
               return (
                 <TableRow key={item.id}>
-                  <TableCell className="font-mono text-sm">
-                    {item.stripe_customer_id}
+                  <TableCell className="text-sm">
+                    {getAccountLabel(item)}
                   </TableCell>
 
                   <TableCell>
@@ -235,8 +236,8 @@ export default function PlaybookApprovals() {
           </DialogHeader>
           <p className="text-sm text-muted-foreground">{t.rejectDialogDesc}</p>
           {rejectItem && (
-            <p className="text-sm font-mono bg-muted rounded px-3 py-2">
-              {rejectItem.stripe_customer_id}
+            <p className="text-sm bg-muted rounded px-3 py-2">
+              {getAccountLabel(rejectItem)}
             </p>
           )}
           <div className="space-y-1.5">

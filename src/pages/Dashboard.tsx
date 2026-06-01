@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { getAccountLabel } from '@/lib/account-display';
 import { useEffect, useState } from 'react';
 import { useOnboardingFlowStatus } from '@/hooks/useOnboardingFlow';
 import { useOnboardingStatusV2 } from '@/hooks/useOnboardingV2';
@@ -484,8 +485,8 @@ function TopAccountsCard({
                 onClick={() => onAccountClick?.(a.id)}
                 className="flex w-full items-center justify-between py-1.5 hover:bg-muted/50 rounded px-2 -mx-2 transition-colors text-left"
               >
-                <span className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">
-                  {a.stripe_customer_id}
+                <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                  {getAccountLabel(a)}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
@@ -558,8 +559,8 @@ function ExpansionCard({
                 onClick={() => onAccountClick?.(a.id)}
                 className="flex w-full items-center justify-between py-1.5 hover:bg-muted/50 rounded px-2 -mx-2 transition-colors text-left gap-2"
               >
-                <span className="font-mono text-xs text-muted-foreground truncate max-w-[140px]">
-                  {a.stripe_customer_id}
+                <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+                  {getAccountLabel(a)}
                 </span>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {/* Seats */}

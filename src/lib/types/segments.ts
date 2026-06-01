@@ -39,6 +39,7 @@ export const SEGMENT_COLORS: Record<SegmentType, { text: string; bg: string; bor
 export interface SegmentAccount {
   id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   hubspot_company_id: string | null;
   plan_tier: string | null;
   billing_interval: string | null;

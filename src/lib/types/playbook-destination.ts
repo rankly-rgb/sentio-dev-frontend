@@ -78,6 +78,7 @@ export interface PlaybookApprovalQueueItem {
   destination_id: string;
   account_id: string;
   stripe_customer_id: string;
+  display_name?: string | null;
   segment: TriggerSegment | string;
   churn_risk: number | null;
   mrr_eur: number | null;

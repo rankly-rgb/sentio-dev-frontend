@@ -136,8 +136,8 @@ export default function AccountHeader({ account }: Props) {
         </button>
       )}
 
-      {/* Stripe ID */}
-      <p className="font-mono text-xs text-muted-foreground">{account.stripe_customer_id}</p>
+      {/* Stripe ID masqué */}
+      <p className="font-mono text-xs text-muted-foreground">{`cus_***${account.stripe_customer_id.slice(-3)}`}</p>
 
       {/* HubSpot ID */}
       {account.hubspot_company_id && (

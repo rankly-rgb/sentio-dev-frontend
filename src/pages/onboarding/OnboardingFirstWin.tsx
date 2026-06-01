@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { getAccountLabel } from '@/lib/account-display';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
@@ -78,7 +79,7 @@ export default function OnboardingFirstWin() {
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-[#f8fafc] truncate">
-                      {acc.display_name ?? acc.stripe_customer_id}
+                      {getAccountLabel(acc)}
                     </p>
                     {acc.top_risk_reason && (
                       <p className="text-xs text-[#64748b] truncate mt-0.5">{acc.top_risk_reason}</p>
