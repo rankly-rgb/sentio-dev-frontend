@@ -12,10 +12,10 @@ import {
   LogOut,
   Menu,
   Target,
-  Building2,
-  Activity,
+  // Building2, // ADMIN — internal only (commenté)
+  // Activity,  // ADMIN — internal only (commenté)
   Settings,
-  Zap,
+  // Zap,      // V2 - Playbook destinations / Webhook destinations (commentés)
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr as dateFnsFr } from 'date-fns/locale';
@@ -31,7 +31,7 @@ import { useLanguage } from '@/lib/i18n/useLanguage';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import AhaMomentModal from '@/components/onboarding/AhaMomentModal';
-import OnboardingProgressBar from '@/components/onboarding/OnboardingProgressBar';
+// import OnboardingProgressBar from '@/components/onboarding/OnboardingProgressBar'; // V2 - setup banner
 import TrialBanner from '@/components/layout/TrialBanner';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
@@ -166,7 +166,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <span>{t('nav.settings')}</span>
         </Link>
 
-        {/* Playbook destinations */}
+        {/* V2 - Playbook destinations
         <Link
           to="/playbooks/destinations"
           onClick={() => setMobileOpen(false)}
@@ -180,8 +180,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Zap className="h-[14px] w-[14px] shrink-0" />
           <span>{t('nav.playbookDestinations')}</span>
         </Link>
+        */}
 
-        {/* Playbook approvals */}
+        {/* V2 - Playbook approvals
         <Link
           to="/playbooks/approvals"
           onClick={() => setMobileOpen(false)}
@@ -200,6 +201,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </span>
           )}
         </Link>
+        */}
 
         {/* V2 - Webhook destinations
         <Link
@@ -244,7 +246,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         */}
       </nav>
 
-      {/* Admin */}
+      {/* ADMIN — internal only : masqué en V1 (role 'admin' non discriminant entre admin client et super-admin Sentio)
       {user?.role === 'admin' && (
         <div className="px-3 pb-2">
           <div className="mb-2 border-t border-border/50" />
@@ -277,6 +279,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </Link>
         </div>
       )}
+      */}
 
       {/* Footer */}
       <div className="border-t border-border/50 p-3">
@@ -317,7 +320,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       <div className="flex flex-1 flex-col min-w-0">
         {trialStatus && <TrialBanner trial={trialStatus} />}
+        {/* V2 - setup banner : masqué en V1 (stripe_connected non fiable côté backend pour l'instant)
         {onboardingStatus && <OnboardingProgressBar status={onboardingStatus} />}
+        */}
 
         <header className="flex h-14 items-center gap-4 border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 lg:px-6">
           <button

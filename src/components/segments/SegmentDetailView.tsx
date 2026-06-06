@@ -211,7 +211,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
           <thead className="bg-muted/50">
             <tr>
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">ID Stripe</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">ID HubSpot</th>
+              {/* V2 - HubSpot <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">ID HubSpot</th> */}
               <SortableHeader field="plan_tier">{fr.accounts.planTier}</SortableHeader>
               <SortableHeader field="mrr_cents">{fr.accounts.mrr}</SortableHeader>
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">{fr.accounts.seats}</th>
@@ -239,9 +239,11 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
                     </Link>
                   )}
                 </td>
+                {/* V2 - HubSpot
                 <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                   {a.hubspot_company_id ?? '—'}
                 </td>
+                */}
                 <td className="px-3 py-2">
                   {a.plan_tier ? (
                     <span className="inline-flex items-center gap-1">

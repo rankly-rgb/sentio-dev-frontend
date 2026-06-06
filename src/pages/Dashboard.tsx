@@ -31,8 +31,8 @@ import {
   ChevronRight,
   AlertTriangle,
   TrendingUp,
-  ChevronUp,
-  ChevronDown,
+  // ChevronUp,   // V2 - setup widget (commenté)
+  // ChevronDown, // V2 - setup widget (commenté)
 } from 'lucide-react';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
@@ -44,10 +44,12 @@ import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
+/* V2 - setup widget : masqué en V1 (onboarding_completed non fiable pour les clients existants)
 const STEP_ORDER = ['promise', 'stripe', 'revelation', 'invested', 'hubspot', 'completed'] as const;
 function stepIndex(step: string): number {
   return STEP_ORDER.indexOf(step as (typeof STEP_ORDER)[number]);
 }
+*/
 
 // ── Demo banner ───────────────────────────────────────────────────
 function DemoBanner() {
@@ -62,7 +64,7 @@ function DemoBanner() {
   );
 }
 
-// ── Setup progression widget ──────────────────────────────────────
+/* V2 - setup widget (suite)
 function SetupWidget({ onboardingStep }: { onboardingStep: string }) {
   const fr = useT();
   const [expanded, setExpanded] = useState(false);
@@ -119,6 +121,7 @@ function SetupWidget({ onboardingStep }: { onboardingStep: string }) {
     </div>
   );
 }
+*/
 
 // ── Re-visit tooltip ──────────────────────────────────────────────
 function RevisitTooltip() {
@@ -229,7 +232,7 @@ export default function Dashboard() {
   const recentSyncs = (syncs || []).slice(0, 3);
 
   const showDemoBanner = v2Status?.has_demo_data === true && v2Status?.onboarding_completed === false;
-  const showSetupWidget = v2Status?.onboarding_completed === false;
+  // V2 - setup widget masqué en V1 : const showSetupWidget = v2Status?.onboarding_completed === false;
   const showRevisitTooltip = v2Status?.first_revelation_done === true;
 
   return (
@@ -240,8 +243,9 @@ export default function Dashboard() {
       {/* Tracker banner */}
       {!trackerConnected && <TrackerBanner />}
 
-      {/* V2 setup progression widget */}
+      {/* V2 setup progression widget — masqué en V1 (onboarding_completed non fiable)
       {showSetupWidget && v2Status && <SetupWidget onboardingStep={v2Status.onboarding_step} />}
+      */}
 
       {/* V2 re-visit tooltip */}
       {showRevisitTooltip && <RevisitTooltip />}
