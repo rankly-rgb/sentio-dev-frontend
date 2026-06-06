@@ -45,6 +45,11 @@ export default function PlaybookActionsSection({ actions }: Props) {
 
   const sorted = [...actions].sort((a, b) => a.sort_order - b.sort_order);
 
+  // V2 - HubSpot/Slack : filtrer les actions non disponibles en V1
+  const V2_ACTION_TYPES = ['slack_notify', 'slack_notification', 'send_email_hubspot', 'hubspot_sequence', 'hubspot_enroll_sequence', 'hubspot_update_company'];
+  const visibleActions = sorted.filter(a => !V2_ACTION_TYPES.includes(a.action_type));
+  if (visibleActions.length === 0) return null;
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -52,12 +57,12 @@ export default function PlaybookActionsSection({ actions }: Props) {
       </CardHeader>
       <CardContent>
         <div className="relative">
-          {sorted.map((action, idx) => {
+          {visibleActions.map((action, idx) => {
             const config = ACTION_ICON_CONFIG[action.action_type] ?? DEFAULT_ICON_CONFIG;
             const Icon = config.icon;
             const label =
               fr.playbooks.actionType[action.action_type as ActionType] ?? action.label;
-            const isLast = idx === sorted.length - 1;
+            const isLast = idx === visibleActions.length - 1;
 
             return (
               <div

@@ -69,7 +69,15 @@ export default function ActionList({ actions }: Props) {
     return <p className="text-sm text-muted-foreground">{fr.playbooks.noActionsMsg}</p>;
   }
 
-  const sorted = [...actions].sort((a, b) => a.order - b.order);
+  // V2 - HubSpot/Slack : filtrer les actions non disponibles en V1
+  const V2_ACTION_TYPES: string[] = ['slack_notify', 'send_email_hubspot', 'hubspot_enroll_sequence', 'hubspot_update_company'];
+  const sorted = [...actions]
+    .filter(a => !V2_ACTION_TYPES.includes(a.type))
+    .sort((a, b) => a.order - b.order);
+
+  if (sorted.length === 0) {
+    return <p className="text-sm text-muted-foreground">{fr.playbooks.noActionsMsg}</p>;
+  }
 
   return (
     <ol className="space-y-2">

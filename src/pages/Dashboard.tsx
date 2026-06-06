@@ -27,7 +27,7 @@ import {
   Calculator,
   CheckCircle,
   XCircle,
-  Info,
+  // Info, // V2 - HubSpot : utilisé dans le message hubspotInfo (commenté)
   ChevronRight,
   AlertTriangle,
   TrendingUp,
@@ -169,7 +169,8 @@ export default function Dashboard() {
   }, [onboardingStatus, navigate]);
 
   const { metrics, distribution, topAccounts, isLoading, error, refetch } = useDashboardData();
-  const { triggerStripeSync, triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
+  // V2 - HubSpot : triggerHubspotSync aliasé pour satisfaire noUnusedLocals
+  const { triggerStripeSync, triggerHubspotSync: _triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();
   const { data: segments } = useSegments();
   const { data: syncs } = useSyncStatus();
@@ -184,10 +185,12 @@ export default function Dashboard() {
     refetch();
   }
 
+  /* V2 - HubSpot
   async function handleHubspotSync() {
-    await triggerHubspotSync('daily');
+    await _triggerHubspotSync('daily');
     refetch();
   }
+  */
 
   async function handleCalculate() {
     await calculateScores();
@@ -264,6 +267,7 @@ export default function Dashboard() {
             {isSyncing ? fr.dashboard.syncInProgress : 'Sync Stripe'}
           </Button>
 
+          {/* V2 - HubSpot
           <Button
             variant="outline"
             size="sm"
@@ -274,6 +278,7 @@ export default function Dashboard() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isSyncingHubspot ? 'animate-spin' : ''}`} />
             {isSyncingHubspot ? fr.dashboard.syncInProgress : 'Sync HubSpot'}
           </Button>
+          */}
 
           <Button
             variant="default"
@@ -288,10 +293,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Integration status banner */}
+      {/* Integration status banner — V1 : Stripe uniquement */}
       {integrationStatus && (
         <div className="flex flex-wrap items-center gap-3">
-          <Link to="/settings/integrations">
+          {/* V2 - lien → /settings/integrations quand la route sera réactivée */}
+          <Link to="/settings">
             <Badge
               variant={integrationStatus.stripe.connected ? 'default' : 'secondary'}
               className={integrationStatus.stripe.connected ? 'bg-emerald-500 hover:bg-emerald-600' : ''}
@@ -304,6 +310,7 @@ export default function Dashboard() {
               Stripe {integrationStatus.stripe.connected ? fr.integrations.connected : fr.integrations.notConnected}
             </Badge>
           </Link>
+          {/* V2 - HubSpot
           <Link to="/settings/integrations">
             <Badge
               variant={integrationStatus.hubspot.connected ? 'default' : 'secondary'}
@@ -323,6 +330,7 @@ export default function Dashboard() {
               {fr.integrations.oauth.hubspotInfo}
             </span>
           )}
+          */}
         </div>
       )}
 
