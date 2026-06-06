@@ -68,7 +68,8 @@ export default function Syncs() {
   const fr = useT();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { triggerStripeSync, triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
+  // V2 - HubSpot : triggerHubspotSync aliasé en _triggerHubspotSync pour conserver le code mais satisfaire noUnusedLocals
+  const { triggerStripeSync, triggerHubspotSync: _triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
 
   const { data: syncs, isLoading, error } = useQuery({
     queryKey: ['syncs', user?.organization_id],
@@ -85,10 +86,12 @@ export default function Syncs() {
     qc.invalidateQueries({ queryKey: ['syncs'] });
   }
 
+  /* V2 - HubSpot
   async function handleHubspotSync() {
-    await triggerHubspotSync('daily');
+    await _triggerHubspotSync('daily');
     qc.invalidateQueries({ queryKey: ['syncs'] });
   }
+  */
 
   async function handleCalculate() {
     await calculateScores();
@@ -122,6 +125,7 @@ export default function Syncs() {
             {fr.syncs.syncStripeFull}
           </Button>
 
+          {/* V2 - HubSpot
           <Button
             variant="outline"
             size="sm"
@@ -131,6 +135,7 @@ export default function Syncs() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isSyncingHubspot ? 'animate-spin' : ''}`} />
             {isSyncingHubspot ? fr.syncs.syncRunning : 'Sync HubSpot'}
           </Button>
+          */}
 
           <Button
             variant="default"

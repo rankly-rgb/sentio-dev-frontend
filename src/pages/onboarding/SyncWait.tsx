@@ -60,10 +60,11 @@ export default function SyncWait() {
     };
   }, [refetch]);
 
-  // Redirect on completion
+  // Redirect on completion — V1 : saute l'étape HubSpot, va directement à done
+  // V2 : remplacer '/onboarding/done' par '/onboarding/hubspot'
   useEffect(() => {
     if (status?.stripe_sync_completed) {
-      navigate('/onboarding/hubspot', { replace: true });
+      navigate('/onboarding/done', { replace: true });
     }
   }, [status?.stripe_sync_completed, navigate]);
 

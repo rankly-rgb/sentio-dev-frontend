@@ -33,9 +33,10 @@ const PlaybookDetail = lazy(() => import('@/pages/PlaybookDetail'));
 const PlaybookApprovals = lazy(() => import('@/pages/PlaybookApprovals'));
 const PlaybookDestinations = lazy(() => import('@/pages/PlaybookDestinations'));
 const WorkflowDetail = lazy(() => import('@/pages/WorkflowDetail'));
-const Integrations = lazy(() => import('@/pages/Integrations'));
-const Webhook = lazy(() => import('@/pages/Webhook'));
-const WebhookDestinations = lazy(() => import('@/pages/WebhookDestinations'));
+// V2 - HubSpot/Webhook : lazy imports conservés pour V2
+// const Integrations = lazy(() => import('@/pages/Integrations'));
+// const Webhook = lazy(() => import('@/pages/Webhook'));
+// const WebhookDestinations = lazy(() => import('@/pages/WebhookDestinations'));
 
 // Admin (lazy — routes admin uniquement)
 const Organizations = lazy(() => import('@/pages/admin/Organizations'));
@@ -52,6 +53,7 @@ const Invested = lazy(() => import('@/pages/onboarding/Invested'));
 const SyncWait = lazy(() => import('@/pages/onboarding/SyncWait'));
 const OnboardingImport = lazy(() => import('@/pages/onboarding/OnboardingImport'));
 const OnboardingFirstWin = lazy(() => import('@/pages/onboarding/OnboardingFirstWin'));
+// V2 - HubSpot : la page redirige automatiquement vers /onboarding/done en V1 (route conservée comme filet de sécurité)
 const HubSpot = lazy(() => import('@/pages/onboarding/HubSpot'));
 const Done = lazy(() => import('@/pages/onboarding/Done'));
 const StripeCallback = lazy(() => import('@/pages/onboarding/StripeCallback'));
@@ -144,9 +146,11 @@ export default function App() {
                 <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/workflows/:id" element={<ProtectedRoute><AppLayout><WorkflowDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
+                {/* V2 - HubSpot/Webhook/Destinations : routes masquées en V1
                 <Route path="/settings/integrations" element={<ProtectedRoute><AppLayout><Integrations /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/webhook" element={<ProtectedRoute><AppLayout><Webhook /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/destinations" element={<ProtectedRoute><AppLayout><WebhookDestinations /></AppLayout></ProtectedRoute>} />
+                */}
 
                 {/* Routes admin */}
                 <Route path="/admin/organizations" element={<AdminRoute><AppLayout><Organizations /></AppLayout></AdminRoute>} />

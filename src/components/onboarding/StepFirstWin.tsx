@@ -21,7 +21,8 @@ function churnBadgeClass(score: number) {
   return 'bg-green-100 text-green-700';
 }
 
-export default function StepFirstWin({ onConnectHubspot }: Props) {
+// V2 - HubSpot : onConnectHubspot préfixé _ pour satisfaire noUnusedParameters
+export default function StepFirstWin({ onConnectHubspot: _onConnectHubspot }: Props) {
   const t = useT();
   const w = t.onboardingWizard.firstWin;
   const navigate = useNavigate();
@@ -80,15 +81,17 @@ export default function StepFirstWin({ onConnectHubspot }: Props) {
         {w.cta}
       </Button>
 
+      {/* V2 - HubSpot
       <div className="text-center">
         <button
           type="button"
-          onClick={onConnectHubspot}
+          onClick={_onConnectHubspot}
           className="text-sm text-indigo-600 hover:underline"
         >
           {w.ctaHubspot}
         </button>
       </div>
+      */}
     </div>
   );
 }

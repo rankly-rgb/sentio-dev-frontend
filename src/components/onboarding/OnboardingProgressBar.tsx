@@ -9,12 +9,13 @@ interface Props {
 
 export default function OnboardingProgressBar({ status }: Props) {
   const fr = useT();
-  const allConnected = status.stripe_connected && status.hubspot_connected;
+  // V1 : seul Stripe est requis — HubSpot masqué (V2 : restaurer la condition && status.hubspot_connected)
+  const allConnected = status.stripe_connected;
   if (allConnected) return null;
 
   const steps = [
     { label: fr.onboarding.stripeNotConnected, done: status.stripe_connected },
-    { label: fr.onboarding.hubspotNotConnected, done: status.hubspot_connected },
+    // V2 - HubSpot : { label: fr.onboarding.hubspotNotConnected, done: status.hubspot_connected },
   ].filter(s => !s.done);
 
   const remaining = steps.length;
@@ -38,8 +39,9 @@ export default function OnboardingProgressBar({ status }: Props) {
             ))}
           </div>
         </div>
+        {/* V2 - remplacer /settings par /settings/integrations quand HubSpot réactivé */}
         <Link
-          to="/settings/integrations"
+          to="/settings"
           className="text-xs font-medium text-primary hover:underline shrink-0"
         >
           {fr.onboarding.configureIntegrations} →

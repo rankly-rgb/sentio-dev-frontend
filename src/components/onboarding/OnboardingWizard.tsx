@@ -4,7 +4,7 @@ import OnboardingStepper from './OnboardingStepper';
 import StepConnectStripe from './StepConnectStripe';
 import StepImportData from './StepImportData';
 import StepFirstWin from './StepFirstWin';
-import StepConnectHubspot from './StepConnectHubspot';
+// V2 - HubSpot : import { StepConnectHubspot } from './StepConnectHubspot';
 
 const LS_KEY = 'sentio_onboarding_state';
 
@@ -103,9 +103,11 @@ export default function OnboardingWizard() {
             {state.currentStep === 3 && (
               <StepFirstWin onConnectHubspot={handleGoToHubspot} />
             )}
+            {/* V2 - HubSpot
             {state.currentStep === 4 && (
               <StepConnectHubspot />
             )}
+            */}
           </div>
         </div>
       </main>

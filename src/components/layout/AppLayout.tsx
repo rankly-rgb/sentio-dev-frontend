@@ -37,7 +37,7 @@ import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const fr = useT();
+  useT(); // V2 - résultat utilisé par le webhook indicator (commenté) — réactiver const fr = useT() en V2
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
@@ -69,7 +69,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, []);
   const criticalInsightsCount = statsData?.data?.by_priority?.critical ?? 0;
   const { totalCount: todayActionsCount } = useTodayActions();
-  const { data: webhookConfig } = useWebhookConfig();
+  useWebhookConfig(); // V2 - appelé pour ses side-effects (prefetch), résultat non utilisé en V1
   const { data: pendingApprovalsCount = 0 } = usePendingApprovalsCount();
   const { data: trialStatus } = useTrialStatus();
 
@@ -201,7 +201,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         </Link>
 
-        {/* Destinations webhook */}
+        {/* V2 - Webhook destinations
         <Link
           to="/settings/destinations"
           onClick={() => setMobileOpen(false)}
@@ -215,8 +215,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Zap className="h-[14px] w-[14px] shrink-0" />
           <span>{t('nav.destinations')}</span>
         </Link>
+        */}
 
-        {/* Webhook status indicator */}
+        {/* V2 - Webhook status indicator
         <Link
           to="/settings/integrations"
           onClick={() => setMobileOpen(false)}
@@ -240,6 +241,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 : fr.integrations.sidebar.webhookNotConfigured}
           </span>
         </Link>
+        */}
       </nav>
 
       {/* Admin */}

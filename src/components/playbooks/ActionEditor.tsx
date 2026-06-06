@@ -470,7 +470,11 @@ export default function ActionEditor({ actions, onChange, isWorkflow = false }: 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ACTION_TYPES.filter((t) => t !== 'send_email' || isWorkflow).map((t) => (
+                  {ACTION_TYPES.filter((t) => {
+                    // V2 - HubSpot/Slack : masqués en V1 (code conservé pour V2)
+                    if (['slack_notify', 'send_email_hubspot', 'hubspot_enroll_sequence', 'hubspot_update_company'].includes(t)) return false;
+                    return t !== 'send_email' || isWorkflow;
+                  }).map((t) => (
                     <SelectItem key={t} value={t}>
                       {fr.playbooks.actionType[t]}
                     </SelectItem>

@@ -1,3 +1,17 @@
+// V2 - HubSpot : page masquée en V1.
+// Le flux onboarding saute cette étape (SyncWait navigue directement vers /onboarding/done).
+// Ce composant redirige automatiquement si quelqu'un atteint la route directement.
+// Pour réactiver en V2 : restaurer le code commenté ci-dessous et mettre à jour SyncWait.
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function HubSpot() {
+  const navigate = useNavigate();
+  useEffect(() => { navigate('/onboarding/done', { replace: true }); }, [navigate]);
+  return null;
+}
+
+/* V2 - HubSpot : code original conservé
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Check, ShieldCheck, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
@@ -71,7 +85,6 @@ export default function HubSpot() {
           </span>
         </div>
 
-        {/* Instructions */}
         <div className="bg-[#0f172a] rounded-xl p-4 text-sm space-y-2">
           <p className="font-medium text-[#94a3b8]">{w.instructionsTitle}</p>
           <ol className="space-y-1 text-[#64748b] list-decimal list-inside">
@@ -81,7 +94,6 @@ export default function HubSpot() {
           </ol>
         </div>
 
-        {/* Token input */}
         <div className="space-y-1.5">
           <Label htmlFor="hubspot-token" className="text-sm text-[#94a3b8]">{w.tokenLabel}</Label>
           <div className="relative">
@@ -105,7 +117,6 @@ export default function HubSpot() {
           {error && <p className="text-xs text-red-400">{error}</p>}
         </div>
 
-        {/* Connect CTA */}
         <button
           type="button"
           onClick={handleConnect}
@@ -128,7 +139,6 @@ export default function HubSpot() {
           {(submitState === 'idle' || submitState === 'error') && w.cta}
         </button>
 
-        {/* Skip */}
         <div className="text-center">
           <button
             type="button"
@@ -143,7 +153,6 @@ export default function HubSpot() {
           </button>
         </div>
 
-        {/* What HubSpot adds */}
         <div className="border-t border-[#334155] pt-5">
           <p className="text-xs font-medium text-[#64748b] uppercase tracking-wide mb-3">{w.syncTitle}</p>
           <ul className="space-y-2">
@@ -157,7 +166,6 @@ export default function HubSpot() {
           <p className="text-xs text-emerald-400 mt-3">{w.pushBadge}</p>
         </div>
 
-        {/* Zero PII badge */}
         <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-900/30 border border-emerald-500/20 rounded-lg px-3 py-2">
           <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0" />
           {w.zeroPiiBadge}
@@ -166,3 +174,4 @@ export default function HubSpot() {
     </WizardLayout>
   );
 }
+*/
