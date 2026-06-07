@@ -60,6 +60,9 @@ export const en: Translations = {
     recentSyncs: 'Recent syncs',
     noSyncs: 'No syncs yet',
     noSyncsDesc: 'Connect Stripe in Settings to trigger the first sync.',
+    criticalAlertTitle: (n: number) => `${n} account${n > 1 ? 's' : ''} in critical danger`,
+    criticalAlertMrr: (mrr: string) => `— ${mrr} MRR at risk`,
+    criticalAlertCta: 'View accounts →',
   },
 
   benchmark: {
@@ -668,6 +671,18 @@ export const en: Translations = {
     owner: 'Owner',
     admin: 'Admin',
     member: 'Member',
+    notifications: 'Email notifications',
+    notificationsDesc: 'Sentio sends you alerts when accounts enter the critical zone.',
+    notificationEmail: 'Notification email',
+    notificationEmailPlaceholder: 'you@company.com',
+    saveEmail: 'Save',
+    emailSaved: 'Email saved.',
+    churnAlertEnabled: 'Immediate churn alerts (accounts > 70% risk)',
+    weeklyDigestEnabled: 'Weekly digest (every Monday morning)',
+    sendTestAlert: 'Send a test email →',
+    testAlertSuccess: 'Email sent — check your inbox.',
+    testAlertError: 'Error sending email. Check your notification email.',
+    savingPrefs: 'Saving…',
   },
 
   onboarding: {

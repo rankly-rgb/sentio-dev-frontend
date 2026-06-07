@@ -243,6 +243,28 @@ export default function Dashboard() {
       {/* Tracker banner */}
       {!trackerConnected && <TrackerBanner />}
 
+      {/* Critical accounts alert banner */}
+      {(topAccounts?.atRisk?.length ?? 0) > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+          <div>
+            <span className="font-semibold text-red-700">
+              {fr.dashboard.criticalAlertTitle(topAccounts!.atRisk.length)}
+            </span>
+            <span className="text-red-600 ml-2">
+              {fr.dashboard.criticalAlertMrr(
+                fr.format.currency(topAccounts!.atRisk.reduce((s, a) => s + (a.mrr_cents || 0), 0))
+              )}
+            </span>
+          </div>
+          <Link
+            to="/dashboard/segments/critical"
+            className="text-red-700 font-medium hover:underline text-sm whitespace-nowrap ml-4"
+          >
+            {fr.dashboard.criticalAlertCta}
+          </Link>
+        </div>
+      )}
+
       {/* V2 setup progression widget — masqué en V1 (onboarding_completed non fiable)
       {showSetupWidget && v2Status && <SetupWidget onboardingStep={v2Status.onboarding_step} />}
       */}

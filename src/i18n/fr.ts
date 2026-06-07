@@ -60,6 +60,9 @@ export const fr = {
     recentSyncs: "Synchronisations récentes",
     noSyncs: "Aucune synchronisation effectuée",
     noSyncsDesc: "Connectez Stripe dans les Paramètres pour lancer la première synchronisation.",
+    criticalAlertTitle: (n: number) => `${n} compte${n > 1 ? 's' : ''} en danger critique`,
+    criticalAlertMrr: (mrr: string) => `— ${mrr} MRR à risque`,
+    criticalAlertCta: "Voir les comptes →",
   },
 
   // Benchmarks sectoriels
@@ -705,6 +708,18 @@ export const fr = {
     owner: "Propriétaire",
     admin: "Administrateur",
     member: "Membre",
+    notifications: "Notifications email",
+    notificationsDesc: "Sentio vous envoie des alertes quand des comptes passent en zone critique.",
+    notificationEmail: "Email de notification",
+    notificationEmailPlaceholder: "vous@entreprise.com",
+    saveEmail: "Enregistrer",
+    emailSaved: "Email enregistré.",
+    churnAlertEnabled: "Alertes churn immédiates (comptes > 70 % risque)",
+    weeklyDigestEnabled: "Digest hebdomadaire (chaque lundi matin)",
+    sendTestAlert: "Envoyer un email de test →",
+    testAlertSuccess: "Email envoyé — vérifiez votre boîte.",
+    testAlertError: "Erreur lors de l’envoi. Vérifiez votre email de notification.",
+    savingPrefs: "Enregistrement…",
   },
 
   // Onboarding

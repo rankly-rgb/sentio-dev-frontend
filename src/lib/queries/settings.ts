@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { TeamMember, UserProfile, OrganizationDetail } from '@/lib/types/settings';
+import type { TeamMember, UserProfile, OrganizationDetail, NotificationPreferences } from '@/lib/types/settings';
 
 /** Masquer un email pour l'affichage Zero-PII */
 export function maskEmail(email: string): string {
@@ -57,7 +57,7 @@ export async function getCurrentProfile(userId: string): Promise<UserProfile | n
 export async function getOrganizationDetails(orgId: string): Promise<OrganizationDetail | null> {
   const { data, error } = await supabase
     .from('organizations')
-    .select('id, name, created_at, stripe_account_id, stripe_customer_id, hubspot_api_key, usage_tracker_connected, usage_tracker_last_event_at')
+    .select('id, name, created_at, stripe_account_id, stripe_customer_id, hubspot_api_key, usage_tracker_connected, usage_tracker_last_event_at, notification_email, churn_alert_enabled, weekly_digest_enabled')
     .eq('id', orgId)
     .single();
 
@@ -67,18 +67,43 @@ export async function getOrganizationDetails(orgId: string): Promise<Organizatio
   }
   if (!data) return null;
 
+  const d = data as typeof data & {
+    notification_email?: string | null;
+    churn_alert_enabled?: boolean | null;
+    weekly_digest_enabled?: boolean | null;
+  };
+
   return {
-    id: data.id,
-    name: data.name || '',
-    stripe_account_id: data.stripe_account_id || null,
-    stripe_customer_id: data.stripe_customer_id || null,
-    hubspot_api_key: data.hubspot_api_key || null,
-    stripe_connected: !!data.stripe_account_id,
-    hubspot_connected: !!data.hubspot_api_key,
-    usage_tracker_connected: !!data.usage_tracker_connected,
-    usage_tracker_last_event_at: data.usage_tracker_last_event_at || null,
+    id: d.id,
+    name: d.name || '',
+    stripe_account_id: d.stripe_account_id || null,
+    stripe_customer_id: d.stripe_customer_id || null,
+    hubspot_api_key: d.hubspot_api_key || null,
+    stripe_connected: !!d.stripe_account_id,
+    hubspot_connected: !!d.hubspot_api_key,
+    usage_tracker_connected: !!d.usage_tracker_connected,
+    usage_tracker_last_event_at: d.usage_tracker_last_event_at || null,
     last_stripe_sync_at: null,
     last_hubspot_sync_at: null,
-    created_at: data.created_at || '',
+    created_at: d.created_at || '',
+    notification_email: d.notification_email ?? null,
+    churn_alert_enabled: d.churn_alert_enabled ?? false,
+    weekly_digest_enabled: d.weekly_digest_enabled ?? false,
   };
+}
+
+export async function updateNotificationPreferences(
+  orgId: string,
+  prefs: NotificationPreferences,
+): Promise<void> {
+  const { error } = await supabase
+    .from('organizations')
+    .update({
+      notification_email: prefs.notification_email,
+      churn_alert_enabled: prefs.churn_alert_enabled,
+      weekly_digest_enabled: prefs.weekly_digest_enabled,
+    })
+    .eq('id', orgId);
+
+  if (error) throw new Error('Échec de la sauvegarde des préférences : ' + error.message);
 }
