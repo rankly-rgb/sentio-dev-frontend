@@ -123,7 +123,9 @@ export const en: Translations = {
     exportCsv: 'Export CSV',
     exporting: 'Exporting…',
     exportError: 'Export error',
-    zeroPiiNote: 'Zero-PII export — technical identifiers only (stripe_customer_id, hubspot_company_id)',
+    zeroPiiNote: 'Emails are fetched from Stripe at export time — never stored by Sentio.',
+    exportSequenceTemplate: 'Sequence template',
+    exportingSequence: 'Downloading…',
     renewal: 'Renewal',
     noAccounts: 'No accounts in this segment',
     truncatedBanner: (count: number) =>
@@ -145,6 +147,7 @@ export const en: Translations = {
     noAccounts: 'No accounts found',
     errorLoading: 'Unable to load accounts',
     exportCsv: 'Export CSV',
+    transitPiiNote: 'Emails are fetched from Stripe at export time — never stored by Sentio.',
     monthly: 'Monthly',
     annual: 'Annual',
     starter: 'Starter',

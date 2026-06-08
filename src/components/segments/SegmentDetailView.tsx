@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { getAccountLabel } from '@/lib/account-display';
 import { Link } from 'react-router-dom';
-import { Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { Download, ChevronUp, ChevronDown, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,7 @@ import {
 import ScoreBadge from '@/components/ScoreBadge';
 import { useT } from '@/lib/i18n/useT';
 import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
-import { supabase } from '@/lib/supabase';
+import { exportCsvWithEmail, exportSequenceTemplate } from '@/lib/exportCsv';
 import type { SegmentType, SegmentAccount } from '@/lib/types/segments';
 import { SEGMENT_COLORS } from '@/lib/types/segments';
 
@@ -45,6 +45,8 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [page, setPage] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [exportingSequence, setExportingSequence] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const colors = SEGMENT_COLORS[segment];
 
@@ -84,40 +86,37 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
     [sortField],
   );
 
+  const isCritical = segment === 'en_danger_critique';
+
   const handleExport = useCallback(async () => {
     setExporting(true);
+    setExportError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error(fr.auth.sessionExpired);
-      }
-      const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const res = await fetch(
-        `${baseUrl}/functions/v1/export-segment-csv?segment=${encodeURIComponent(segment)}`,
-        {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        },
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: `Erreur ${res.status}` }));
-        throw new Error((body as { error?: string }).error ?? `Erreur ${res.status}`);
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `segment-${segment}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const options = isCritical
+        ? { filters: { min_churn_risk: 70 } }
+        : { segment_id: segment };
+      await exportCsvWithEmail(options);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      setExportError(message);
+      setTimeout(() => setExportError(null), 5000);
       toast.error(fr.segmentDetail.exportError + ' : ' + message);
     } finally {
       setExporting(false);
     }
-  }, [segment, fr]);
+  }, [segment, isCritical, fr]);
+
+  const handleExportSequence = useCallback(async () => {
+    setExportingSequence(true);
+    try {
+      await exportSequenceTemplate();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message);
+    } finally {
+      setExportingSequence(false);
+    }
+  }, []);
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ChevronDown className="inline h-3 w-3 opacity-30" />;
@@ -163,14 +162,26 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
             {accounts.length} {fr.segmentDetail.accountCount} · MRR {fr.format.currency(totalMrr)} · {fr.segmentDetail.avgHealth} {avgHealth !== null ? avgHealth : '—'}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
-            <Download className="h-4 w-4 mr-1" />
-            {exporting ? fr.segmentDetail.exporting : fr.segmentDetail.exportCsv}
-          </Button>
-          <span className="text-[10px] text-muted-foreground max-w-[240px] text-right">
-            {fr.segmentDetail.zeroPiiNote}
-          </span>
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="flex items-center gap-2">
+            {isCritical && (
+              <Button variant="ghost" size="sm" onClick={handleExportSequence} disabled={exportingSequence}>
+                <FileText className="h-4 w-4 mr-1" />
+                {exportingSequence ? fr.segmentDetail.exportingSequence : fr.segmentDetail.exportSequenceTemplate}
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+              <Download className="h-4 w-4 mr-1" />
+              {exporting ? fr.segmentDetail.exporting : fr.segmentDetail.exportCsv}
+            </Button>
+          </div>
+          {exportError ? (
+            <span className="text-[10px] text-destructive max-w-[300px] text-right">{exportError}</span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground max-w-[300px] text-right">
+              {fr.segmentDetail.zeroPiiNote}
+            </span>
+          )}
         </div>
       </div>
 

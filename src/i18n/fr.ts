@@ -127,7 +127,9 @@ export const fr = {
     exportCsv: 'Exporter CSV',
     exporting: 'Export en cours\u2026',
     exportError: "Erreur lors de l'export",
-    zeroPiiNote: 'Export Zero-PII \u2014 identifiants techniques uniquement (stripe_customer_id, hubspot_company_id)',
+    zeroPiiNote: 'Les emails sont r\u00e9cup\u00e9r\u00e9s depuis Stripe au moment de l\u2019export \u2014 jamais stock\u00e9s par Sentio.',
+    exportSequenceTemplate: 'Mod\u00e8le de s\u00e9quence',
+    exportingSequence: 'T\u00e9l\u00e9chargement\u2026',
     renewal: 'Renouvellement',
     noAccounts: 'Aucun compte dans ce segment',
     truncatedBanner: (count: number) =>
@@ -150,6 +152,7 @@ export const fr = {
     noAccounts: "Aucun compte trouvé",
     errorLoading: "Impossible de charger les comptes",
     exportCsv: "Exporter CSV",
+    transitPiiNote: "Les emails sont récupérés depuis Stripe au moment de l'export — jamais stockés par Sentio.",
     monthly: "Mensuel",
     annual: "Annuel",
     starter: "Starter",

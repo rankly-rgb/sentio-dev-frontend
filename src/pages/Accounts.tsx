@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
-import { exportAccountsCsv } from '@/lib/exportCsv';
+import { exportCsvWithEmail } from '@/lib/exportCsv';
 import { useT } from '@/lib/i18n/useT';
 import { useLanguage } from '@/lib/i18n/useLanguage';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ export default function Accounts() {
   const [search, setSearch] = useState('');
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [flagsOnly, setFlagsOnly] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
   const { t } = useLanguage();
@@ -31,11 +32,13 @@ export default function Accounts() {
 
   const handleExport = useCallback(async () => {
     setExporting(true);
+    setExportError(null);
     try {
-      const { exported } = await exportAccountsCsv();
-      toast.success(`${exported} comptes exportés`);
+      await exportCsvWithEmail({ limit: 2000 });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      setExportError(msg);
+      setTimeout(() => setExportError(null), 5000);
       toast.error(msg);
     } finally {
       setExporting(false);
@@ -56,10 +59,19 @@ export default function Accounts() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('accounts.title')}</h1>
-        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
-          <Download className="h-4 w-4 mr-2" />
-          {exporting ? fr.segmentDetail.exporting : fr.accounts.exportCsv}
-        </Button>
+        <div className="flex flex-col items-end gap-1">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            <Download className="h-4 w-4 mr-2" />
+            {exporting ? fr.segmentDetail.exporting : fr.accounts.exportCsv}
+          </Button>
+          {exportError ? (
+            <span className="text-[10px] text-destructive text-right max-w-[280px]">{exportError}</span>
+          ) : (
+            <span className="text-[10px] text-muted-foreground text-right max-w-[280px]">
+              {fr.accounts.transitPiiNote}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Cartes résumé */}
