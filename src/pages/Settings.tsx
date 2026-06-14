@@ -1,5 +1,7 @@
 // import { Link } from 'react-router-dom'; // V2 - utilisé par les liens Integrations/Webhook/Destinations
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import ProductMappingTable from '@/components/settings/ProductMappingTable';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
@@ -20,6 +22,9 @@ import { CheckCircle, XCircle, UserPlus } from 'lucide-react';
 
 export default function Settings() {
   const fr = useT();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') ?? 'organization';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const { organization, team, isLoading } = useOrganizationSettings();
   const { t } = useLanguage();
   const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();
@@ -93,12 +98,13 @@ export default function Settings() {
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">{fr.settings.title}</h1>
 
-      <Tabs defaultValue="organization">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="organization">{fr.settings.organization}</TabsTrigger>
           <TabsTrigger value="integrations">{fr.settings.integrations}</TabsTrigger>
           <TabsTrigger value="notifications">{fr.settings.notifications}</TabsTrigger>
           <TabsTrigger value="team">{fr.settings.team}</TabsTrigger>
+          <TabsTrigger value="plans-sieges">{fr.settings.plans.tabLabel}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="organization" className="mt-4 space-y-4">
@@ -296,6 +302,18 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="plans-sieges" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{fr.settings.plans.tabLabel}</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">{fr.settings.plans.tabDescription}</p>
+            </CardHeader>
+            <CardContent>
+              <ProductMappingTable />
             </CardContent>
           </Card>
         </TabsContent>

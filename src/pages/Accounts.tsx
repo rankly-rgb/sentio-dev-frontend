@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
@@ -101,6 +102,23 @@ export default function Accounts() {
               <p className="text-2xl font-bold text-success">{summary.expansion_ready}</p>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Bandeau Plans & Sièges non configurés */}
+      {!isLoading && accounts.length > 0 && (() => {
+        const nullCount = accounts.filter(a => a.plan_tier === null).length;
+        return nullCount / accounts.length > 0.8;
+      })() && (
+        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-800">
+          <span>{fr.accounts.plansBannerText}</span>
+          <span aria-hidden>→</span>
+          <Link
+            to="/settings?tab=plans-sieges"
+            className="font-medium underline underline-offset-2 hover:text-blue-900"
+          >
+            {fr.accounts.plansBannerLink}
+          </Link>
         </div>
       )}
 
