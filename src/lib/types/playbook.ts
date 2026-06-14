@@ -26,8 +26,39 @@ export type ActionType =
   | 'schedule_review'
   | 'flag_for_review'
   | 'send_email'
+  | 'export_csv'
   | 'hubspot_enroll_sequence'
   | 'hubspot_update_company';
+
+// V1 — actions disponibles
+export type PlaybookActionType = 'send_email' | 'export_csv' | 'log_note' | 'flag_for_review';
+/* V2 : 'slack_notify' | 'hubspot_enroll_sequence' | 'hubspot_update_company' | 'hubspot_create_task' */
+
+export type PlaybookTemplateCategory =
+  | 'churn_prevention'
+  | 'expansion'
+  | 'renewal'
+  | 'payment_recovery'
+  | 'reactivation';
+/* V2 : | 'onboarding' | 'winback' | 'health_monitoring' | ... */
+
+export interface PlaybookTemplate {
+  id: string;
+  title: string;
+  description: string;
+  playbook_type: PlaybookType;
+  template_category: PlaybookTemplateCategory;
+  priority: PlaybookPriority;
+  is_automated: boolean;
+  trigger_conditions: Record<string, unknown>;
+  actions: PlaybookAction[];
+}
+
+const V1_ACTION_TYPES = new Set<string>(['send_email', 'export_csv', 'log_note', 'flag_for_review']);
+
+export function isPlaybookActionType(type: string): type is PlaybookActionType {
+  return V1_ACTION_TYPES.has(type);
+}
 export type ExecutionFrequency = 'daily' | 'weekly' | 'monthly';
 export type ConditionOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in';
 export type ConditionField =

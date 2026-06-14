@@ -5,6 +5,8 @@ import { useLanguage } from '@/lib/i18n/useLanguage';
 import {
   listPlaybooks,
   listPlaybookTemplates,
+  listPlaybookTemplatesV1,
+  createPlaybookFromTemplate,
   getPlaybook,
   createPlaybook,
   updatePlaybookViaApi,
@@ -55,6 +57,29 @@ export function usePlaybookTemplates() {
     queryFn: () => listPlaybookTemplates(user?.organization_id ?? ''),
     enabled: !!user?.organization_id,
     staleTime: 120_000,
+  });
+}
+
+export function usePlaybookTemplatesV1(locale: 'fr' | 'en' = 'fr') {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['playbooks', 'templates-v1', user?.organization_id ?? '', locale],
+    queryFn: () => listPlaybookTemplatesV1(locale),
+    enabled: !!user?.organization_id,
+    staleTime: 120_000,
+  });
+}
+
+export function useCreatePlaybookFromTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { templateId: string; title?: string }) =>
+      createPlaybookFromTemplate({ from_template_id: payload.templateId, title: payload.title }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
+    },
+    retry: false,
+    onError: () => {},
   });
 }
 

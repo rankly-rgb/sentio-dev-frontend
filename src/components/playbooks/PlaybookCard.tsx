@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { useT } from '@/lib/i18n/useT';
 import PlaybookStatusBadge from './PlaybookStatusBadge';
 import PriorityBadge from './PriorityBadge';
-import type { Playbook } from '@/lib/types/playbook';
+import PlaybookActionBadge from './PlaybookActionBadge';
+import { isPlaybookActionType } from '@/lib/types/playbook';
+import type { Playbook, PlaybookActionType } from '@/lib/types/playbook';
 
 interface Props {
   playbook: Playbook;
@@ -57,6 +59,24 @@ export default function PlaybookCard({ playbook }: Props) {
             {fr.playbooks.category[playbook.template_category] ?? playbook.template_category}
           </span>
         )}
+
+        {/* Action badges (V1 types only) */}
+        {playbook.actions && playbook.actions.length > 0 && (() => {
+          const v1Actions = playbook.actions.filter(a => isPlaybookActionType(a.type));
+          if (v1Actions.length === 0) return null;
+          const visible = v1Actions.slice(0, 2);
+          const extra = v1Actions.length - visible.length;
+          return (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {visible.map((a, i) => (
+                <PlaybookActionBadge key={i} actionType={a.type as PlaybookActionType} />
+              ))}
+              {extra > 0 && (
+                <span className="text-xs text-muted-foreground">+{extra}</span>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Stats */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">

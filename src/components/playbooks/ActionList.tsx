@@ -23,6 +23,7 @@ const actionIcons: Record<ActionType, React.ElementType> = {
   schedule_review: CalendarClock,
   flag_for_review: Flag,
   send_email: Mail,
+  export_csv: FileText,
   hubspot_enroll_sequence: ListChecks,
   hubspot_update_company: Building2,
 };

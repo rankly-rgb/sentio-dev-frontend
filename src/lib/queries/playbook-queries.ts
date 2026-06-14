@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import type {
   Playbook,
+  PlaybookTemplate,
   PlaybookFilters,
   PlaybookListResponse,
   CreatePlaybookPayload,
@@ -41,6 +42,41 @@ export async function listPlaybookTemplates(
   return fetchWithUserJwt<PlaybookListResponse>(
     `playbook-crud?organization_id=${organizationId}&is_template=true&per_page=50`,
   );
+}
+
+interface PlaybookTemplatesV1Response {
+  data: {
+    templates: PlaybookTemplate[];
+    locale: string;
+    total: number;
+  };
+}
+
+export async function listPlaybookTemplatesV1(locale: 'fr' | 'en' = 'fr'): Promise<PlaybookTemplate[]> {
+  const res = await fetchWithUserJwt<PlaybookTemplatesV1Response>(`playbook-templates?locale=${locale}`);
+  return res.data.templates;
+}
+
+export interface CreateFromTemplatePayload {
+  from_template_id: string;
+  title?: string;
+}
+
+export interface CreateFromTemplateResponse {
+  id: string;
+  title: string;
+  status: string;
+  actions: Playbook['actions'];
+  organization_id: string;
+}
+
+export async function createPlaybookFromTemplate(
+  payload: CreateFromTemplatePayload,
+): Promise<CreateFromTemplateResponse> {
+  return fetchWithUserJwt<CreateFromTemplateResponse>('playbook-crud', {
+    method: 'POST',
+    body: payload,
+  });
 }
 
 export async function getPlaybook(id: string): Promise<Playbook> {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +18,7 @@ import { usePlaybooks, useWorkflows } from '@/hooks/usePlaybooks';
 import PlaybookCard from '@/components/playbooks/PlaybookCard';
 import WorkflowCard from '@/components/workflows/WorkflowCard';
 import SuggestedPlaybook from '@/components/playbooks/SuggestedPlaybook';
+import NewPlaybookModal from '@/components/playbooks/NewPlaybookModal';
 import type { Playbook, PlaybookStatus, PlaybookType, TemplateCategory, PlaybookFilters } from '@/lib/types/playbook';
 
 const STATUSES: PlaybookStatus[] = ['draft', 'active', 'paused', 'completed', 'archived'];
@@ -33,6 +35,7 @@ export default function Playbooks() {
   const fr = useT();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'playbooks' | 'workflows'>('playbooks');
+  const [isNewPlaybookModalOpen, setIsNewPlaybookModalOpen] = useState(false);
 
   // Playbooks filters
   const [pbFilterStatus, setPbFilterStatus] = useState<string>('all');
@@ -78,8 +81,14 @@ export default function Playbooks() {
     if (activeTab === 'workflows') {
       navigate('/playbooks/new?type=workflow');
     } else {
-      navigate('/playbooks/new');
+      setIsNewPlaybookModalOpen(true);
     }
+  };
+
+  const handlePlaybookCreated = (id: string) => {
+    toast.success(fr.playbooks.newModal.success);
+    pbQuery.refetch();
+    navigate(`/playbooks/${id}`);
   };
 
   return (
@@ -164,6 +173,12 @@ export default function Playbooks() {
           />
         </TabsContent>
       </Tabs>
+
+      <NewPlaybookModal
+        open={isNewPlaybookModalOpen}
+        onOpenChange={setIsNewPlaybookModalOpen}
+        onCreated={handlePlaybookCreated}
+      />
     </div>
   );
 }
