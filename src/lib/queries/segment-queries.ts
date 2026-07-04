@@ -78,7 +78,7 @@ export async function getSegmentAccounts(segment: SegmentType, organizationId: s
 
   const filter = getSegmentFilter(segment);
   const rows = (data || []) as AccountRow[];
-  return rows.filter(filter).map((a) => ({
+  const filtered = rows.filter(filter).map((a) => ({
     id: a.id,
     stripe_customer_id: a.stripe_customer_id,
     display_name: a.display_name ?? null,
@@ -94,4 +94,9 @@ export async function getSegmentAccounts(segment: SegmentType, organizationId: s
     expansion_score: a.expansion_score,
     product_usage_score: a.product_usage_score,
   }));
+  if (import.meta.env.DEV) {
+    const dupeCount = filtered.length - new Set(filtered.map(a => a.stripe_customer_id)).size;
+    if (dupeCount > 0) console.warn(`[sentio] segment(${segment}): ${dupeCount} duplicate stripe_customer_id(s) detected`);
+  }
+  return Array.from(new Map(filtered.map(a => [a.stripe_customer_id, a])).values());
 }

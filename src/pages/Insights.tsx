@@ -57,7 +57,20 @@ export default function Insights() {
     updateStatus.mutate({ id, status: 'dismissed' });
   }, [updateStatus]);
 
-  const insights = listData?.data ?? [];
+  const insights = useMemo(() => {
+    const raw = listData?.data ?? [];
+    const seen = new Set<string>();
+    const deduped = raw.filter(i => {
+      const key = `${i.account_id}|${i.insight_type}|${i.created_at.slice(0, 10)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    if (import.meta.env.DEV && deduped.length < raw.length) {
+      console.warn(`[sentio] insights: ${raw.length - deduped.length} duplicate(s) detected (account_id+insight_type+date)`);
+    }
+    return deduped;
+  }, [listData]);
   const pagination = listData?.pagination;
 
   return (

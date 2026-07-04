@@ -57,14 +57,20 @@ export async function getAccountList(params: {
   if (params.search) qs.set('search', params.search);
   const path = qs.toString() ? `accounts-api?${qs}` : 'accounts-api';
   const res = await fetchWithUserJwt<AccountsListResponse>(path);
+  const mapped = res.data.map(a => ({
+    ...a,
+    display_name: a.display_name ?? null,
+    active_subscriptions: 0,
+    segment_name: null,
+    flags: Array.isArray(a.flags) ? a.flags : [],
+  }));
+  if (import.meta.env.DEV) {
+    const dupeCount = mapped.length - new Set(mapped.map(a => a.stripe_customer_id)).size;
+    if (dupeCount > 0) console.warn(`[sentio] accounts-api: ${dupeCount} duplicate stripe_customer_id(s) detected`);
+  }
+  const deduped = Array.from(new Map(mapped.map(a => [a.stripe_customer_id, a])).values());
   return {
-    data: res.data.map(a => ({
-      ...a,
-      display_name: a.display_name ?? null,
-      active_subscriptions: 0,
-      segment_name: null,
-      flags: Array.isArray(a.flags) ? a.flags : [],
-    })),
+    data: deduped,
     pagination: res.pagination,
   };
 }
