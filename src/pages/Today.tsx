@@ -1,5 +1,5 @@
 import { useRef, useState, useMemo, useCallback } from 'react';
-import { CheckCircle, CalendarCheck, Loader2, Download } from 'lucide-react';
+import { CalendarCheck, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
@@ -15,9 +15,9 @@ import TodaySummaryBar from '@/components/today/TodaySummaryBar';
 import TodayFilters from '@/components/today/TodayFilters';
 import TodayPriorityGroup from '@/components/today/TodayPriorityGroup';
 import DailyBriefing from '@/components/today/DailyBriefing';
+import TodayHeroCard from '@/components/today/TodayHeroCard';
 import WeeklyWins from '@/components/today/WeeklyWins';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
-import EmptyState from '@/components/EmptyState';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -36,7 +36,7 @@ export default function Today() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<TodayActionsFilters>({});
   const [exporting, setExporting] = useState(false);
-  const { summary, playbooks, isLoading, error } = useTodayActions(filters);
+  const { summary, accounts, playbooks, isLoading, error } = useTodayActions(filters);
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   const p0Ref = useRef<HTMLDivElement>(null);
@@ -145,16 +145,8 @@ export default function Today() {
       {/* Daily briefing — always shown */}
       <DailyBriefing />
 
-      {/* Empty state */}
-      {summary && summary.total === 0 && (
-        <EmptyState
-          icon={CheckCircle}
-          title={fr.todayActions.noActions}
-          description={fr.todayActions.noActionsDesc}
-          actionLabel={fr.todayActions.viewDashboard}
-          actionHref="/dashboard"
-        />
-      )}
+      {/* Hero card — always shown, never an empty state */}
+      <TodayHeroCard accounts={accounts} p0InsightsCount={summary?.by_priority.P0 ?? 0} />
 
       {/* Content */}
       {summary && summary.total > 0 && (

@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useT } from '@/lib/i18n/useT';
 import { useInsights, useInsightStats, useUpdateInsightStatus } from '@/hooks/useInsights';
 import InsightStatsCards from '@/components/insights/InsightStatsCards';
@@ -15,6 +16,8 @@ type SortOption = 'created_at' | 'priority' | 'confidence_score' | 'mrr_impact_c
 
 export default function Insights() {
   const fr = useT();
+  const [searchParams] = useSearchParams();
+  const priorityFromUrl = searchParams.get('priority') ?? '';
   const [insightType, setInsightType] = useState('');
   const [status, setStatus] = useState('active');
   const [sort, setSort] = useState<SortOption>('created_at');
@@ -22,6 +25,7 @@ export default function Insights() {
 
   const filters: FiltersType = {
     ...(insightType ? { insight_type: insightType } : {}),
+    ...(priorityFromUrl ? { priority: priorityFromUrl } : {}),
     status,
     sort,
     page,

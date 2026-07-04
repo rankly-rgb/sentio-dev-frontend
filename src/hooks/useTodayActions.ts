@@ -84,6 +84,7 @@ export function useTodayActions(filters?: TodayActionsFilters) {
   return {
     summary,
     totalCount: totalUnfilteredCount,
+    accounts: accountsQuery.data ?? [],
     playbooks: playbooksQuery.data?.data ?? [],
     isLoading: accountsQuery.isLoading || playbooksQuery.isLoading,
     error: accountsQuery.error ?? playbooksQuery.error,

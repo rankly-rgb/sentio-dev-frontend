@@ -1247,6 +1247,15 @@ export const en: Translations = {
     allClear: "Everything's under control today.",
     nextRenewal: (days: number) => `Next renewal to watch: in ${days} days.`,
     perMonth: '/mo',
+    hero: {
+      urgentTitle: 'Priority account',
+      mrrExposed: 'MRR exposed',
+      riskScore: 'Risk score',
+      viewAccount: 'View this account',
+      stableTitle: 'Stable portfolio',
+      mrrSecured: 'Total MRR secured',
+      championsCount: (n: number) => `${n} champion${n > 1 ? 's' : ''}`,
+    },
   },
 
   playbookExport: {

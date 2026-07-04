@@ -1297,6 +1297,15 @@ export const fr = {
     allClear: "Tout est sous contr\u00f4le aujourd'hui.",
     nextRenewal: (days: number) => `Prochain renouvellement \u00e0 surveiller : dans ${days} jours.`,
     perMonth: "/mois",
+    hero: {
+      urgentTitle: 'Compte prioritaire',
+      mrrExposed: 'MRR expos\u00e9',
+      riskScore: 'Score de risque',
+      viewAccount: 'Voir ce compte',
+      stableTitle: 'Portefeuille stable',
+      mrrSecured: 'MRR total s\u00e9curis\u00e9',
+      championsCount: (n: number) => `${n} champion${n > 1 ? 's' : ''}`,
+    },
   },
 
   // Export playbook
