@@ -1,6 +1,16 @@
 import type { Translations } from './fr';
 
-export const en: Translations = {
+// English-only keys (no French equivalent — fr.ts is being phased out, see CLAUDE.md)
+type EnOnlyKeys = {
+  today: {
+    hero: {
+      requiresAttention: (n: number) => string;
+      loadError: string;
+    };
+  };
+};
+
+export const en: Translations & EnOnlyKeys = {
   nav: {
     today: 'Today',
     dashboard: 'Overview',
@@ -1255,6 +1265,8 @@ export const en: Translations = {
       stableTitle: 'Stable portfolio',
       mrrSecured: 'Total MRR secured',
       championsCount: (n: number) => `${n} champion${n > 1 ? 's' : ''}`,
+      requiresAttention: (n: number) => `${n} account${n > 1 ? 's' : ''} require immediate attention`,
+      loadError: 'Unable to load portfolio status',
     },
   },
 

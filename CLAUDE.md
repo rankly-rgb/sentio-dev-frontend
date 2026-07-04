@@ -20,7 +20,7 @@
 - IMPORTANT: TypeScript `strict: true` — JAMAIS de `any`, `as any`, `@ts-ignore`, `@ts-expect-error`
 - YOU MUST exécuter `npx tsc --noEmit` avant de considérer une tâche terminée
 - YOU MUST exécuter `npm run build` pour vérifier que le build passe
-- Toute l'interface est en français (traductions dans `src/i18n/fr.ts`)
+- IMPORTANT: The product UI is 100% American English (en-US). Do not add French strings anywhere.
 - Zero PII côté client — pas d'email/nom affiché (uniquement IDs Stripe anonymes)
 - DOMPurify.sanitize() obligatoire sur tout `dangerouslySetInnerHTML`
 

@@ -1,64 +1,91 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { ArrowRight, AlertTriangle, ShieldCheck, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import AccountName from '@/components/AccountName';
+import { Badge } from '@/components/ui/badge';
 import { useT } from '@/lib/i18n/useT';
+import { en } from '@/i18n/en';
 import { cn } from '@/lib/utils';
-import type { Account } from '@/types/database';
+import { useTodayStatus } from '@/hooks/useTodayStatus';
 
-interface TodayHeroCardProps {
-  accounts: Account[];
-  p0InsightsCount: number;
+function formatCurrency(amount: number): string {
+  return amount.toLocaleString('en-US', { style: 'currency', currency: 'EUR' });
 }
 
-function computeMostUrgentAccount(accounts: Account[]): Account | null {
-  const atRisk = accounts.filter((a) => (a.churn_risk_score ?? 0) >= 50);
-  if (atRisk.length === 0) return null;
-  return [...atRisk].sort((a, b) => {
-    const riskDiff = (b.churn_risk_score ?? 0) - (a.churn_risk_score ?? 0);
-    if (riskDiff !== 0) return riskDiff;
-    return (b.mrr_cents ?? 0) - (a.mrr_cents ?? 0);
-  })[0];
+function HeroSkeleton() {
+  return (
+    <Card className="p-5 border-0 shadow-sm animate-pulse">
+      <div className="flex items-start gap-3">
+        <div className="h-5 w-5 rounded-full bg-muted shrink-0" />
+        <div className="flex-1 space-y-3">
+          <div className="h-4 w-1/3 rounded bg-muted" />
+          <div className="h-3 w-2/3 rounded bg-muted" />
+        </div>
+      </div>
+    </Card>
+  );
 }
 
-export default function TodayHeroCard({ accounts, p0InsightsCount }: TodayHeroCardProps) {
+export default function TodayHeroCard() {
   const fr = useT();
-  const urgent = computeMostUrgentAccount(accounts);
+  const { data, isLoading, error, refetch } = useTodayStatus();
 
-  const p0Link = p0InsightsCount > 0 && (
+  if (isLoading) {
+    return <HeroSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <Card className="p-5 border border-destructive/30 bg-destructive/5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-destructive">{en.today.hero.loadError}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-1.5 shrink-0">
+            <RefreshCw className="h-3.5 w-3.5" />
+            {fr.common.retry}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!data) {
+    return <HeroSkeleton />;
+  }
+
+  const urgent = data.status === 'critical' || data.status === 'at_risk' ? data.top_urgent_account : null;
+
+  const attentionLink = data.critical_count > 0 && (
     <Link
       to="/insights?priority=critical"
       className="text-xs font-medium underline underline-offset-2 hover:no-underline"
     >
-      {fr.briefing.actionsP0(p0InsightsCount)}
+      {en.today.hero.requiresAttention(data.critical_count)}
     </Link>
   );
 
   if (urgent) {
-    const isCritical = (urgent.churn_risk_score ?? 0) >= 70;
+    const isCritical = data.status === 'critical';
     return (
-      <Card className={cn('p-5 border-0 shadow-sm', isCritical ? 'bg-red-50' : 'bg-orange-50')}>
+      <Card className={cn('p-5 border shadow-sm', isCritical ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200')}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3 min-w-0">
             <AlertTriangle className={cn('h-5 w-5 mt-0.5 shrink-0', isCritical ? 'text-red-600' : 'text-orange-600')} />
             <div className="min-w-0 space-y-2">
               <p className={cn('text-sm font-semibold', isCritical ? 'text-red-700' : 'text-orange-700')}>
-                {fr.today.hero.urgentTitle}
+                {urgent.name}
               </p>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                <AccountName stripeId={urgent.stripe_customer_id} displayName={urgent.display_name} />
                 <span className="text-muted-foreground">
-                  {fr.today.hero.mrrExposed} : <strong className="text-foreground">{fr.format.currency(urgent.mrr_cents)}</strong>
+                  {fr.today.hero.mrrExposed} : <strong className="text-foreground">{formatCurrency(urgent.mrr)}</strong>
                 </span>
-                <span className="text-muted-foreground">
-                  {fr.today.hero.riskScore} :{' '}
-                  <strong className={isCritical ? 'text-red-600' : 'text-orange-600'}>
-                    {Math.round(urgent.churn_risk_score ?? 0)}%
-                  </strong>
-                </span>
+                <Badge variant={isCritical ? 'destructive' : 'outline'} className={!isCritical ? 'border-orange-300 text-orange-700' : undefined}>
+                  {fr.today.hero.riskScore} : {Math.round(urgent.risk_score)}%
+                </Badge>
               </div>
-              {p0Link}
+              {urgent.top_insight && (
+                <p className="text-sm text-muted-foreground">{urgent.top_insight}</p>
+              )}
+              {attentionLink}
             </div>
           </div>
           <Button asChild size="sm" variant={isCritical ? 'destructive' : 'default'} className="shrink-0 gap-1">
@@ -71,27 +98,27 @@ export default function TodayHeroCard({ accounts, p0InsightsCount }: TodayHeroCa
     );
   }
 
-  const securedMrrCents = accounts
-    .filter((a) => (a.churn_risk_score ?? 0) < 50)
-    .reduce((sum, a) => sum + (a.mrr_cents ?? 0), 0);
-  const championsCount = accounts.filter(
-    (a) => (a.health_score ?? 0) >= 80 && (a.churn_risk_score ?? 100) < 50,
-  ).length;
-
   return (
-    <Card className="p-5 border-0 shadow-sm bg-green-50">
-      <div className="flex items-start gap-3">
-        <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-green-600" />
-        <div className="min-w-0 space-y-2">
-          <p className="text-sm font-semibold text-green-700">{fr.today.hero.stableTitle}</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <span className="text-muted-foreground">
-              {fr.today.hero.mrrSecured} : <strong className="text-foreground">{fr.format.currency(securedMrrCents)}</strong>
-            </span>
-            <span className="text-muted-foreground">{fr.today.hero.championsCount(championsCount)}</span>
+    <Card className="p-5 border border-green-200 bg-green-50 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <ShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-green-600" />
+          <div className="min-w-0 space-y-2">
+            <p className="text-sm font-semibold text-green-700">{fr.today.hero.stableTitle}</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span className="text-muted-foreground">
+                {fr.today.hero.mrrSecured} : <strong className="text-foreground">{formatCurrency(data.total_mrr_cents / 100)}</strong>
+              </span>
+              <span className="text-muted-foreground">{fr.today.hero.championsCount(data.champions_count)}</span>
+            </div>
+            {attentionLink}
           </div>
-          {p0Link}
         </div>
+        <Button asChild size="sm" variant="outline" className="shrink-0 gap-1 border-green-300 text-green-700 hover:bg-green-100">
+          <Link to="/dashboard">
+            {fr.todayActions.viewDashboard} <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
       </div>
     </Card>
   );
