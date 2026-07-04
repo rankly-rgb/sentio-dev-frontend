@@ -36,7 +36,7 @@ export default function Today() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<TodayActionsFilters>({});
   const [exporting, setExporting] = useState(false);
-  const { summary, accounts, playbooks, isLoading, error } = useTodayActions(filters);
+  const { summary, playbooks, isLoading, error } = useTodayActions(filters);
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   const p0Ref = useRef<HTMLDivElement>(null);
@@ -146,7 +146,7 @@ export default function Today() {
       <DailyBriefing />
 
       {/* Hero card — always shown, never an empty state */}
-      <TodayHeroCard accounts={accounts} p0InsightsCount={summary?.by_priority.P0 ?? 0} />
+      <TodayHeroCard />
 
       {/* Content */}
       {summary && summary.total > 0 && (
