@@ -82,8 +82,8 @@ export default function TodayHeroCard() {
                   {fr.today.hero.riskScore} : {Math.round(urgent.risk_score)}%
                 </Badge>
               </div>
-              {urgent.top_insight && (
-                <p className="text-sm text-muted-foreground">{urgent.top_insight}</p>
+              {(urgent.top_insight ?? '') !== '' && (
+                <p className="text-sm text-muted-foreground">{urgent.top_insight ?? ''}</p>
               )}
               {attentionLink}
             </div>
