@@ -155,16 +155,16 @@ function BenchmarkCard({
   const METRIC_CONFIG: Record<BenchmarkMetricKey, { label: string; formatValue: (v: number) => string }> = {
     nrr: {
       label: fr.benchmark.nrr,
-      formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
+      formatValue: (v) => `${v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
     },
     churn_rate: {
       label: fr.benchmark.churnRate,
-      formatValue: (v) => `${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
+      formatValue: (v) => `${v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
     },
     mrr_growth: {
       label: fr.benchmark.mrrGrowth,
       formatValue: (v) =>
-        `${v > 0 ? '+' : ''}${v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
+        `${v > 0 ? '+' : ''}${v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`,
     },
   };
   const config = METRIC_CONFIG[metricKey];

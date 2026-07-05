@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import {
   listPlaybooks,
   listPlaybookTemplates,
@@ -29,7 +28,7 @@ import type {
 
 const KEYS = {
   all: ['playbooks'] as const,
-  list: (orgId: string, filters: PlaybookFilters, lang: string) => ['playbooks', 'list', orgId, filters, lang] as const,
+  list: (orgId: string, filters: PlaybookFilters) => ['playbooks', 'list', orgId, filters] as const,
   templates: (orgId: string) => ['playbooks', 'templates', orgId] as const,
   detail: (id: string) => ['playbooks', 'detail', id] as const,
   executions: (id: string) => ['playbooks', 'executions', id] as const,
@@ -37,9 +36,8 @@ const KEYS = {
 
 export function usePlaybooks(filters: PlaybookFilters = {}) {
   const { user } = useAuth();
-  const { language } = useLanguage();
   return useQuery({
-    queryKey: KEYS.list(user?.organization_id ?? '', filters, language),
+    queryKey: KEYS.list(user?.organization_id ?? '', filters),
     queryFn: () => listPlaybooks(user?.organization_id ?? '', filters),
     enabled: !!user?.organization_id,
     staleTime: 60_000,
@@ -60,7 +58,7 @@ export function usePlaybookTemplates() {
   });
 }
 
-export function usePlaybookTemplatesV1(locale: 'fr' | 'en' = 'fr') {
+export function usePlaybookTemplatesV1(locale: 'fr' | 'en' = 'en') {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['playbooks', 'templates-v1', user?.organization_id ?? '', locale],

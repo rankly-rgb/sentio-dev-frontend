@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import TrialBanner from '../TrialBanner';
 import type { TrialStatus } from '@/lib/types/trial';
-import { fr } from '@/i18n/fr';
+import { en } from '@/i18n/en';
 
-vi.mock('@/lib/i18n/useT', () => ({ useT: () => fr }));
+vi.mock('@/lib/i18n/useT', () => ({ useT: () => en }));
 
 function makeTrialStatus(overrides?: Partial<TrialStatus>): TrialStatus {
   return {
@@ -21,12 +21,12 @@ describe('TrialBanner', () => {
   it('renders remaining days for active trial', () => {
     render(<TrialBanner trial={makeTrialStatus({ trial_days_remaining: 7 })} />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/7 jours restants/)).toBeInTheDocument();
+    expect(screen.getByText(/7 days remaining/)).toBeInTheDocument();
   });
 
   it('uses singular when 1 day remaining', () => {
     render(<TrialBanner trial={makeTrialStatus({ trial_days_remaining: 1 })} />);
-    expect(screen.getByText(/1 jour restant/)).toBeInTheDocument();
+    expect(screen.getByText(/1 day remaining/)).toBeInTheDocument();
   });
 
   it('renders expired state when trial is expired', () => {
@@ -39,13 +39,13 @@ describe('TrialBanner', () => {
         })}
       />,
     );
-    expect(screen.getByText(/Votre essai est terminé/)).toBeInTheDocument();
-    expect(screen.getByText(/Passez à un plan payant/)).toBeInTheDocument();
+    expect(screen.getByText(/Your trial has ended/)).toBeInTheDocument();
+    expect(screen.getByText(/Upgrade to a paid plan/)).toBeInTheDocument();
   });
 
   it('renders upgrade link', () => {
     render(<TrialBanner trial={makeTrialStatus()} />);
-    expect(screen.getByRole('link', { name: /mettre à niveau/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /upgrade/i })).toBeInTheDocument();
   });
 
   it('renders nothing for paid plans', () => {

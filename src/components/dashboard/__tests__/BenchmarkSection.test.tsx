@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BenchmarkSection } from '../BenchmarkSection';
 import type { BenchmarkResponse } from '@/lib/types/benchmark';
-import { fr } from '@/i18n/fr';
+import { en } from '@/i18n/en';
 
-vi.mock('@/lib/i18n/useT', () => ({ useT: () => fr }));
+vi.mock('@/lib/i18n/useT', () => ({ useT: () => en }));
 
 function makeBenchmarkData(overrides?: Partial<BenchmarkResponse>): BenchmarkResponse {
   return {
@@ -42,10 +42,10 @@ describe('BenchmarkSection', () => {
     const data = makeBenchmarkData();
     render(<BenchmarkSection data={data} />);
 
-    expect(screen.getByText('Benchmarks sectoriels')).toBeInTheDocument();
+    expect(screen.getByText('Industry benchmarks')).toBeInTheDocument();
     expect(screen.getByText('NRR')).toBeInTheDocument();
-    expect(screen.getByText('Taux de churn')).toBeInTheDocument();
-    expect(screen.getByText('Croissance MRR')).toBeInTheDocument();
+    expect(screen.getByText('Churn rate')).toBeInTheDocument();
+    expect(screen.getByText('MRR growth')).toBeInTheDocument();
   });
 
   it('shows "Excellent" badge in green for NRR rated excellent', () => {
@@ -64,7 +64,7 @@ describe('BenchmarkSection', () => {
     render(<BenchmarkSection data={data} />);
 
     expect(
-      screen.getAllByText('Données pairs disponibles à partir de 3 organisations').length,
+      screen.getAllByText('Peer data available from 3 organisations').length,
     ).toBeGreaterThanOrEqual(1);
   });
 
@@ -91,7 +91,7 @@ describe('BenchmarkSection', () => {
   it('displays error state when error is provided', () => {
     render(<BenchmarkSection data={null} error={new Error('Erreur 500')} />);
 
-    expect(screen.getByText('Benchmarks indisponibles')).toBeInTheDocument();
-    expect(screen.getByText(/Impossible de charger/)).toBeInTheDocument();
+    expect(screen.getByText('Benchmarks unavailable')).toBeInTheDocument();
+    expect(screen.getByText(/Unable to load/)).toBeInTheDocument();
   });
 });

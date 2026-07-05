@@ -3,7 +3,7 @@ import { getAccountLabel } from '@/lib/account-display';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, XCircle, ClipboardList } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr as dateFnsFr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -182,7 +182,7 @@ export default function PlaybookApprovals() {
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                     {formatDistanceToNow(new Date(item.expires_at), {
                       addSuffix: true,
-                      locale: dateFnsFr,
+                      locale: enUS,
                     })}
                   </TableCell>
 

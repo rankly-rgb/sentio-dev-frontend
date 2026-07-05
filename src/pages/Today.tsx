@@ -3,7 +3,6 @@ import { CalendarCheck, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { supabase } from '@/lib/supabase';
 import { useTodayActions } from '@/hooks/useTodayActions';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
@@ -22,7 +21,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
 function formatDateHeader(): string {
   const now = new Date();
-  return now.toLocaleDateString('fr-FR', {
+  return now.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -138,7 +137,6 @@ export default function Today() {
             {fr.todayActions.actionCount(summary?.total ?? 0)}
           </p>
         </div>
-        <LanguageSwitcher />
       </div>
 
       {/* Hero card — always shown, never an empty state */}

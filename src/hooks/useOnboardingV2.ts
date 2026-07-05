@@ -138,10 +138,10 @@ export function useCreateOrganization() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${access_token}`,
         },
-        body: JSON.stringify({ user_id, email, company_name, locale: locale ?? 'fr' }),
+        body: JSON.stringify({ user_id, email, company_name, locale: locale ?? 'en' }),
       }).then(async (res) => {
         const data: CreateOrganizationResponse & { error?: string } = await res.json();
-        if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+        if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
         return data as CreateOrganizationResponse;
       });
     },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pencil, Trash2, TestTube2, FileText, Loader2, Power } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr as dateFnsFr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +91,7 @@ function DestinationCard({ destination, onEdit, onViewLogs }: CardProps) {
   const lastTriggeredText = destination.last_triggered_at
     ? formatDistanceToNow(new Date(destination.last_triggered_at), {
         addSuffix: true,
-        locale: dateFnsFr,
+        locale: enUS,
       })
     : null;
 

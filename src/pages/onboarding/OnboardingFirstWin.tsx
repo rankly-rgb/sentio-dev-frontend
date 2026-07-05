@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { getAccountLabel } from '@/lib/account-display';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import WizardLayout from '@/components/onboarding/WizardLayout';
 import { useOnboardingStatusFull } from '@/hooks/useOnboardingWizard';
 import { useOnboardingFirstWin, useMarkOnboardingField } from '@/hooks/useOnboardingFlow';
@@ -16,13 +15,12 @@ function healthBadgeClass(score: number) {
 }
 
 function formatCurrency(cents: number) {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(cents / 100);
 }
 
 export default function OnboardingFirstWin() {
   const t = useT();
   const w = t.onboardingWizard.firstWin;
-  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const { data: statusData } = useOnboardingStatusFull();
@@ -40,7 +38,7 @@ export default function OnboardingFirstWin() {
   };
 
   return (
-    <WizardLayout steps={steps} locale={language}>
+    <WizardLayout steps={steps}>
       <div className="space-y-6">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-[#f8fafc]">{w.radarTitle}</h2>

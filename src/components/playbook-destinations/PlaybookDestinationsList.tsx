@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr as dateFnsFr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { Pencil, Trash2, FlaskConical, ScrollText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -87,7 +87,7 @@ export default function PlaybookDestinationsList({
                 {dest.last_triggered_at
                   ? formatDistanceToNow(new Date(dest.last_triggered_at), {
                       addSuffix: true,
-                      locale: dateFnsFr,
+                      locale: enUS,
                     })
                   : t.neverTriggered}
               </TableCell>

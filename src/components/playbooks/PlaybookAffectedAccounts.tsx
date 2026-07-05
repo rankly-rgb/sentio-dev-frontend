@@ -12,7 +12,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 }
 
 function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'EUR' });
 }
 
 interface Props {

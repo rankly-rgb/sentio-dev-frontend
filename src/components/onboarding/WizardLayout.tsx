@@ -1,16 +1,14 @@
 import type { ReactNode } from 'react';
 import WizardStepper from './WizardStepper';
 import type { WizardStep } from '@/lib/types/onboarding-wizard';
-import type { Language } from '@/lib/i18n/translations';
 
 interface Props {
   steps: WizardStep[];
-  locale: Language;
   children: ReactNode;
 }
 
-export default function WizardLayout({ steps, locale, children }: Props) {
-  const breadcrumb = locale === 'en' ? 'Setup' : 'Configuration';
+export default function WizardLayout({ steps, children }: Props) {
+  const breadcrumb = 'Setup';
 
   return (
     <div className="min-h-screen bg-[#0f172a]">
@@ -28,7 +26,7 @@ export default function WizardLayout({ steps, locale, children }: Props) {
       {/* Content */}
       <main className="flex flex-col items-center px-4 py-10">
         <div className="w-full max-w-lg">
-          {steps.length > 0 && <WizardStepper steps={steps} locale={locale} />}
+          {steps.length > 0 && <WizardStepper steps={steps} />}
           <div className="bg-[#1e293b] rounded-xl border border-[#334155] p-8">
             {children}
           </div>

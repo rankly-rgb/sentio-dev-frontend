@@ -37,7 +37,7 @@ function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; i
           <span className="font-medium text-sm text-[#111827] truncate">{name}</span>
         </div>
         <span className="text-sm font-semibold text-[#111827] flex-shrink-0 whitespace-nowrap">
-          {account.mrr.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+          {account.mrr.toLocaleString('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
           /mois
         </span>
       </div>
@@ -127,7 +127,7 @@ export default function Done() {
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 text-center">
               <p className={`text-2xl font-bold ${firstWin.mrr_at_risk > 0 ? 'text-[#ef4444]' : 'text-[#111827]'}`}>
-                {firstWin.mrr_at_risk.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+                {firstWin.mrr_at_risk.toLocaleString('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
               </p>
               <p className="text-xs text-[#6b7280] mt-1">{fr.onboarding.done.mrrAtRisk}</p>
             </div>

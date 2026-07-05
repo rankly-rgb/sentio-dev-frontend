@@ -7,8 +7,6 @@ import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
 import { useUpdateNotificationPreferences, useSendTestAlert } from '@/hooks/useNotificationPreferences';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { maskEmail } from '@/lib/queries/settings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +24,6 @@ export default function Settings() {
   const initialTab = searchParams.get('tab') ?? 'organization';
   const [activeTab, setActiveTab] = useState(initialTab);
   const { organization, team, isLoading } = useOrganizationSettings();
-  const { t } = useLanguage();
   const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();
   useHubspotSyncFreshness(); // V2 - HubSpot : hook conservé pour V2, résultat non utilisé en V1
 
@@ -113,21 +110,9 @@ export default function Settings() {
             <CardContent>
               <p className="text-lg font-medium">{organization?.name || '-'}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Creee le {organization?.created_at ? fr.format.date(organization.created_at) : '-'}
+                Created on {organization?.created_at ? fr.format.date(organization.created_at) : '-'}
               </p>
             </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{t('settings.language')}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">{t('settings.languageDesc')}</p>
-                </div>
-                <LanguageSwitcher />
-              </div>
-            </CardHeader>
           </Card>
         </TabsContent>
 

@@ -6,7 +6,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { LanguageProvider } from '@/lib/i18n/LanguageContext';
 import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import AdminRoute from '@/components/layout/AdminRoute';
@@ -105,7 +104,6 @@ export default function App() {
         <Toaster />
         <BrowserRouter>
           <AuthProvider>
-            <LanguageProvider>
             <ErrorBoundary>
               <Suspense fallback={null}>
               <Routes>
@@ -161,7 +159,6 @@ export default function App() {
               </Routes>
               </Suspense>
             </ErrorBoundary>
-            </LanguageProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

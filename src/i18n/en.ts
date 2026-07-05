@@ -1,15 +1,4 @@
-import type { Translations } from './fr';
-
-// English-only keys (no French equivalent — fr.ts is being phased out, see CLAUDE.md)
-type EnOnlyKeys = {
-  today: {
-    hero: {
-      loadError: string;
-    };
-  };
-};
-
-export const en: Translations & EnOnlyKeys = {
+export const en = {
   nav: {
     today: 'Today',
     dashboard: 'Overview',

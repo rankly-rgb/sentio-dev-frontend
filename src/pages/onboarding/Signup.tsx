@@ -1,28 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import { supabase } from '@/lib/supabase';
 import { useCreateOrganization, useOnUserSignup } from '@/hooks/useOnboardingV2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShieldCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { Language } from '@/lib/i18n/translations';
+
+const LOCALE = 'en' as const;
 
 export default function Signup() {
   const t = useT();
-  const { setLanguage } = useLanguage();
-  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
-  const [locale, setLocale] = useState<Language>(() => {
-    const param = searchParams.get('locale');
-    return param === 'en' ? 'en' : 'fr';
-  });
   const [errors, setErrors] = useState<{ email?: string; password?: string; company?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
 
@@ -36,11 +29,6 @@ export default function Signup() {
       navigate('/onboarding/promise', { replace: true });
     }
   }, [authLoading, user, navigate]);
-
-  // Keep language context in sync with the toggle so useT() reflects the selection immediately
-  useEffect(() => {
-    setLanguage(locale);
-  }, [locale, setLanguage]);
 
   const validate = () => {
     const next: typeof errors = {};
@@ -71,7 +59,7 @@ export default function Signup() {
       email: emailValue,
       password,
       options: {
-        data: { locale },
+        data: { locale: LOCALE },
         emailRedirectTo: 'https://app.sentioapp.io/auth/callback',
       },
     });
@@ -96,7 +84,7 @@ export default function Signup() {
     }
 
     try {
-      await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken, locale });
+      await createOrg.mutateAsync({ user_id: userId, email: emailValue, company_name: companyValue, access_token: accessToken, locale: LOCALE });
       // on-user-signup : fire-and-forget, session déjà établie
       void onUserSignup.mutateAsync();
       navigate('/onboarding/promise');
@@ -165,27 +153,6 @@ export default function Signup() {
           </div>
 
           {errors.general && <p className="text-sm text-[#ef4444]">{errors.general}</p>}
-
-          <div className="space-y-1.5">
-            <Label>{locale === 'fr' ? 'Langue de l’interface' : 'Interface language'}</Label>
-            <div className="flex gap-2">
-              {(['fr', 'en'] as const).map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  onClick={() => setLocale(lang)}
-                  className={cn(
-                    'flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-all',
-                    locale === lang
-                      ? 'border-[#3b5bdb] bg-[#3b5bdb]/10 text-[#3b5bdb]'
-                      : 'border-[#e5e7eb] text-[#6b7280] hover:border-[#9ca3af]',
-                  )}
-                >
-                  {lang === 'fr' ? '🇫🇷 Français' : '🇬🇧 English'}
-                </button>
-              ))}
-            </div>
-          </div>
 
           <Button
             type="submit"

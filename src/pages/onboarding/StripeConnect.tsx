@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Check, ShieldCheck, Loader2, CheckCircle2 } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import WizardLayout from '@/components/onboarding/WizardLayout';
@@ -18,7 +17,6 @@ type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 export default function StripeConnect() {
   const t = useT();
   const w = t.onboardingWizard.stripe;
-  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const { data: statusData, isLoading } = useOnboardingStatusFull();
@@ -88,7 +86,7 @@ export default function StripeConnect() {
   ];
 
   return (
-    <WizardLayout steps={steps} locale={language}>
+    <WizardLayout steps={steps}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-semibold text-[#f8fafc]">{w.title}</h2>

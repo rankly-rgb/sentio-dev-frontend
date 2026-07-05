@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Loader2, AlertTriangle, Info } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import WizardLayout from '@/components/onboarding/WizardLayout';
 import { useOnboardingStatusFull, useSyncStatus } from '@/hooks/useOnboardingWizard';
 import { cn } from '@/lib/utils';
@@ -13,7 +12,6 @@ type ItemState = 'pending' | 'active' | 'done';
 export default function OnboardingImport() {
   const t = useT();
   const w = t.onboardingWizard.import;
-  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const { data: statusData } = useOnboardingStatusFull();
@@ -71,7 +69,7 @@ export default function OnboardingImport() {
   ];
 
   return (
-    <WizardLayout steps={steps} locale={language}>
+    <WizardLayout steps={steps}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-semibold text-[#f8fafc]">{w.title}</h2>

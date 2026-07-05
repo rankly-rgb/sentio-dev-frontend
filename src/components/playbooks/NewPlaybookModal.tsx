@@ -55,7 +55,7 @@ export default function NewPlaybookModal({ open, onOpenChange, onCreated }: Prop
   const [title, setTitle] = useState('');
   const [createError, setCreateError] = useState<string | null>(null);
 
-  const { data: templates = [], isLoading } = usePlaybookTemplatesV1('fr');
+  const { data: templates = [], isLoading } = usePlaybookTemplatesV1('en');
   const { mutateAsync: createFromTemplate, isPending: isCreating } = useCreatePlaybookFromTemplate();
 
   const handleSelectTemplate = (template: PlaybookTemplate) => {

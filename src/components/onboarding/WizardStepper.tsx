@@ -1,21 +1,17 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { WizardStep } from '@/lib/types/onboarding-wizard';
-import type { Language } from '@/lib/i18n/translations';
 
 interface Props {
   steps: WizardStep[];
-  locale: Language;
 }
 
-export default function WizardStepper({ steps, locale }: Props) {
+export default function WizardStepper({ steps }: Props) {
   const activeIndex = steps.findIndex((s) => s.status === 'active');
   const activeStep = activeIndex >= 0 ? steps[activeIndex] : null;
   const displayNumber = activeIndex >= 0 ? activeIndex + 1 : steps.length;
-  const mobileLabel = activeStep
-    ? (locale === 'en' ? activeStep.label_en : activeStep.label_fr)
-    : '';
-  const mobilePrefix = locale === 'en' ? 'Step' : 'Étape';
+  const mobileLabel = activeStep ? activeStep.label_en : '';
+  const mobilePrefix = 'Step';
 
   return (
     <>
@@ -34,7 +30,7 @@ export default function WizardStepper({ steps, locale }: Props) {
         {steps.map((step, index) => {
           const isCompleted = step.status === 'completed';
           const isActive = step.status === 'active';
-          const label = locale === 'en' ? step.label_en : step.label_fr;
+          const label = step.label_en;
 
           return (
             <div key={step.id} className="flex items-start">

@@ -18,7 +18,7 @@ import {
   // Zap,      // V2 - Playbook destinations / Webhook destinations (commentés)
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr as dateFnsFr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInsightStats } from '@/hooks/useInsights';
 import { useTodayActions } from '@/hooks/useTodayActions';
@@ -27,7 +27,6 @@ import { useSessionPing } from '@/hooks/useSessionPing';
 import { useOnboardingStatus } from '@/hooks/useOnboardingStatus';
 import { usePendingApprovalsCount } from '@/hooks/usePlaybookDestinations';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import AhaMomentModal from '@/components/onboarding/AhaMomentModal';
@@ -37,22 +36,21 @@ import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useTrialStatus } from '@/hooks/useTrialStatus';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  useT(); // V2 - résultat utilisé par le webhook indicator (commenté) — réactiver const fr = useT() en V2
+  const fr = useT();
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ahaSeen, setAhaSeen] = useState(false);
 
   const navItems = useMemo(() => [
-    { label: t('nav.today'), path: '/today', icon: CalendarCheck, badgeKey: 'today' as const },
-    { label: t('nav.dashboard'), path: '/dashboard', icon: BarChart3 },
-    { label: t('nav.accounts'), path: '/accounts', icon: Users },
-    { label: t('nav.segments'), path: '/segments', icon: Tag },
-    { label: t('nav.insights'), path: '/insights', icon: Lightbulb },
-    { label: t('nav.playbooks'), path: '/playbooks', icon: Play, badgeKey: 'playbooks' as const },
-    { label: t('nav.syncs'), path: '/syncs', icon: RefreshCw },
-  ], [t]);
+    { label: fr.nav.today, path: '/today', icon: CalendarCheck, badgeKey: 'today' as const },
+    { label: fr.nav.dashboard, path: '/dashboard', icon: BarChart3 },
+    { label: fr.nav.accounts, path: '/accounts', icon: Users },
+    { label: fr.nav.segments, path: '/segments', icon: Tag },
+    { label: fr.nav.insights, path: '/insights', icon: Lightbulb },
+    { label: fr.nav.playbooks, path: '/playbooks', icon: Play, badgeKey: 'playbooks' as const },
+    { label: fr.nav.syncs, path: '/syncs', icon: RefreshCw },
+  ], [fr]);
   const { data: statsData } = useInsightStats();
 
   useSessionPing();
@@ -91,7 +89,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   });
 
   const lastSyncText = lastSyncData
-    ? formatDistanceToNow(new Date(lastSyncData), { addSuffix: true, locale: dateFnsFr })
+    ? formatDistanceToNow(new Date(lastSyncData), { addSuffix: true, locale: enUS })
     : null;
 
   const sidebarContent = (
@@ -164,7 +162,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Settings className={cn('h-[18px] w-[18px] shrink-0', location.pathname.startsWith('/settings') ? 'text-primary' : 'text-muted-foreground')} />
-          <span>{t('nav.settings')}</span>
+          <span>{fr.nav.settings}</span>
         </Link>
 
         {/* V2 - Playbook destinations
@@ -179,7 +177,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Zap className="h-[14px] w-[14px] shrink-0" />
-          <span>{t('nav.playbookDestinations')}</span>
+          <span>{fr.nav.playbookDestinations}</span>
         </Link>
         */}
 
@@ -195,7 +193,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Play className="h-[14px] w-[14px] shrink-0" />
-          <span>{t('nav.playbookApprovals')}</span>
+          <span>{fr.nav.playbookApprovals}</span>
           {pendingApprovalsCount > 0 && (
             <span className="ml-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
               {pendingApprovalsCount > 99 ? '99+' : pendingApprovalsCount}
@@ -216,7 +214,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         >
           <Zap className="h-[14px] w-[14px] shrink-0" />
-          <span>{t('nav.destinations')}</span>
+          <span>{fr.nav.destinations}</span>
         </Link>
         */}
 
@@ -276,7 +274,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             )}
           >
             <Activity className="h-[18px] w-[18px] shrink-0" />
-            {t('nav.ops')}
+            {fr.nav.ops}
           </Link>
         </div>
       )}
@@ -298,7 +296,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           aria-label="Se déconnecter"
         >
           <LogOut className="h-[18px] w-[18px] shrink-0" />
-          <span>{t('nav.logout')}</span>
+          <span>{fr.nav.logout}</span>
         </button>
       </div>
     </>

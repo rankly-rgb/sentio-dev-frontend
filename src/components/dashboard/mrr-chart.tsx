@@ -20,16 +20,16 @@ import type { MrrTrendPoint, MrrTrendSummary } from '@/types/dashboard';
 
 function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' });
 }
 
 function formatDateFull(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function formatMrrEur(cents: number): string {
-  return (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 }
 
 function computeSummary(points: MrrTrendPoint[]): MrrTrendSummary | null {
@@ -185,7 +185,7 @@ export function MrrChart() {
                     tick={{ fontSize: 11 }}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(v: number) => `${Math.round(v).toLocaleString('fr-FR')} €`}
+                    tickFormatter={(v: number) => `${Math.round(v).toLocaleString('en-US')} €`}
                     className="text-muted-foreground"
                     width={80}
                   />

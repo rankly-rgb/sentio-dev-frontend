@@ -14,7 +14,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr as dateFnsFr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -164,7 +164,7 @@ function ConfiguredState({ config }: { config: WebhookConfig }) {
 
   const hasErrors = config.failure_count > 0;
   const lastTriggeredText = config.last_triggered_at
-    ? formatDistanceToNow(new Date(config.last_triggered_at), { addSuffix: true, locale: dateFnsFr })
+    ? formatDistanceToNow(new Date(config.last_triggered_at), { addSuffix: true, locale: enUS })
     : null;
 
   return (

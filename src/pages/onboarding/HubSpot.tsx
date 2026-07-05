@@ -16,7 +16,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Check, ShieldCheck, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
-import { useLanguage } from '@/lib/i18n/useLanguage';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import WizardLayout from '@/components/onboarding/WizardLayout';
@@ -30,7 +29,6 @@ type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 export default function HubSpot() {
   const t = useT();
   const w = t.onboardingWizard.hubspot;
-  const { language } = useLanguage();
   const navigate = useNavigate();
 
   const { data: statusData } = useOnboardingStatusFull();
@@ -73,7 +71,7 @@ export default function HubSpot() {
   const syncItems = [w.sync1, w.sync2];
 
   return (
-    <WizardLayout steps={steps} locale={language}>
+    <WizardLayout steps={steps}>
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-3">
           <div>
