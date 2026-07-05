@@ -3,6 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import type { TodayStatusResponse } from '@/lib/types/today-status';
 
+interface TodayStatusApiResponse {
+  data: TodayStatusResponse;
+}
+
 export function useTodayStatus() {
   const { user } = useAuth();
 
@@ -10,7 +14,8 @@ export function useTodayStatus() {
     queryKey: ['today-status', user?.organization_id],
     queryFn: async () => {
       try {
-        return await fetchWithUserJwt<TodayStatusResponse>('get-today-status');
+        const res = await fetchWithUserJwt<TodayStatusApiResponse>('get-today-status');
+        return res.data;
       } catch (error) {
         console.error('[useTodayStatus]', error);
         throw error;
