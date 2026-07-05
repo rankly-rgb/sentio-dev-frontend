@@ -1093,6 +1093,7 @@ export const en: Translations & EnOnlyKeys = {
     results: 'results',
     noInsights: 'No insights detected — your accounts are healthy',
     noFilterResults: 'No insights match the selected filters',
+    viewAll: (n: number) => `View all insights (${n})`,
     errorLoading: 'Unable to load insights',
     statusLabel: 'Status',
     sortLabel: 'Sort',

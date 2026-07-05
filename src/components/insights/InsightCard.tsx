@@ -91,7 +91,7 @@ export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdat
         </span>
       )}
 
-      <CardContent className="p-4">
+      <CardContent className="p-4 min-h-[140px]">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {/* Badges row */}
@@ -111,7 +111,7 @@ export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdat
             </div>
 
             {/* Title + description */}
-            <p className="font-semibold text-sm">{insight.title}</p>
+            <p className="font-semibold text-sm line-clamp-1">{insight.title}</p>
             <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{insight.description}</p>
 
             {/* Metrics row */}

@@ -1126,6 +1126,7 @@ export const fr = {
     results: "résultats",
     noInsights: "Aucun insight détecté — vos comptes sont en bonne santé",
     noFilterResults: "Aucun insight ne correspond aux filtres sélectionnés",
+    viewAll: (n: number) => `Voir tous les insights (${n})`,
     errorLoading: "Impossible de charger les insights",
     statusLabel: "Statut",
     sortLabel: "Tri",
