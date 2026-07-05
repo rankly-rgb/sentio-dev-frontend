@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import TodaySummaryBar from '@/components/today/TodaySummaryBar';
 import TodayFilters from '@/components/today/TodayFilters';
 import TodayPriorityGroup from '@/components/today/TodayPriorityGroup';
-import DailyBriefing from '@/components/today/DailyBriefing';
 import TodayHeroCard from '@/components/today/TodayHeroCard';
 import WeeklyWins from '@/components/today/WeeklyWins';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
@@ -141,9 +140,6 @@ export default function Today() {
         </div>
         <LanguageSwitcher />
       </div>
-
-      {/* Daily briefing — always shown */}
-      <DailyBriefing />
 
       {/* Hero card — always shown, never an empty state */}
       <TodayHeroCard />
