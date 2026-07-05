@@ -59,7 +59,7 @@ export default function TodayHeroCard() {
       to="/insights?priority=critical"
       className="text-xs font-medium underline underline-offset-2 hover:no-underline"
     >
-      {en.today.hero.requiresAttention(data.critical_count)}
+      {fr.today.hero.requiresAttention(data.critical_count)}
     </Link>
   );
 
