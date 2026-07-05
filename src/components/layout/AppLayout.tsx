@@ -123,7 +123,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             : badgeKey === 'playbooks' ? pendingApprovalsCount
             : path === '/insights' ? criticalInsightsCount
             : 0;
-          const badgeCount = rawBadgeCount > 99 ? '99+' : rawBadgeCount;
+          // Insights badge always shows the exact critical count, never capped to "99+"
+          const badgeCount = path !== '/insights' && rawBadgeCount > 99 ? '99+' : rawBadgeCount;
 
           return (
             <Link

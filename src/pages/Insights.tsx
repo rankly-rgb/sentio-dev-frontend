@@ -20,8 +20,11 @@ export default function Insights() {
   const priorityFromUrl = searchParams.get('priority') ?? '';
   const [insightType, setInsightType] = useState('');
   const [status, setStatus] = useState('active');
-  const [sort, setSort] = useState<SortOption>('created_at');
+  const [sort, setSort] = useState<SortOption>('mrr_impact_cents');
   const [page, setPage] = useState(1);
+  const [showAll, setShowAll] = useState(false);
+
+  const DEFAULT_VISIBLE = 5;
 
   const filters: FiltersType = {
     ...(insightType ? { insight_type: insightType } : {}),
@@ -29,7 +32,7 @@ export default function Insights() {
     status,
     sort,
     page,
-    per_page: 20,
+    per_page: showAll ? 20 : DEFAULT_VISIBLE,
   };
 
   const { data: listData, isLoading, error, refetch } = useInsights(filters);
@@ -41,15 +44,23 @@ export default function Insights() {
   const handleTypeChange = useCallback((type: string) => {
     setInsightType(type);
     setPage(1);
+    setShowAll(false);
   }, []);
 
   const handleStatusChange = useCallback((s: string) => {
     setStatus(s);
     setPage(1);
+    setShowAll(false);
   }, []);
 
   const handleSortChange = useCallback((s: SortOption) => {
     setSort(s);
+    setPage(1);
+    setShowAll(false);
+  }, []);
+
+  const handleShowAll = useCallback(() => {
+    setShowAll(true);
     setPage(1);
   }, []);
 
@@ -144,9 +155,15 @@ export default function Insights() {
             ))}
           </div>
 
-          {pagination && (
+          {!showAll && pagination && pagination.total > DEFAULT_VISIBLE ? (
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" size="sm" onClick={handleShowAll}>
+                {fr.insights.viewAll(pagination.total)}
+              </Button>
+            </div>
+          ) : showAll && pagination ? (
             <InsightsPagination pagination={pagination} onPageChange={setPage} />
-          )}
+          ) : null}
         </>
       )}
     </div>
