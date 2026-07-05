@@ -1305,6 +1305,7 @@ export const fr = {
       stableTitle: 'Portefeuille stable',
       mrrSecured: 'MRR total s\u00e9curis\u00e9',
       championsCount: (n: number) => `${n} champion${n > 1 ? 's' : ''}`,
+      requiresAttention: (n: number) => `${n} compte${n > 1 ? 's' : ''} n\u00e9cessite${n > 1 ? 'nt' : ''} une attention imm\u00e9diate`,
     },
   },
 

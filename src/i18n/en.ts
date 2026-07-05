@@ -4,7 +4,6 @@ import type { Translations } from './fr';
 type EnOnlyKeys = {
   today: {
     hero: {
-      requiresAttention: (n: number) => string;
       loadError: string;
     };
   };
