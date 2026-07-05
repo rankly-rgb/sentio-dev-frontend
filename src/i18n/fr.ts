@@ -160,6 +160,14 @@ export const fr = {
     enterprise: "Enterprise",
     plansBannerText: "Les colonnes Plan et Sièges sont vides.",
     plansBannerLink: "Configurer vos plans",
+    priorityColumn: "Priorité",
+  },
+
+  accountPriority: {
+    critique: "Critique",
+    surveillance: "Surveillance",
+    stable: "Stable",
+    nouveau: "Nouveau",
   },
 
   // Détail compte

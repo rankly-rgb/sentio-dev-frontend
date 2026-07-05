@@ -164,6 +164,14 @@ export const en: Translations & EnOnlyKeys = {
     enterprise: 'Enterprise',
     plansBannerText: 'Plan and Seats columns are empty.',
     plansBannerLink: 'Configure your plans',
+    priorityColumn: 'Priority',
+  },
+
+  accountPriority: {
+    critique: 'Critical',
+    surveillance: 'Watch',
+    stable: 'Stable',
+    nouveau: 'New',
   },
 
   accountDetail: {

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
-import type { AccountListItem, AccountDetail, AccountSummaryCards } from '@/lib/types/accounts';
+import type { AccountListItem, AccountDetail, AccountSummaryCards, AccountPriorityLabel } from '@/lib/types/accounts';
 import type { AccountFlag } from '@/types/database';
 
 interface AccountsApiItem {
@@ -17,6 +17,7 @@ interface AccountsApiItem {
   expansion_score: number | null;
   product_usage_score: number | null;
   contract_end_date: string | null;
+  priority_label: AccountPriorityLabel | null;
   flags: AccountFlag[];
   created_at: string;
 }

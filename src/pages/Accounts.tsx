@@ -15,9 +15,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ScoreBadge from '@/components/ScoreBadge';
 import AccountName from '@/components/AccountName';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
+import AccountPriorityBadge from '@/components/accounts/AccountPriorityBadge';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
-import { Search, Download, Flag } from 'lucide-react';
+import { Search, Download, Flag, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import type { AccountPriorityLabel } from '@/lib/types/accounts';
 
 export default function Accounts() {
   const fr = useT();
@@ -26,6 +28,7 @@ export default function Accounts() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [flagsOnly, setFlagsOnly] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState<AccountPriorityLabel | null>(null);
   const debouncedSearch = useDebounce(search, 300);
   const { t } = useLanguage();
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
@@ -52,9 +55,9 @@ export default function Accounts() {
     limit: 25,
   });
 
-  const filteredAccounts = flagsOnly
-    ? accounts.filter(a => a.flags.length > 0)
-    : accounts;
+  const filteredAccounts = accounts
+    .filter(a => !flagsOnly || a.flags.length > 0)
+    .filter(a => !priorityFilter || a.priority_label === priorityFilter);
 
   return (
     <div className="space-y-6 p-6">
@@ -142,6 +145,17 @@ export default function Accounts() {
           <Flag className="h-4 w-4 mr-1.5" />
           {fr.accounts.withFlags}
         </Button>
+        {priorityFilter && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => setPriorityFilter(null)}
+          >
+            {fr.accountPriority[priorityFilter]}
+            <X className="h-3.5 w-3.5 ml-1.5" />
+          </Button>
+        )}
       </div>
 
       {/* Error state */}
@@ -167,6 +181,7 @@ export default function Accounts() {
                 <TableHead>{fr.accounts.mrr}</TableHead>
                 <TableHead>{fr.accounts.seats}</TableHead>
                 <TableHead>{fr.accounts.healthScore}</TableHead>
+                <TableHead>{fr.accounts.priorityColumn}</TableHead>
                 <TableHead>{fr.accounts.churnRisk}</TableHead>
                 <TableHead>{fr.accounts.flags}</TableHead>
                 <TableHead>{fr.accounts.contractEnd}</TableHead>
@@ -176,14 +191,14 @@ export default function Accounts() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 8 }).map((_, j) => (
+                    {Array.from({ length: 9 }).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : filteredAccounts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     {fr.accounts.noAccounts}
                   </TableCell>
                 </TableRow>
@@ -203,6 +218,12 @@ export default function Accounts() {
                     <TableCell className="font-medium">{fr.format.currency(account.mrr_cents)}</TableCell>
                     <TableCell>{account.seat_count ?? '-'} / {account.seat_limit ?? '-'}</TableCell>
                     <TableCell><ScoreBadge score={account.health_score} /></TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}>
+                      <AccountPriorityBadge
+                        priority={account.priority_label}
+                        onClick={setPriorityFilter}
+                      />
+                    </TableCell>
                     <TableCell><ScoreBadge score={account.churn_risk_score} inverted /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <AccountFlagsBadges flags={account.flags} compact />

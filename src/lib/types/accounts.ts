@@ -2,6 +2,8 @@
 
 import type { AccountFlag } from '@/types/database';
 
+export type AccountPriorityLabel = 'critique' | 'surveillance' | 'stable' | 'nouveau';
+
 export type SegmentType =
   | 'champions'
   | 'en_expansion'
@@ -40,6 +42,7 @@ export interface AccountListItem {
   contract_end_date: string | null;
   active_subscriptions: number;
   segment_name: string | null;
+  priority_label: AccountPriorityLabel | null;
   flags: AccountFlag[];
 }
 
