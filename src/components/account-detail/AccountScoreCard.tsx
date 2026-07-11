@@ -155,7 +155,7 @@ export default function AccountScoreCard({ account, trackerConnected }: Props) {
           <p className="text-sm font-medium">{fr.scores.healthScore}</p>
           {account.scores_calculated_at && (
             <p className="text-xs text-muted-foreground">
-              Mis à jour {relativeTimeFr(account.scores_calculated_at)}
+              Updated {relativeTimeFr(account.scores_calculated_at)}
             </p>
           )}
           <div className="flex gap-2 mt-1">
@@ -206,7 +206,7 @@ export default function AccountScoreCard({ account, trackerConnected }: Props) {
                   </TooltipContent>
                 </Tooltip>
               </span>
-              <span className="text-muted-foreground text-[10px]">Tracker non connecté</span>
+              <span className="text-muted-foreground text-[10px]">Tracker not connected</span>
             </div>
             <div className="h-1.5 w-full rounded-full bg-secondary border border-dashed border-gray-300" />
           </div>

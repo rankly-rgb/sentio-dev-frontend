@@ -33,13 +33,13 @@ export default function Promise() {
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center px-4">
-          <p className="text-sm text-[#94a3b8]">Impossible de charger votre espace.</p>
+          <p className="text-sm text-[#94a3b8]">Unable to load your workspace.</p>
           <button
             type="button"
             onClick={() => void refetch()}
             className="text-sm text-indigo-400 hover:text-indigo-300 underline"
           >
-            Réessayer
+            Retry
           </button>
         </div>
       </div>

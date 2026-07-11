@@ -190,7 +190,7 @@ export default function PlaybookDestinationsList({
                 setConfirmDeleteId(null);
               }}
             >
-              {fr.common.delete ?? 'Supprimer'}
+              {fr.common.delete ?? 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

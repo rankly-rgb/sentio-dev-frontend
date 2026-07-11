@@ -21,9 +21,9 @@ window.addEventListener('unhandledrejection', (event) => {
     ts: new Date().toISOString(),
   });
 
-  // Toast pour les erreurs réseau non capturées
+  // Toast for uncaught network errors
   if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
-    toast.error('Erreur réseau — vérifiez votre connexion');
+    toast.error('Network error — check your connection');
   }
 });
 
@@ -42,7 +42,7 @@ window.addEventListener('error', (event) => {
 
 // ─── Offline / Online detection ──────────────────────────────────────────
 window.addEventListener('offline', () => {
-  toast.error('Connexion perdue — les données ne seront pas mises à jour', {
+  toast.error('Connection lost — data will not be updated', {
     duration: Infinity,
     id: 'offline-banner',
   });
@@ -50,7 +50,7 @@ window.addEventListener('offline', () => {
 
 window.addEventListener('online', () => {
   toast.dismiss('offline-banner');
-  toast.success('Connexion rétablie', { duration: 3000 });
+  toast.success('Connection restored', { duration: 3000 });
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

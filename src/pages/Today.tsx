@@ -69,7 +69,7 @@ export default function Today() {
     setExporting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Session expirée');
+      if (!session?.access_token) throw new Error('Session expired');
 
       const res = await fetch(
         `${SUPABASE_URL}/functions/v1/export-playbook-accounts`,
@@ -83,7 +83,7 @@ export default function Today() {
         },
       );
 
-      if (!res.ok) throw new Error(`Erreur ${res.status}`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -93,7 +93,7 @@ export default function Today() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erreur export');
+      toast.error(err instanceof Error ? err.message : 'Export error');
     } finally {
       setExporting(false);
     }

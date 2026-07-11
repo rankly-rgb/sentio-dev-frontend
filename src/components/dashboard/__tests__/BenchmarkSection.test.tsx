@@ -89,7 +89,7 @@ describe('BenchmarkSection', () => {
   });
 
   it('displays error state when error is provided', () => {
-    render(<BenchmarkSection data={null} error={new Error('Erreur 500')} />);
+    render(<BenchmarkSection data={null} error={new Error('Error 500')} />);
 
     expect(screen.getByText('Benchmarks unavailable')).toBeInTheDocument();
     expect(screen.getByText(/Unable to load/)).toBeInTheDocument();

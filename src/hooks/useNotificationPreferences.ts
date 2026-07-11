@@ -11,7 +11,7 @@ export function useUpdateNotificationPreferences() {
 
   return useMutation({
     mutationFn: (prefs: NotificationPreferences) => {
-      if (!orgId) throw new Error('Organisation non trouvée');
+      if (!orgId) throw new Error('Organization not found');
       return updateNotificationPreferences(orgId, prefs);
     },
     retry: false,

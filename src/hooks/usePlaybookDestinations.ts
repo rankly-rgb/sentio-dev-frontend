@@ -54,10 +54,10 @@ export function useCreatePlaybookDestination() {
       createPlaybookDestination({ ...payload, organization_id: orgId }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.list(orgId) });
-      toast.success('Destination créée avec succès');
+      toast.success('Destination created successfully');
     },
     onError: (e) => {
-      toast.error('Erreur : ' + e.message);
+      toast.error('Error: ' + e.message);
     },
     retry: false,
   });
@@ -76,10 +76,10 @@ export function useUpdatePlaybookDestination() {
     mutationFn: ({ id, ...payload }) => updatePlaybookDestination(id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.list(orgId) });
-      toast.success('Destination mise à jour');
+      toast.success('Destination updated');
     },
     onError: (e) => {
-      toast.error('Erreur : ' + e.message);
+      toast.error('Error: ' + e.message);
     },
     retry: false,
   });
@@ -94,10 +94,10 @@ export function useDeletePlaybookDestination() {
     mutationFn: deletePlaybookDestination,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.list(orgId) });
-      toast.success('Destination supprimée');
+      toast.success('Destination deleted');
     },
     onError: (e) => {
-      toast.error('Erreur suppression : ' + e.message);
+      toast.error('Deletion error: ' + e.message);
     },
     retry: false,
   });

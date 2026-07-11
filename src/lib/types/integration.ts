@@ -55,15 +55,15 @@ export interface ConnectSlackBotTokenResponse {
 
 export function validateStripeKey(key: string): { valid: boolean; error?: string } {
   const trimmed = key.trim();
-  if (!trimmed) return { valid: false, error: 'Clé API requise' };
+  if (!trimmed) return { valid: false, error: 'API key required' };
   if (trimmed.startsWith('pk_')) {
-    return { valid: false, error: 'Utilisez la Secret Key (sk_), pas la clé publique (pk_)' };
+    return { valid: false, error: 'Use the Secret Key (sk_), not the publishable key (pk_)' };
   }
   if (!/^(sk_live_|sk_test_|rk_live_|rk_test_)/.test(trimmed)) {
-    return { valid: false, error: 'Format invalide — la clé doit commencer par sk_live_ ou sk_test_' };
+    return { valid: false, error: 'Invalid format — the key must start with sk_live_ or sk_test_' };
   }
   if (trimmed.length < 30) {
-    return { valid: false, error: 'Clé trop courte' };
+    return { valid: false, error: 'Key too short' };
   }
   return { valid: true };
 }
@@ -72,12 +72,12 @@ export function validateStripeKey(key: string): { valid: boolean; error?: string
 
 export function validateHubspotKey(key: string): { valid: boolean; error?: string } {
   const trimmed = key.trim();
-  if (!trimmed) return { valid: false, error: 'Clé API requise' };
+  if (!trimmed) return { valid: false, error: 'API key required' };
   if (!trimmed.startsWith('pat-')) {
-    return { valid: false, error: 'Format invalide — la clé doit commencer par pat-' };
+    return { valid: false, error: 'Invalid format — the key must start with pat-' };
   }
   if (trimmed.length < 30) {
-    return { valid: false, error: 'Clé trop courte' };
+    return { valid: false, error: 'Key too short' };
   }
   return { valid: true };
 }
@@ -86,12 +86,12 @@ export function validateHubspotKey(key: string): { valid: boolean; error?: strin
 
 export function validateSlackBotToken(token: string): { valid: boolean; error?: string } {
   const trimmed = token.trim();
-  if (!trimmed) return { valid: false, error: 'Token requis' };
+  if (!trimmed) return { valid: false, error: 'Token required' };
   if (!trimmed.startsWith('xoxb-') && !trimmed.startsWith('xoxp-')) {
-    return { valid: false, error: 'Le token doit commencer par xoxb- (Bot Token)' };
+    return { valid: false, error: 'The token must start with xoxb- (Bot Token)' };
   }
   if (trimmed.length < 30) {
-    return { valid: false, error: 'Token trop court' };
+    return { valid: false, error: 'Token too short' };
   }
   return { valid: true };
 }

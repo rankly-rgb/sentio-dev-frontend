@@ -130,16 +130,16 @@ export default function AccountFinancials({ account }: Props) {
           <div className="flex gap-3 text-[11px] text-muted-foreground flex-wrap">
             <span>
               <span className="inline-block h-2 w-2 rounded-full bg-green-500 mr-1" />
-              Payé : {fr.format.currency(invoiceTotals.paid)} ({invoiceTotals.paidCount})
+              Paid: {fr.format.currency(invoiceTotals.paid)} ({invoiceTotals.paidCount})
             </span>
             <span>
               <span className="inline-block h-2 w-2 rounded-full bg-yellow-400 mr-1" />
-              Dû : {fr.format.currency(invoiceTotals.due)} ({invoiceTotals.dueCount})
+              Due: {fr.format.currency(invoiceTotals.due)} ({invoiceTotals.dueCount})
             </span>
             {invoiceTotals.overdue > 0 && (
               <span>
                 <span className="inline-block h-2 w-2 rounded-full bg-red-500 mr-1" />
-                En retard : {fr.format.currency(invoiceTotals.overdue)} ({invoiceTotals.overdueCount})
+                Overdue: {fr.format.currency(invoiceTotals.overdue)} ({invoiceTotals.overdueCount})
               </span>
             )}
           </div>

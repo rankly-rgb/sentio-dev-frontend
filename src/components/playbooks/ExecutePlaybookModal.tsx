@@ -113,27 +113,27 @@ export default function ExecutePlaybookModal({ open, onOpenChange, playbookId, l
               <div>
                 <p className="font-medium">
                   {result.status === 'pending_approval'
-                    ? `Exécution en attente d'approbation — ${result.accounts_count ?? 0} comptes`
+                    ? `Execution pending approval — ${result.accounts_count ?? 0} accounts`
                     : result.executions_created > 0
                       ? result.has_more
-                        ? `${result.executions_created} comptes traités (${result.total_eligible ?? '?'} éligibles au total)`
-                        : `${result.executions_created} comptes traités`
-                      : 'Aucun compte traité'}
+                        ? `${result.executions_created} accounts processed (${result.total_eligible ?? '?'} eligible in total)`
+                        : `${result.executions_created} accounts processed`
+                      : 'No accounts processed'}
                 </p>
                 {result.executions_created === 0 && result.status !== 'pending_approval' && (
                   <p className="text-sm text-muted-foreground">
                     {(() => {
                       const MESSAGE_MAP: Record<string, string> = {
                         'All eligible accounts have recent executions':
-                          'Tous les comptes éligibles ont déjà été traités dans les dernières 24h. Réessayez plus tard.',
+                          'All eligible accounts have already been processed in the last 24h. Try again later.',
                         'No accounts match eligibility criteria':
-                          'Aucun compte ne correspond aux critères d\'éligibilité du playbook.',
+                          'No account matches the playbook eligibility criteria.',
                         'No accounts found':
-                          'Aucun compte trouvé dans l\'organisation.',
+                          'No accounts found in the organization.',
                         'No eligible accounts':
-                          'Aucun compte éligible dans le segment cible.',
+                          'No eligible accounts in the target segment.',
                       };
-                      return MESSAGE_MAP[result.message ?? ''] ?? result.message ?? 'Aucun compte éligible';
+                      return MESSAGE_MAP[result.message ?? ''] ?? result.message ?? 'No eligible accounts';
                     })()}
                   </p>
                 )}

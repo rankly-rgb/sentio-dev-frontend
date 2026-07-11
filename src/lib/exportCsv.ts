@@ -89,7 +89,7 @@ function triggerBlobDownload(blob: Blob, filename: string): void {
 
 export async function exportCsvWithEmail(options: ExportCsvOptions = {}): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) throw new Error('Session expirée, veuillez vous reconnecter');
+  if (!session?.access_token) throw new Error('Session expired, please log in again');
 
   const body: ExportCsvOptions = { include_email: true, limit: 2000, ...options };
 
@@ -110,15 +110,15 @@ export async function exportCsvWithEmail(options: ExportCsvOptions = {}): Promis
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error("L'export a pris trop de temps, veuillez réessayer avec un périmètre plus petit");
+      throw new Error('The export took too long, please retry with a smaller scope');
     }
-    throw new Error('Erreur réseau — vérifiez votre connexion');
+    throw new Error('Network error — check your connection');
   }
   clearTimeout(timeoutId);
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: `Erreur ${res.status}` }));
-    throw new Error((body as { error?: string }).error ?? `Erreur ${res.status}`);
+    const body = await res.json().catch(() => ({ error: `Error ${res.status}` }));
+    throw new Error((body as { error?: string }).error ?? `Error ${res.status}`);
   }
 
   const blob = await res.blob();
@@ -127,13 +127,13 @@ export async function exportCsvWithEmail(options: ExportCsvOptions = {}): Promis
 
 export async function exportSequenceTemplate(): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) throw new Error('Session expirée, veuillez vous reconnecter');
+  if (!session?.access_token) throw new Error('Session expired, please log in again');
 
   const res = await fetch(`${SUPABASE_URL}/functions/v1/export-csv?format=sequence_template`, {
     headers: { Authorization: `Bearer ${session.access_token}` },
   });
 
-  if (!res.ok) throw new Error(`Erreur ${res.status}`);
+  if (!res.ok) throw new Error(`Error ${res.status}`);
 
   const blob = await res.blob();
   triggerBlobDownload(blob, buildDateFilename('sentio-sequence', '.txt'));
@@ -146,8 +146,8 @@ export async function exportAccountsCsv(): Promise<{ exported: number }> {
     .order('mrr_cents', { ascending: false })
     .limit(MAX_EXPORT_ROWS);
 
-  if (error) throw new Error('Erreur export : ' + error.message);
-  if (!data || data.length === 0) throw new Error('Aucun compte à exporter');
+  if (error) throw new Error('Export error: ' + error.message);
+  if (!data || data.length === 0) throw new Error('No accounts to export');
 
   const rows = data as unknown[] as AccountCsvRow[];
   const lines: string[] = [];
@@ -170,6 +170,6 @@ export async function exportAccountsCsv(): Promise<{ exported: number }> {
     ].join(','));
   }
 
-  triggerDownload(lines.join('\n'), buildDateFilename('sentio-comptes'));
+  triggerDownload(lines.join('\n'), buildDateFilename('sentio-accounts'));
   return { exported: data.length };
 }

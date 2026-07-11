@@ -44,49 +44,47 @@ export function computeTriggerReasons(account: {
 }): string[] {
   const reasons: string[] = [];
   if ((account.churn_risk_score ?? 0) >= 70) {
-    reasons.push(`Risque churn ${account.churn_risk_score}/100`);
+    reasons.push(`Churn risk ${account.churn_risk_score}/100`);
   }
   if ((account.health_score ?? 100) < 40) {
-    reasons.push(`Score santé critique (${account.health_score}/100)`);
+    reasons.push(`Critical health score (${account.health_score}/100)`);
   }
   const daysToRenewal = computeDaysToRenewal(
     account.contract_end_date,
     account.billing_interval,
   );
   if (daysToRenewal !== null && daysToRenewal <= 30) {
-    reasons.push(`Renouvellement dans ${daysToRenewal}j`);
+    reasons.push(`Renews in ${daysToRenewal}d`);
   }
   if ((account.expansion_score ?? 0) >= 70) {
-    reasons.push(`Potentiel expansion ${account.expansion_score}/100`);
+    reasons.push(`Expansion potential ${account.expansion_score}/100`);
   }
   return reasons;
 }
 
-/** Format relative time in French */
 export function relativeTimeFr(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMin = Math.floor((now - then) / 60_000);
 
-  if (diffMin < 1) return "à l'instant";
-  if (diffMin < 60) return `il y a ${diffMin} min`;
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin} min ago`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `il y a ${diffH}h`;
+  if (diffH < 24) return `${diffH}h ago`;
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 30) return `il y a ${diffD}j`;
+  if (diffD < 30) return `${diffD}d ago`;
   const diffM = Math.floor(diffD / 30);
-  if (diffM < 12) return `il y a ${diffM} mois`;
-  return `il y a ${Math.floor(diffM / 12)} an(s)`;
+  if (diffM < 12) return `${diffM} mo ago`;
+  return `${Math.floor(diffM / 12)}y ago`;
 }
 
-/** Format months since date in French */
 export function monthsSince(dateStr: string): string {
   const then = new Date(dateStr);
   const now = new Date();
   const months =
     (now.getFullYear() - then.getFullYear()) * 12 +
     (now.getMonth() - then.getMonth());
-  if (months < 1) return 'moins d\'un mois';
-  if (months === 1) return '1 mois';
-  return `${months} mois`;
+  if (months < 1) return 'less than a month';
+  if (months === 1) return '1 month';
+  return `${months} months`;
 }

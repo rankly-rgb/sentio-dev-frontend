@@ -57,7 +57,7 @@ function defaultConfig(type: ActionType): Record<string, unknown> {
     case 'update_tag': return { tag: '' };
     case 'log_note': return { title: '', body: '' };
     case 'schedule_review': return { review_days: 7 };
-    case 'flag_for_review': return { flag: 'review_needed', reason: 'Signalé par playbook' };
+    case 'flag_for_review': return { flag: 'review_needed', reason: 'Flagged by playbook' };
     case 'send_email': return { recipient_field: 'account_email', subject: '', body_html: '' };
     case 'hubspot_enroll_sequence': return { sequence_id: '', sender_id: '' };
     case 'hubspot_update_company': return { properties: {} };

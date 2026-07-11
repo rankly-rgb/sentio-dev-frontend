@@ -23,7 +23,7 @@ export async function invokeWithServiceRole<T = void>(
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
 ): Promise<T> {
   if (!_SERVICE_ROLE_KEY_TEST_ONLY) {
-    throw new Error('Configuration manquante : clé service_role non disponible');
+    throw new Error('Missing configuration: service_role key not available');
   }
 
   const controller = new AbortController();
@@ -42,11 +42,11 @@ export async function invokeWithServiceRole<T = void>(
 
   try {
     const { data, error } = await supabase.functions.invoke(fnName, options);
-    if (error) throw new Error(`Edge Function "${fnName}" : ${error.message}`);
+    if (error) throw new Error(`Edge Function "${fnName}": ${error.message}`);
     return data as T;
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(`Edge Function "${fnName}" : délai dépassé (${timeoutMs / 1000}s)`);
+      throw new Error(`Edge Function "${fnName}": timed out (${timeoutMs / 1000}s)`);
     }
     throw err;
   } finally {

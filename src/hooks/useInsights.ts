@@ -69,7 +69,7 @@ export function useUpdateInsightStatus() {
           qc.setQueryData(key, data);
         }
       }
-      toast.error('Erreur lors de la mise à jour du statut');
+      toast.error('Error updating status');
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['insights'] });

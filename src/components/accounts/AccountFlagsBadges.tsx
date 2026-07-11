@@ -17,10 +17,10 @@ const FLAG_STYLES: Record<string, { bg: string; text: string }> = {
 };
 
 const FLAG_LABELS: Record<string, string> = {
-  review_needed: 'Revue requise',
-  escalation: 'Escalade',
+  review_needed: 'Review needed',
+  escalation: 'Escalation',
   vip: 'VIP',
-  at_risk: 'À risque',
+  at_risk: 'At risk',
 };
 
 function flagStyle(flag: string) {

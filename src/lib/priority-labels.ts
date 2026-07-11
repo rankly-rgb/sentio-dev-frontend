@@ -13,7 +13,7 @@ interface PriorityConfig {
 
 const PRIORITY_MAP: Record<PriorityCode, PriorityConfig> = {
   P0: { label: 'Urgent', variant: 'destructive' },
-  P1: { label: 'À surveiller', variant: 'warning' },
+  P1: { label: 'Watch', variant: 'warning' },
   P2: { label: 'Stable', variant: 'secondary' },
 };
 

@@ -22,18 +22,18 @@ const NOTE_ICONS: Record<NoteType, React.ElementType> = {
 
 const NOTE_TYPE_LABELS: Record<NoteType, string> = {
   playbook_action: 'Playbook',
-  manual: 'Manuelle',
-  system: 'Système',
+  manual: 'Manual',
+  system: 'System',
 };
 
 function relativeTime(dateStr: string, formatDate: (d: string) => string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `il y a ${Math.max(1, minutes)} min`;
+  if (minutes < 60) return `${Math.max(1, minutes)} min ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `il y a ${hours}h`;
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `il y a ${days}j`;
+  if (days < 30) return `${days}d ago`;
   return formatDate(dateStr);
 }
 

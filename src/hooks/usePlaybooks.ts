@@ -104,13 +104,13 @@ export function useCreatePlaybook() {
   return useMutation({
     mutationFn: (payload: CreatePlaybookPayload) => createPlaybook(payload),
     onSuccess: () => {
-      // Invalider seulement les listes, pas les détails/exécutions existants
+      // Invalidate lists only, not existing details/executions
       qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
       qc.invalidateQueries({ queryKey: ['playbooks', 'templates'] });
-      toast.success('Playbook créé avec succès');
+      toast.success('Playbook created successfully');
     },
     onError: (e: Error) => {
-      toast.error('Erreur création playbook : ' + e.message);
+      toast.error('Error creating playbook: ' + e.message);
     },
   });
 }
@@ -123,10 +123,10 @@ export function useUpdatePlaybook() {
     onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
       qc.invalidateQueries({ queryKey: KEYS.detail(id) });
-      toast.success('Playbook mis à jour');
+      toast.success('Playbook updated');
     },
     onError: (e: Error) => {
-      toast.error('Erreur mise à jour : ' + e.message);
+      toast.error('Update error: ' + e.message);
     },
   });
 }
@@ -137,10 +137,10 @@ export function useArchivePlaybook() {
     mutationFn: (id: string) => archivePlaybook(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['playbooks', 'list'] });
-      toast.success('Playbook archivé');
+      toast.success('Playbook archived');
     },
     onError: (e: Error) => {
-      toast.error('Erreur archivage : ' + e.message);
+      toast.error('Archiving error: ' + e.message);
     },
   });
 }
@@ -157,7 +157,7 @@ export function useExecutePlaybook() {
 
       // Semi-automated → pending approval
       if (data.status === 'pending_approval') {
-        toast.info(`Exécution en attente d'approbation — ${data.accounts_count ?? 0} comptes`);
+        toast.info(`Execution pending approval — ${data.accounts_count ?? 0} accounts`);
         return;
       }
 
@@ -169,13 +169,13 @@ export function useExecutePlaybook() {
         const skipped = results.filter(r => r.status === 'skipped').length;
 
         let msg = data.has_more
-          ? `${data.executions_created} comptes traités (${data.total_eligible ?? '?'} éligibles au total — max 200 par run)`
-          : `${data.executions_created} comptes traités`;
+          ? `${data.executions_created} accounts processed (${data.total_eligible ?? '?'} eligible in total — max 200 per run)`
+          : `${data.executions_created} accounts processed`;
         if (completed > 0 || failed > 0 || skipped > 0) {
           const parts: string[] = [];
-          if (completed > 0) parts.push(`${completed} réussis`);
-          if (failed > 0) parts.push(`${failed} échoués`);
-          if (skipped > 0) parts.push(`${skipped} ignorés`);
+          if (completed > 0) parts.push(`${completed} succeeded`);
+          if (failed > 0) parts.push(`${failed} failed`);
+          if (skipped > 0) parts.push(`${skipped} skipped`);
           msg += ` — ${parts.join(', ')}`;
         }
         toast.success(msg);
@@ -183,28 +183,28 @@ export function useExecutePlaybook() {
         // Warn about skipped actions
         const hasSkipped = data.actions_summary?.some(a => a.status === 'skipped');
         if (hasSkipped) {
-          toast.warning('Certaines actions ont été ignorées. Vérifiez la configuration des intégrations.', {
+          toast.warning('Some actions were skipped. Check your integration configuration.', {
             duration: 8000,
           });
         }
       } else {
-        // 0 executions — display backend message with French translation
+        // 0 executions — display backend message with English translation
         const MESSAGE_MAP: Record<string, string> = {
           'All eligible accounts have recent executions':
-            'Tous les comptes éligibles ont déjà été traités dans les dernières 24h. Réessayez plus tard.',
+            'All eligible accounts have already been processed in the last 24h. Try again later.',
           'No accounts match eligibility criteria':
-            'Aucun compte ne correspond aux critères d\'éligibilité du playbook.',
+            'No account matches the playbook eligibility criteria.',
           'No accounts found':
-            'Aucun compte trouvé dans l\'organisation.',
+            'No accounts found in the organization.',
           'No eligible accounts':
-            'Aucun compte éligible dans le segment cible.',
+            'No eligible accounts in the target segment.',
         };
-        const displayMsg = MESSAGE_MAP[data.message ?? ''] ?? data.message ?? 'Aucun compte éligible';
+        const displayMsg = MESSAGE_MAP[data.message ?? ''] ?? data.message ?? 'No eligible accounts';
         toast.warning(displayMsg);
       }
     },
     onError: (e: Error) => {
-      toast.error('Erreur exécution : ' + e.message);
+      toast.error('Execution error: ' + e.message);
     },
   });
 }
@@ -237,7 +237,7 @@ export function useTransitionPlaybookStatus() {
       qc.invalidateQueries({ queryKey: ['playbooks', 'full-detail', id] });
     },
     onError: (e: Error) => {
-      toast.error('Erreur changement de statut : ' + e.message);
+      toast.error('Status change error: ' + e.message);
     },
   });
 }
@@ -250,13 +250,13 @@ export function useApproveExecution() {
     onSuccess: (data, { playbookId }) => {
       qc.invalidateQueries({ queryKey: KEYS.executions(playbookId) });
       qc.invalidateQueries({ queryKey: ['playbooks', 'full-detail', playbookId] });
-      toast.success(`Exécution approuvée — ${data.accounts_count} comptes en cours de traitement`);
+      toast.success(`Execution approved — ${data.accounts_count} accounts being processed`);
     },
     onError: (e: Error) => {
-      if (e.message.includes('409') || e.message.includes('statut invalide')) {
-        toast.error('Cette exécution a déjà été traitée');
+      if (e.message.includes('409') || e.message.includes('invalid status') || e.message.includes('statut invalide')) {
+        toast.error('This execution has already been processed');
       } else {
-        toast.error('Erreur approbation : ' + e.message);
+        toast.error('Approval error: ' + e.message);
       }
     },
   });
@@ -270,13 +270,13 @@ export function useRejectExecution() {
     onSuccess: (_data, { playbookId }) => {
       qc.invalidateQueries({ queryKey: KEYS.executions(playbookId) });
       qc.invalidateQueries({ queryKey: ['playbooks', 'full-detail', playbookId] });
-      toast.success('Exécution rejetée');
+      toast.success('Execution rejected');
     },
     onError: (e: Error) => {
-      if (e.message.includes('409') || e.message.includes('statut invalide')) {
-        toast.error('Cette exécution a déjà été traitée');
+      if (e.message.includes('409') || e.message.includes('invalid status') || e.message.includes('statut invalide')) {
+        toast.error('This execution has already been processed');
       } else {
-        toast.error('Erreur rejet : ' + e.message);
+        toast.error('Rejection error: ' + e.message);
       }
     },
   });

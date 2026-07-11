@@ -15,9 +15,9 @@ interface ScoreBadgeProps {
 }
 
 const LABELS: Record<ScoreType, [string, string, string]> = {
-  health: ['Sain', 'Attention', 'Critique'],
-  churn: ['Élevé', 'Modéré', 'Faible'],
-  expansion: ['Fort', 'Modéré', 'Faible'],
+  health: ['Healthy', 'Attention', 'Critical'],
+  churn: ['High', 'Moderate', 'Low'],
+  expansion: ['Strong', 'Moderate', 'Low'],
 };
 
 function getColorAndLabel(score: number, scoreType: ScoreType | undefined, inverted: boolean): { color: string; label: string; pulseClass: string } {

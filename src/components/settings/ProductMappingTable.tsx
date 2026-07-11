@@ -64,7 +64,7 @@ export default function ProductMappingTable() {
         }
       } catch (err) {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : 'Erreur de chargement');
+          setLoadError(err instanceof Error ? err.message : 'Loading error');
           setLoading(false);
         }
       }

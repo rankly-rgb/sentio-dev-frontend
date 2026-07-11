@@ -19,7 +19,7 @@ describe('invokeWithServiceRole', () => {
   it('throws when SERVICE_ROLE_KEY is missing', async () => {
     vi.stubEnv('VITE_SUPABASE_SERVICE_ROLE_KEY', '');
     const { invokeWithServiceRole } = await import('../invokeEdgeFunction');
-    await expect(invokeWithServiceRole('test-fn')).rejects.toThrow('Configuration manquante');
+    await expect(invokeWithServiceRole('test-fn')).rejects.toThrow('Missing configuration');
   });
 
   it('calls supabase.functions.invoke with correct params', async () => {

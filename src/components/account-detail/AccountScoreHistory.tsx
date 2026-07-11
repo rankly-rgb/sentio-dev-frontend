@@ -19,7 +19,7 @@ function formatChartData(history: ScoreHistoryItem[]) {
     .sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date))
     .map((h) => ({
       date: h.snapshot_date.slice(5),
-      Santé: h.health_score,
+      Health: h.health_score,
       Churn: h.churn_risk_score,
       Expansion: h.expansion_score,
     }));
@@ -30,7 +30,7 @@ export default function AccountScoreHistory({ scoreHistory }: Props) {
   if (scoreHistory.length === 0) {
     return (
       <p className="text-xs text-muted-foreground text-center py-4">
-        Historique disponible après le premier calcul de scores
+        History available after the first score calculation
       </p>
     );
   }
@@ -40,7 +40,7 @@ export default function AccountScoreHistory({ scoreHistory }: Props) {
   return (
     <div>
       <p className="text-xs font-medium text-muted-foreground mb-2">
-        {fr.accountDetail.scoreEvolution} (30j)
+        {fr.accountDetail.scoreEvolution} (30d)
       </p>
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
@@ -55,7 +55,7 @@ export default function AccountScoreHistory({ scoreHistory }: Props) {
           />
           <Line
             type="monotone"
-            dataKey="Santé"
+            dataKey="Health"
             stroke="hsl(var(--primary))"
             strokeWidth={2}
             dot={false}

@@ -51,19 +51,19 @@ export interface TodayActionsFilters {
 // --- Category labels ---
 
 export const CATEGORY_LABELS: Record<string, string> = {
-  churn_prevention: 'Prévention churn',
+  churn_prevention: 'Churn prevention',
   expansion: 'Expansion',
   onboarding: 'Onboarding',
-  reactivation: 'Réactivation',
-  renewal: 'Renouvellement',
-  winback: 'Récupération',
-  payment_recovery: 'Recouvrement',
-  health_monitoring: 'Suivi santé',
-  customer_education: 'Éducation client',
-  nps_detractors: 'Détracteurs NPS',
+  reactivation: 'Reactivation',
+  renewal: 'Renewal',
+  winback: 'Winback',
+  payment_recovery: 'Payment recovery',
+  health_monitoring: 'Health monitoring',
+  customer_education: 'Customer education',
+  nps_detractors: 'NPS detractors',
   champions_advocacy: 'Champions & advocacy',
-  downgrade_prevention: 'Prévention downgrade',
-  success_planning: 'Planification succès',
+  downgrade_prevention: 'Downgrade prevention',
+  success_planning: 'Success planning',
 };
 
 export function categoryLabel(cat: string): string {
@@ -105,28 +105,28 @@ export function computeTriggerReasons(account: Account): string[] {
 
   const churnRisk = account.churn_risk_score ?? 0;
   if (churnRisk >= 70) {
-    reasons.push(`Risque churn critique (${Math.round(churnRisk)}%)`);
+    reasons.push(`Critical churn risk (${Math.round(churnRisk)}%)`);
   } else if (churnRisk >= 50) {
-    reasons.push(`Risque churn modéré (${Math.round(churnRisk)}%)`);
+    reasons.push(`Moderate churn risk (${Math.round(churnRisk)}%)`);
   }
 
   const health = account.health_score ?? 100;
   if (health < 40) {
-    reasons.push(`Santé faible (${Math.round(health)}%)`);
+    reasons.push(`Low health score (${Math.round(health)}%)`);
   }
 
   const dtr = computeDaysToRenewal(account.contract_end_date, account.billing_interval);
   if (dtr !== null && dtr <= 60) {
-    reasons.push(`Renouvellement dans ${dtr}j`);
+    reasons.push(`Renews in ${dtr}d`);
   }
 
   const expansion = account.expansion_score ?? 0;
   if (expansion >= 70) {
-    reasons.push(`Opportunité expansion (${Math.round(expansion)}%)`);
+    reasons.push(`Expansion opportunity (${Math.round(expansion)}%)`);
   }
 
   if (account.mrr_cents === 0) {
-    reasons.push('MRR à zéro');
+    reasons.push('MRR at zero');
   }
 
   return reasons;

@@ -27,12 +27,12 @@ const computed  = crypto
   .digest('hex');
 
 if (signature !== computed) {
-  return res.status(401).send('Signature invalide');
+  return res.status(401).send('Invalid signature');
 }
 
-// Utiliser stripe_customer_id pour retrouver le contact
+// Use stripe_customer_id to look up the contact
 const { stripe_customer_id, signals } = req.body.account;
-// Votre outil email a deja ce mapping via son integration Stripe`;
+// Your email tool already has this mapping via its Stripe integration`;
 
 const PYTHON_SNIPPET = `import hmac, hashlib, json
 
@@ -44,10 +44,10 @@ computed = hmac.new(
 ).hexdigest()
 
 if not hmac.compare_digest(signature, computed):
-    return Response('Signature invalide', status=401)
+    return Response('Invalid signature', status=401)
 
 stripe_customer_id = request.json['account']['stripe_customer_id']
-# Votre outil email a deja ce mapping via son integration Stripe`;
+# Your email tool already has this mapping via its Stripe integration`;
 
 const PHP_SNIPPET = `$signature = $_SERVER['HTTP_X_SENTIO_SIGNATURE'] ?? '';
 $computed  = hash_hmac(
@@ -58,7 +58,7 @@ $computed  = hash_hmac(
 
 if (!hash_equals($computed, $signature)) {
     http_response_code(401);
-    exit('Signature invalide');
+    exit('Invalid signature');
 }
 
 $payload = json_decode(file_get_contents('php://input'), true);

@@ -13,7 +13,7 @@ export function useManualSync() {
   const syncMutation = useMutation({
     mutationFn: async (syncType: 'incremental' | 'full_sync') => {
       const orgId = userRef.current?.organization_id;
-      if (!orgId) throw new Error('Utilisateur non connecté');
+      if (!orgId) throw new Error('User not connected');
       await fetchWithUserJwt('sync-stripe', {
         method: 'POST',
         body: {
@@ -24,22 +24,22 @@ export function useManualSync() {
       });
     },
     onSuccess: () => {
-      toast.success('Synchronisation Stripe déclenchée');
+      toast.success('Stripe sync triggered');
       queryClient.invalidateQueries({ queryKey: ['syncs'] });
       queryClient.invalidateQueries({ queryKey: ['sync-status'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
     onError: (e: unknown) => {
-      const msg = e instanceof Error ? e.message : 'Erreur inconnue';
-      toast.error('Échec sync Stripe : ' + msg);
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      toast.error('Stripe sync failed: ' + msg);
     },
   });
 
   const hubspotSyncMutation = useMutation({
     mutationFn: async (syncType: 'daily' | 'initial') => {
       const orgId = userRef.current?.organization_id;
-      if (!orgId) throw new Error('Utilisateur non connecté');
+      if (!orgId) throw new Error('User not connected');
       await fetchWithUserJwt('admin-proxy', {
         method: 'POST',
         body: {
@@ -50,36 +50,36 @@ export function useManualSync() {
       });
     },
     onSuccess: () => {
-      toast.success('Synchronisation HubSpot déclenchée');
+      toast.success('HubSpot sync triggered');
       queryClient.invalidateQueries({ queryKey: ['syncs'] });
       queryClient.invalidateQueries({ queryKey: ['sync-status'] });
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
     onError: (e: unknown) => {
-      const msg = e instanceof Error ? e.message : 'Erreur inconnue';
-      toast.error('Échec sync HubSpot : ' + msg);
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      toast.error('HubSpot sync failed: ' + msg);
     },
   });
 
   const scoresMutation = useMutation({
     mutationFn: async () => {
       const orgId = userRef.current?.organization_id;
-      if (!orgId) throw new Error('Utilisateur non connecté');
+      if (!orgId) throw new Error('User not connected');
       await fetchWithUserJwt('calculate-scores', {
         method: 'POST',
         body: { organization_id: orgId },
       });
     },
     onSuccess: () => {
-      toast.success('Scores recalculés avec succès');
+      toast.success('Scores recalculated successfully');
       queryClient.invalidateQueries({ queryKey: ['accounts'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['segments'] });
     },
     onError: (e: unknown) => {
-      const msg = e instanceof Error ? e.message : 'Erreur inconnue';
-      toast.error('Échec recalcul scores : ' + msg);
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      toast.error('Score recalculation failed: ' + msg);
     },
   });
 

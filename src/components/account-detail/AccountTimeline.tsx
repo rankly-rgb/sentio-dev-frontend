@@ -188,7 +188,7 @@ export default function AccountTimeline({ accountId, flags }: Props) {
                 {event.execution.health_score_before !== null &&
                   event.execution.health_score_after !== null && (
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Santé : {event.execution.health_score_before} → {event.execution.health_score_after}
+                      Health: {event.execution.health_score_before} → {event.execution.health_score_after}
                       {' '}
                       ({event.execution.health_score_after - event.execution.health_score_before > 0 ? '+' : ''}
                       {event.execution.health_score_after - event.execution.health_score_before})
@@ -197,12 +197,12 @@ export default function AccountTimeline({ accountId, flags }: Props) {
                 {/* MRR impact */}
                 {(event.execution.mrr_recovered_cents ?? 0) > 0 && (
                   <p className="text-[11px] text-green-600">
-                    MRR récupéré : {fr.format.currency(event.execution.mrr_recovered_cents ?? 0)}
+                    MRR recovered: {fr.format.currency(event.execution.mrr_recovered_cents ?? 0)}
                   </p>
                 )}
                 {(event.execution.mrr_expansion_cents ?? 0) > 0 && (
                   <p className="text-[11px] text-blue-600">
-                    MRR expansion : {fr.format.currency(event.execution.mrr_expansion_cents ?? 0)}
+                    MRR expansion: {fr.format.currency(event.execution.mrr_expansion_cents ?? 0)}
                   </p>
                 )}
               </div>

@@ -41,7 +41,7 @@ function summarizeConfig(type: ActionType, config: Record<string, unknown>): str
     case 'log_note':
       return String(config.note ?? '');
     case 'schedule_review':
-      return config.review_days ? `${config.review_days} jours` : '';
+      return config.review_days ? `${config.review_days} days` : '';
     case 'flag_for_review':
       return '';
     case 'send_email_hubspot':
@@ -49,11 +49,11 @@ function summarizeConfig(type: ActionType, config: Record<string, unknown>): str
     case 'send_email':
       return config.subject ? `Email: "${String(config.subject)}"` : 'Email';
     case 'hubspot_enroll_sequence':
-      return config.sequence_id ? `Séquence ${String(config.sequence_id)}` : '';
+      return config.sequence_id ? `Sequence ${String(config.sequence_id)}` : '';
     case 'hubspot_update_company': {
       const props = config.properties as Record<string, string> | undefined;
       const count = props ? Object.keys(props).length : 0;
-      return count > 0 ? `${count} propriété${count > 1 ? 's' : ''}` : '';
+      return count > 0 ? `${count} propert${count > 1 ? 'ies' : 'y'}` : '';
     }
     default:
       return '';

@@ -142,13 +142,13 @@ export default function AccountHeader({ account }: Props) {
       {/* HubSpot ID */}
       {account.hubspot_company_id && (
         <p className="text-xs text-muted-foreground">
-          HubSpot : {account.hubspot_company_id}
+          HubSpot: {account.hubspot_company_id}
         </p>
       )}
 
       {/* Client since */}
       <p className="text-xs text-muted-foreground">
-        Client depuis {monthsSince(account.created_at)}
+        Customer for {monthsSince(account.created_at)}
       </p>
 
       {/* Flags */}

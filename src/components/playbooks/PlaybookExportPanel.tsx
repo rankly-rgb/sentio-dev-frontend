@@ -104,7 +104,7 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
 
       if (!res.ok) {
         const errData: { error?: string } = await res.json().catch(() => ({}));
-        throw new Error(errData.error ?? `Erreur ${res.status}`);
+        throw new Error(errData.error ?? `Error ${res.status}`);
       }
 
       const blob = await res.blob();
@@ -116,7 +116,7 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
       const mrrStr = fr.format.currency(summary?.total_mrr_at_risk_cents ?? 0);
       toast.success(fr.playbookExport.toastSuccess(totalAccounts, mrrStr));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erreur export');
+      toast.error(err instanceof Error ? err.message : 'Export error');
     } finally {
       setLoading(false);
     }
