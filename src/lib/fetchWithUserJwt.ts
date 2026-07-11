@@ -4,7 +4,7 @@ import { logger } from '@/utils/productionLogger';
 export class TrialExpiredError extends Error {
   readonly status = 402;
   constructor() {
-    super('Essai expiré — veuillez mettre à jour votre abonnement');
+    super('Trial expired — please update your subscription');
     this.name = 'TrialExpiredError';
   }
 }
@@ -22,7 +22,7 @@ export async function fetchWithUserJwt<T>(
 ): Promise<T> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
-    throw new Error('Session expirée, veuillez vous reconnecter');
+    throw new Error('Session expired, please log in again');
   }
 
   const method = options.method || 'GET';
@@ -48,9 +48,9 @@ export async function fetchWithUserJwt<T>(
     clearTimeout(timeoutId);
     logger.perf('EdgeFn', `${method} ${fnName} (network error)`, performance.now() - t0);
     if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error(`Timeout — le serveur n'a pas répondu en ${REQUEST_TIMEOUT_MS / 1000}s`);
+      throw new Error(`Timeout — server did not respond in ${REQUEST_TIMEOUT_MS / 1000}s`);
     }
-    throw new Error('Erreur réseau — vérifiez votre connexion');
+    throw new Error('Network error — check your connection');
   }
   clearTimeout(timeoutId);
 
@@ -60,10 +60,10 @@ export async function fetchWithUserJwt<T>(
   try {
     data = await res.json();
   } catch {
-    throw new Error(`Réponse invalide du serveur (${res.status})`);
+    throw new Error(`Invalid server response (${res.status})`);
   }
 
   if (res.status === 402) throw new TrialExpiredError();
-  if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+  if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
   return data as T;
 }

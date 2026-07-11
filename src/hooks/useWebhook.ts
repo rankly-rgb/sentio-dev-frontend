@@ -42,7 +42,7 @@ export function useUpsertWebhook() {
       qc.invalidateQueries({ queryKey: KEYS.config(orgId) });
     },
     onError: (e) => {
-      toast.error('Erreur configuration webhook : ' + e.message);
+      toast.error('Webhook configuration error: ' + e.message);
     },
   });
 }
@@ -54,7 +54,7 @@ export function useTestWebhook() {
   return useMutation<TestWebhookResponse, Error, void>({
     mutationFn: () => testWebhook(orgId),
     onError: (e) => {
-      toast.error('Erreur test webhook : ' + e.message);
+      toast.error('Webhook test error: ' + e.message);
     },
   });
 }
@@ -68,10 +68,10 @@ export function useRegenerateWebhookSecret() {
     mutationFn: () => regenerateWebhookSecret(orgId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.config(orgId) });
-      toast.success('Secret regenere avec succes');
+      toast.success('Secret regenerated successfully');
     },
     onError: (e) => {
-      toast.error('Erreur regeneration secret : ' + e.message);
+      toast.error('Secret regeneration error: ' + e.message);
     },
   });
 }
@@ -85,10 +85,10 @@ export function useDisableWebhook() {
     mutationFn: () => disableWebhook(orgId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.config(orgId) });
-      toast.success('Webhook desactive');
+      toast.success('Webhook disabled');
     },
     onError: (e) => {
-      toast.error('Erreur desactivation webhook : ' + e.message);
+      toast.error('Webhook disabling error: ' + e.message);
     },
   });
 }

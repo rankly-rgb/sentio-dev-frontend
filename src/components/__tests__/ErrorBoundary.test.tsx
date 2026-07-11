@@ -34,7 +34,7 @@ describe('ErrorBoundary', () => {
         <ThrowError message="Something broke" />
       </ErrorBoundary>,
     );
-    expect(screen.getByText('Une erreur est survenue')).toBeInTheDocument();
+    expect(screen.getByText('An error occurred')).toBeInTheDocument();
   });
 
   it('shows session expired message for session-related errors', () => {
@@ -43,8 +43,8 @@ describe('ErrorBoundary', () => {
         <ThrowError message="JWT session expired" />
       </ErrorBoundary>,
     );
-    expect(screen.getByText('Session expirée')).toBeInTheDocument();
-    expect(screen.getByText(/redirigé/)).toBeInTheDocument();
+    expect(screen.getByText('Session expired')).toBeInTheDocument();
+    expect(screen.getByText(/redirected/)).toBeInTheDocument();
   });
 
   it('shows retry and reload buttons for non-session errors', () => {
@@ -53,11 +53,11 @@ describe('ErrorBoundary', () => {
         <ThrowError message="Network failure" />
       </ErrorBoundary>,
     );
-    expect(screen.getByText('Réessayer')).toBeInTheDocument();
-    expect(screen.getByText('Rafraîchir la page')).toBeInTheDocument();
+    expect(screen.getByText('Retry')).toBeInTheDocument();
+    expect(screen.getByText('Refresh page')).toBeInTheDocument();
   });
 
-  it('resets error state when clicking Réessayer', () => {
+  it('resets error state when clicking Retry', () => {
     let shouldThrow = true;
     function MaybeThrow(): ReactNode {
       if (shouldThrow) throw new Error('fail');
@@ -70,10 +70,10 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>,
     );
 
-    expect(screen.getByText('Une erreur est survenue')).toBeInTheDocument();
+    expect(screen.getByText('An error occurred')).toBeInTheDocument();
 
     shouldThrow = false;
-    fireEvent.click(screen.getByText('Réessayer'));
+    fireEvent.click(screen.getByText('Retry'));
 
     rerender(
       <ErrorBoundary>

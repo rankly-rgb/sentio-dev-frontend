@@ -33,11 +33,11 @@ const CATEGORY_CONFIG: Record<PlaybookTemplateCategory, { icon: React.ElementTyp
 };
 
 const CATEGORY_LABELS: Record<PlaybookTemplateCategory, string> = {
-  churn_prevention: 'Prévention churn',
+  churn_prevention: 'Churn prevention',
   expansion: 'Expansion',
-  renewal: 'Renouvellement',
-  payment_recovery: 'Recouvrement',
-  reactivation: 'Réactivation',
+  renewal: 'Renewal',
+  payment_recovery: 'Payment recovery',
+  reactivation: 'Reactivation',
 };
 
 function getCategoryConfig(cat: string) {
@@ -81,7 +81,7 @@ export default function NewPlaybookModal({ open, onOpenChange, onCreated }: Prop
       onOpenChange(false);
       onCreated?.(result.id);
     } catch (e) {
-      setCreateError(e instanceof Error ? e.message : 'Erreur création playbook');
+      setCreateError(e instanceof Error ? e.message : 'Error creating playbook');
     }
   };
 

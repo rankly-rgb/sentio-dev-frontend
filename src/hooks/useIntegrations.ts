@@ -43,7 +43,7 @@ export function useAuthorize() {
       window.location.href = data.authorization_url;
     },
     onError: (e) => {
-      toast.error('Erreur connexion OAuth : ' + e.message);
+      toast.error('OAuth connection error: ' + e.message);
     },
   });
 }
@@ -55,10 +55,10 @@ export function useRevokeIntegration() {
     mutationFn: (provider) => revokeIntegration(provider),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEYS.status });
-      toast.success('Integration deconnectee');
+      toast.success('Integration disconnected');
     },
     onError: (e) => {
-      toast.error('Erreur deconnexion : ' + e.message);
+      toast.error('Disconnection error: ' + e.message);
     },
   });
 }
@@ -72,8 +72,8 @@ export function useConnectStripeApiKey() {
       qc.invalidateQueries({ queryKey: KEYS.status });
       toast.success(
         data.account_name
-          ? `Stripe connecté (${data.account_name}) — synchronisation en cours...`
-          : 'Stripe connecté via clé API — synchronisation en cours...',
+          ? `Stripe connected (${data.account_name}) — syncing...`
+          : 'Stripe connected via API key — syncing...',
       );
     },
     onError: (e) => {
@@ -94,8 +94,8 @@ export function useConnectHubspotApiKey() {
       qc.invalidateQueries({ queryKey: ['sync-status'] });
       toast.success(
         data.portal_id
-          ? `HubSpot connecté (Portal ${data.portal_id}) — synchronisation en cours...`
-          : 'HubSpot connecté via clé API — synchronisation en cours...',
+          ? `HubSpot connected (Portal ${data.portal_id}) — syncing...`
+          : 'HubSpot connected via API key — syncing...',
       );
     },
     onError: (e) => {
@@ -114,8 +114,8 @@ export function useConnectSlackBotToken() {
       qc.invalidateQueries({ queryKey: KEYS.status });
       toast.success(
         data.team_name
-          ? `Slack connecté — Workspace "${data.team_name}"`
-          : 'Slack connecté via Bot Token',
+          ? `Slack connected — Workspace "${data.team_name}"`
+          : 'Slack connected via Bot Token',
       );
     },
     onError: (e) => {

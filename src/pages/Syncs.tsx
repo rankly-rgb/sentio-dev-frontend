@@ -155,9 +155,9 @@ export default function Syncs() {
           <CardContent className="p-4 flex items-center gap-3">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <div>
-              <p className="font-medium text-sm">Synchronisation en cours</p>
+              <p className="font-medium text-sm">Sync in progress</p>
               <p className="text-xs text-muted-foreground">
-                {running.map(s => s.sync_source).join(', ')} — démarré le{' '}
+                {running.map(s => s.sync_source).join(', ')} — started on{' '}
                 {running[0].started_at ? fr.format.dateTime(running[0].started_at) : '…'}
               </p>
             </div>

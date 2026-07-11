@@ -23,7 +23,7 @@ export default function OnboardingHeader({ step, totalSteps }: Props) {
       {step !== undefined && totalSteps !== undefined && (
         <div className="flex items-center gap-3">
           <span className="text-sm text-[#6b7280]">
-            Étape {step} sur {totalSteps}
+            Step {step} of {totalSteps}
           </span>
           <div className="flex gap-1.5">
             {Array.from({ length: totalSteps }).map((_, i) => (

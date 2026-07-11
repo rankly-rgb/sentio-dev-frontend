@@ -111,7 +111,7 @@ export default function TodayActionRow({ action, onAccountClick }: TodayActionRo
 
       {/* Days to renewal */}
       <td className="px-3 py-2.5 text-xs text-muted-foreground">
-        {action.days_to_renewal !== null ? `${action.days_to_renewal}j` : '—'}
+        {action.days_to_renewal !== null ? `${action.days_to_renewal}d` : '—'}
       </td>
     </tr>
   );

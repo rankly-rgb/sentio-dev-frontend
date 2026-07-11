@@ -21,7 +21,7 @@ export async function getTeamMembers(orgId: string): Promise<TeamMember[]> {
     .eq('organization_id', orgId)
     .order('created_at', { ascending: true });
 
-  if (error) throw new Error('Échec chargement des membres : ' + error.message);
+  if (error) throw new Error('Failed to load members: ' + error.message);
 
   return (data || []).map(row => ({
     id: row.id,
@@ -105,5 +105,5 @@ export async function updateNotificationPreferences(
     })
     .eq('id', orgId);
 
-  if (error) throw new Error('Échec de la sauvegarde des préférences : ' + error.message);
+  if (error) throw new Error('Failed to save preferences: ' + error.message);
 }

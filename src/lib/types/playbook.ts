@@ -441,49 +441,49 @@ function summarizeLegacyAction(type: ActionType, config: Record<string, unknown>
     case 'log_note':
       return String(config.note ?? '');
     case 'schedule_review':
-      return config.review_days ? `${config.review_days} jours` : '';
+      return config.review_days ? `${config.review_days} days` : '';
     case 'flag_for_review':
       return '';
     case 'send_email_hubspot':
-      return config.subject ? `Email HubSpot : "${String(config.subject)}"` : 'Email via HubSpot';
+      return config.subject ? `HubSpot Email: "${String(config.subject)}"` : 'Email via HubSpot';
     case 'send_email':
-      return config.subject ? `Email : "${String(config.subject)}"` : 'Email';
+      return config.subject ? `Email: "${String(config.subject)}"` : 'Email';
     default:
       return '';
   }
 }
 
 const FIELD_LABELS: Record<string, string> = {
-  health_score: 'Score de santé',
-  churn_risk_score: 'Score de risque churn',
-  expansion_score: "Score d'expansion",
-  product_usage_score: "Score d'usage produit",
+  health_score: 'Health score',
+  churn_risk_score: 'Churn risk score',
+  expansion_score: 'Expansion score',
+  product_usage_score: 'Product usage score',
   mrr_cents: 'MRR',
   arr_cents: 'ARR',
   plan_tier: 'Plan',
-  seat_count: 'Nombre de sièges',
-  seat_limit: 'Limite de sièges',
-  contract_start_date: 'Début de contrat',
-  contract_end_date: 'Fin de contrat',
+  seat_count: 'Seat count',
+  seat_limit: 'Seat limit',
+  contract_start_date: 'Contract start',
+  contract_end_date: 'Contract end',
 };
 
 const OP_LABELS: Record<string, string> = {
-  eq: 'égal à', neq: 'différent de',
-  gt: 'supérieur à', gte: '≥',
-  lt: 'inférieur à', lte: '≤',
-  in: 'dans', not_in: 'pas dans',
+  eq: 'equals', neq: 'not equal to',
+  gt: 'greater than', gte: '≥',
+  lt: 'less than', lte: '≤',
+  in: 'in', not_in: 'not in',
 };
 
 const ACTION_LABELS: Record<string, string> = {
-  slack_notify: 'Notification Slack',
-  create_task: 'Envoyer la séquence mail sur HubSpot',
-  assign_owner: 'Assigner un responsable',
-  update_tag: 'Mettre à jour le tag',
-  log_note: 'Ajouter une note',
-  schedule_review: 'Planifier une revue',
-  flag_for_review: 'Signaler pour revue',
+  slack_notify: 'Slack notification',
+  create_task: 'Send HubSpot email sequence',
+  assign_owner: 'Assign an owner',
+  update_tag: 'Update tag',
+  log_note: 'Add a note',
+  schedule_review: 'Schedule a review',
+  flag_for_review: 'Flag for review',
   send_email_hubspot: 'Email via HubSpot',
-  send_email: 'Envoyer un email',
+  send_email: 'Send an email',
 };
 
 export function buildFullDetailFromPlaybook(p: Playbook): PlaybookFullDetail {

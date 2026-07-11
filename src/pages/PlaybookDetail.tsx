@@ -74,11 +74,11 @@ export default function PlaybookDetail() {
         <Card className="border-destructive">
           <CardContent className="p-6 flex items-center justify-between">
             <p className="text-destructive text-sm">
-              {fr.common.error} : {(error as Error)?.message ?? 'Playbook introuvable'}
+              {fr.common.error}: {(error as Error)?.message ?? 'Playbook not found'}
             </p>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
-              Réessayer
+              Retry
             </Button>
           </CardContent>
         </Card>

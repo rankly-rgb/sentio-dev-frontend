@@ -397,10 +397,10 @@ export default function WorkflowDetail() {
                   )}
                   <div>
                     <span className="text-muted-foreground">{fr.playbooks.form.requiresApproval} : </span>
-                    <span className="font-medium">{playbook.requires_approval ? 'Oui' : 'Non'}</span>
+                    <span className="font-medium">{playbook.requires_approval ? 'Yes' : 'No'}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Créé le : </span>
+                    <span className="text-muted-foreground">Created on: </span>
                     <span className="font-medium">{fr.format.dateTime(playbook.created_at)}</span>
                   </div>
                 </div>

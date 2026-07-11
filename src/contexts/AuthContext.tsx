@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (profileError || !profile) {
-        logger.error('AuthContext', 'Erreur chargement profil', profileError);
+        logger.error('AuthContext', 'Profile loading error', profileError);
         return null;
       }
 
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: profile.id,
         email,
         organization_id: profile.organization_id,
-        organization_name: orgData?.name || 'Organisation inconnue',
+        organization_name: orgData?.name || 'Unknown organization',
         full_name: profile.full_name,
         role: profile.role,
       };
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(authUser);
       return authUser;
     } catch (error) {
-      logger.error('AuthContext', 'Erreur inattendue chargement profil', error);
+      logger.error('AuthContext', 'Unexpected profile loading error', error);
       return null;
     }
   }, []);
@@ -164,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setLoading(false);
     }).catch((err) => {
-      logger.error('AuthContext', 'Échec getSession initial', err);
+      logger.error('AuthContext', 'Initial getSession failed', err);
       setLoading(false);
     });
 
@@ -179,18 +179,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Vérification session au retour d'onglet
   useEffect(() => {
     const unsubscribe = visibilityMonitor.onReturn(async () => {
-      logger.log('AuthContext', 'Retour onglet après inactivité, vérification session');
+      logger.log('AuthContext', 'Tab focus after inactivity, checking session');
 
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
-          logger.error('AuthContext', 'Échec vérification session', error);
+          logger.error('AuthContext', 'Session check failed', error);
           return;
         }
 
         if (!currentSession) {
-          logger.error('AuthContext', 'Session perdue pendant inactivité');
+          logger.error('AuthContext', 'Session lost during inactivity');
           handleSessionLost();
           return;
         }
@@ -204,7 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await supabase.auth.refreshSession();
 
           if (refreshError || !newSession) {
-            logger.error('AuthContext', 'Échec rafraîchissement token — redirection login', refreshError);
+            logger.error('AuthContext', 'Token refresh failed — redirecting to login', refreshError);
             handleSessionLost();
           } else {
             setSession(newSession);
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSupabaseUser(currentSession.user ?? null);
         }
       } catch (error) {
-        logger.error('AuthContext', 'Erreur gestion visibilité onglet', error);
+        logger.error('AuthContext', 'Tab visibility handling error', error);
       }
     });
 
@@ -228,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) return { error: error.message };
       return {};
     } catch {
-      return { error: 'Une erreur inattendue est survenue' };
+      return { error: 'An unexpected error occurred' };
     }
   }, []);
 
@@ -242,7 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) return { error: error.message };
       return {};
     } catch {
-      return { error: 'Une erreur inattendue est survenue' };
+      return { error: 'An unexpected error occurred' };
     }
   }, []);
 
@@ -276,6 +276,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth doit être utilisé dans un AuthProvider');
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
   return ctx;
 }

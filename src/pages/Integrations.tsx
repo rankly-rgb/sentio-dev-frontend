@@ -591,18 +591,17 @@ function HubSpotCard({
   );
 }
 
-/** Format relative time in French */
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
   const diffMinutes = Math.floor(diffMs / 60_000);
-  if (diffMinutes < 1) return "à l'instant";
-  if (diffMinutes < 60) return `il y a ${diffMinutes} min`;
+  if (diffMinutes < 1) return 'just now';
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
   const diffDays = Math.floor(diffHours / 24);
-  return `il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 }
 
 /** Usage tracker section for Integrations page */

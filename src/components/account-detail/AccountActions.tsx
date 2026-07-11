@@ -17,7 +17,7 @@ export default function AccountActions({ account }: Props) {
       <Button variant="outline" size="sm" asChild>
         <Link to={`/accounts/${account.id}`}>
           <Eye className="h-3.5 w-3.5 mr-1.5" />
-          Voir le détail complet
+          View full details
         </Link>
       </Button>
       <Button variant="outline" size="sm" asChild>

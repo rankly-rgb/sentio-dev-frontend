@@ -61,12 +61,12 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="flex min-h-screen items-center justify-center bg-background">
           <div className="text-center max-w-md p-6">
             <h1 className="text-2xl font-bold text-destructive mb-2">
-              {isSession ? 'Session expirée' : 'Une erreur est survenue'}
+              {isSession ? 'Session expired' : 'An error occurred'}
             </h1>
             <p className="text-sm text-muted-foreground mb-4">
               {isSession
-                ? 'Votre session a expiré. Vous allez être redirigé vers la page de connexion.'
-                : 'Une erreur inattendue est survenue. Essayez de rafraîchir la page.'}
+                ? 'Your session has expired. You will be redirected to the login page.'
+                : 'An unexpected error occurred. Try refreshing the page.'}
             </p>
             {import.meta.env.DEV && this.state.error && (
               <pre className="text-xs text-left bg-muted p-3 rounded overflow-auto max-h-48 mb-4">
@@ -75,7 +75,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             )}
             {isSession ? (
               <p className="text-sm text-muted-foreground">
-                Redirection en cours...
+                Redirecting...
               </p>
             ) : (
               <div className="flex gap-2 justify-center">
@@ -83,13 +83,13 @@ export default class ErrorBoundary extends Component<Props, State> {
                   onClick={this.handleReset}
                   className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm hover:bg-secondary/80"
                 >
-                  Réessayer
+                  Retry
                 </button>
                 <button
                   onClick={this.handleReload}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90"
                 >
-                  Rafraîchir la page
+                  Refresh page
                 </button>
               </div>
             )}

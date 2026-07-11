@@ -58,7 +58,7 @@ export default function PlaybookDetailHeader({
       {
         onSuccess: () => {
           setActivateConfirm(false);
-          toast.success('Playbook activé avec succès');
+          toast.success('Playbook activated successfully');
         },
       },
     );
@@ -67,7 +67,7 @@ export default function PlaybookDetailHeader({
   const handleDeactivate = () => {
     transitionMutation.mutate(
       { id: playbook.id, targetStatus: 'draft' },
-      { onSuccess: () => toast.success('Playbook désactivé') },
+      { onSuccess: () => toast.success('Playbook deactivated') },
     );
   };
 

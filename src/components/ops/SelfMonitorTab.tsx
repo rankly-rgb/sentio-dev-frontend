@@ -50,7 +50,7 @@ export default function SelfMonitorTab() {
           </Button>
           {error && (
             <p className="text-sm text-destructive mt-2">
-              {error instanceof Error ? error.message : 'Erreur inconnue'}
+              {error instanceof Error ? error.message : 'Unknown error'}
             </p>
           )}
         </CardContent>

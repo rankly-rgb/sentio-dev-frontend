@@ -86,7 +86,7 @@ export default function ExecutionTimeline({ executions, isLoading }: Props) {
     completed: fr.actions.completed,
     partially_completed: fr.playbooks.executionStatusLabels.partially_completed,
     failed: fr.actions.failed,
-    cancelled: 'Annulée',
+    cancelled: 'Cancelled',
   };
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 

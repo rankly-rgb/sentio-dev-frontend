@@ -293,7 +293,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <button
           onClick={logout}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
-          aria-label="Se déconnecter"
+          aria-label="Log out"
         >
           <LogOut className="h-[18px] w-[18px] shrink-0" />
           <span>{fr.nav.logout}</span>
@@ -327,7 +327,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <button
             className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
             onClick={() => setMobileOpen(true)}
-            aria-label="Ouvrir le menu"
+            aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -339,7 +339,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             {lastSyncText && (
               <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground">
                 <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                Synchronisé {lastSyncText}
+                Synced {lastSyncText}
               </div>
             )}
           </div>

@@ -112,13 +112,13 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
       .eq('status', 'active'),
   ]);
 
-  // Vérifier les erreurs individuellement (hubspot/segments peuvent légitimement être vides)
-  if (subsRes.error) throw new Error(`Erreur chargement subscriptions: ${subsRes.error.message}`);
-  if (invoicesRes.error) throw new Error(`Erreur chargement invoices: ${invoicesRes.error.message}`);
-  if (usageRes.error) throw new Error(`Erreur chargement usage: ${usageRes.error.message}`);
-  if (scoreRes.error) throw new Error(`Erreur chargement score_history: ${scoreRes.error.message}`);
-  if (hubspotRes.error) throw new Error(`Erreur chargement hubspot: ${hubspotRes.error.message}`);
-  if (segmentsRes.error) throw new Error(`Erreur chargement segments: ${segmentsRes.error.message}`);
+  // Check errors individually (hubspot/segments can legitimately be empty)
+  if (subsRes.error) throw new Error(`Error loading subscriptions: ${subsRes.error.message}`);
+  if (invoicesRes.error) throw new Error(`Error loading invoices: ${invoicesRes.error.message}`);
+  if (usageRes.error) throw new Error(`Error loading usage: ${usageRes.error.message}`);
+  if (scoreRes.error) throw new Error(`Error loading score_history: ${scoreRes.error.message}`);
+  if (hubspotRes.error) throw new Error(`Error loading hubspot: ${hubspotRes.error.message}`);
+  if (segmentsRes.error) throw new Error(`Error loading segments: ${segmentsRes.error.message}`);
 
   return {
     ...account,

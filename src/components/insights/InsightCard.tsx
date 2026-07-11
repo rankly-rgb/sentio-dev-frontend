@@ -16,11 +16,11 @@ function relativeTime(dateStr: string): string {
   const then = new Date(dateStr).getTime();
   const diffSec = Math.floor((now - then) / 1000);
 
-  if (diffSec < 60) return "à l'instant";
-  if (diffSec < 3600) return `il y a ${Math.floor(diffSec / 60)} min`;
-  if (diffSec < 86400) return `il y a ${Math.floor(diffSec / 3600)}h`;
-  if (diffSec < 172800) return 'hier';
-  return `il y a ${Math.floor(diffSec / 86400)}j`;
+  if (diffSec < 60) return 'just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} min ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  if (diffSec < 172800) return 'yesterday';
+  return `${Math.floor(diffSec / 86400)}d ago`;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────

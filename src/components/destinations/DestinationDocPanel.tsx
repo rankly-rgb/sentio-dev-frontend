@@ -51,13 +51,13 @@ export default function DestinationDocPanel({ provider }: Props) {
       {(provider === 'custom' || provider === 'mailchimp' || provider === 'activecampaign') && (
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            Sentio enverra un POST JSON vers votre URL avec ce payload :
+            Sentio will send a JSON POST to your URL with this payload:
           </p>
           <pre className="text-xs bg-white/80 border border-blue-100 rounded-md p-2.5 overflow-x-auto font-mono leading-relaxed">
             {PAYLOAD_EXAMPLE}
           </pre>
           <p className="text-xs text-blue-700 italic">
-            Aucune donnée personnelle (email, nom) n'est transmise.
+            No personal data (email, name) is transmitted.
           </p>
         </div>
       )}

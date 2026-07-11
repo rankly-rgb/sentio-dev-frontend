@@ -59,7 +59,7 @@ function formatScoreHistory(history: ScoreHistoryItem[], days: number) {
     .sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date))
     .map(h => ({
       date: h.snapshot_date.slice(5),
-      Santé: h.health_score,
+      Health: h.health_score,
       Churn: h.churn_risk_score,
       Expansion: h.expansion_score,
     }));
@@ -369,7 +369,7 @@ export default function AccountDetail() {
                       formatter={(v: number | string) => [typeof v === 'number' ? `${Math.round(v)}/100` : '—']}
                     />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Line type="monotone" dataKey="Santé" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} connectNulls />
+                    <Line type="monotone" dataKey="Health" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} connectNulls />
                     <Line type="monotone" dataKey="Churn" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} connectNulls />
                     <Line type="monotone" dataKey="Expansion" stroke="#22c55e" strokeWidth={2} dot={false} connectNulls />
                   </LineChart>
@@ -468,8 +468,8 @@ export default function AccountDetail() {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{fr.format.currency(sub.mrr_cents)}/mois</p>
-                        <p className="text-xs text-muted-foreground">{sub.quantity} siège(s)</p>
+                        <p className="font-medium">{fr.format.currency(sub.mrr_cents)}/mo</p>
+                        <p className="text-xs text-muted-foreground">{sub.quantity} seat{sub.quantity > 1 ? 's' : ''}</p>
                       </div>
                     </div>
                   ))}
