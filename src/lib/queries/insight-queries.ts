@@ -46,3 +46,15 @@ export async function updateInsightStatus(
     body: { status },
   });
 }
+
+// --- Score feedback (thumbs up/down on an insight or account score) ---
+export async function postScoreFeedback(params: {
+  account_id: string;
+  insight_id?: string;
+  is_helpful: boolean;
+}): Promise<{ data: { id: string } }> {
+  return fetchWithUserJwt<{ data: { id: string } }>('score-feedback', {
+    method: 'POST',
+    body: params,
+  });
+}

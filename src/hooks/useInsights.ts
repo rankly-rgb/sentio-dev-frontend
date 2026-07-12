@@ -5,6 +5,7 @@ import {
   listInsights,
   getInsightStats,
   updateInsightStatus,
+  postScoreFeedback,
 } from '@/lib/queries/insight-queries';
 import type { InsightsFilters, Insight, InsightStatus, InsightsListResponse } from '@/types/insights';
 
@@ -73,6 +74,16 @@ export function useUpdateInsightStatus() {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['insights'] });
+    },
+  });
+}
+
+// --- Score feedback (thumbs up/down, no read endpoint yet) ---
+export function useScoreFeedback() {
+  return useMutation({
+    mutationFn: postScoreFeedback,
+    onError: () => {
+      toast.error('Error sending feedback');
     },
   });
 }

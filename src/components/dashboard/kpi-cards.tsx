@@ -12,6 +12,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
   const fr = useT();
   const kpis = [
     {
+      key: 'mrr',
       label: fr.dashboard.mrr,
       value: fr.format.currency(metrics.mrr_cents),
       icon: DollarSign,
@@ -19,6 +20,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.mrr,
     },
     {
+      key: 'arr',
       label: fr.dashboard.arr,
       value: fr.format.currency(metrics.arr_cents),
       icon: TrendingUp,
@@ -26,6 +28,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.arr,
     },
     {
+      key: 'nrr',
       label: fr.dashboard.nrr,
       value: fr.format.percentage(metrics.nrr_percentage),
       icon: metrics.nrr_percentage >= 100 ? TrendingUp : TrendingDown,
@@ -33,6 +36,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.nrr,
     },
     {
+      key: 'active-accounts',
       label: fr.dashboard.activeAccounts,
       value: fr.format.number(metrics.active_accounts),
       icon: Users,
@@ -40,6 +44,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.activeAccounts,
     },
     {
+      key: 'accounts-at-risk',
       label: fr.dashboard.accountsAtRisk,
       value: fr.format.number(metrics.accounts_at_risk),
       icon: AlertTriangle,
@@ -47,6 +52,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.accountsAtRisk,
     },
     {
+      key: 'mrr-at-risk',
       label: fr.dashboard.mrrAtRisk,
       value: fr.format.currency(metrics.mrr_at_risk_cents),
       icon: AlertTriangle,
@@ -54,6 +60,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.mrrAtRisk,
     },
     {
+      key: 'expansion-opportunities',
       label: fr.dashboard.expansionOpportunities,
       value: fr.format.number(metrics.expansion_opportunities),
       icon: Target,
@@ -61,6 +68,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       tooltip: fr.dashboard.tooltips.expansionOpportunities,
     },
     {
+      key: 'churn-rate',
       label: fr.dashboard.churnRate,
       value: fr.format.percentage(metrics.churn_rate),
       icon: TrendingDown,
@@ -73,7 +81,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     <TooltipProvider>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {kpis.map(kpi => (
-          <Card key={kpi.label} className="hover:shadow-card transition-shadow">
+          <Card key={kpi.label} data-testid={`kpi-${kpi.key}`} className="hover:shadow-card transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1">

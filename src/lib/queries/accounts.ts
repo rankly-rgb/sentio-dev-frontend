@@ -25,6 +25,8 @@ interface AccountsApiItem {
 interface AccountsListResponse {
   data: AccountsApiItem[];
   pagination: { limit: number; next_cursor: string | null; has_more: boolean };
+  total_count: number;
+  total_mrr_cents: number;
 }
 
 export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
@@ -51,7 +53,12 @@ export async function getAccountList(params: {
   cursor?: string | null;
   limit?: number;
   search?: string;
-} = {}): Promise<{ data: AccountListItem[]; pagination: { next_cursor: string | null; has_more: boolean } }> {
+} = {}): Promise<{
+  data: AccountListItem[];
+  pagination: { next_cursor: string | null; has_more: boolean };
+  total_count: number;
+  total_mrr_cents: number;
+}> {
   const qs = new URLSearchParams();
   if (params.limit) qs.set('limit', String(params.limit));
   if (params.cursor) qs.set('cursor', params.cursor);
@@ -73,6 +80,8 @@ export async function getAccountList(params: {
   return {
     data: deduped,
     pagination: res.pagination,
+    total_count: res.total_count,
+    total_mrr_cents: res.total_mrr_cents,
   };
 }
 

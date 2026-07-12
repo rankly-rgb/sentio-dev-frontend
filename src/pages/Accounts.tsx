@@ -79,13 +79,13 @@ export default function Accounts() {
       {/* Cartes résumé */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
+          <Card data-testid="kpi-active-accounts">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{fr.dashboard.activeAccounts}</p>
               <p className="text-2xl font-bold">{summary.total_accounts}</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card data-testid="kpi-mrr">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{fr.dashboard.mrr}</p>
               <p className="text-2xl font-bold">{fr.format.currency(summary.total_mrr_cents)}</p>

@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useT } from '@/lib/i18n/useT';
-import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
+import { useInsights, useUpdateInsightStatus, useScoreFeedback } from '@/hooks/useInsights';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BrainCircuit } from 'lucide-react';
+import { BrainCircuit, ThumbsUp, ThumbsDown } from 'lucide-react';
 import type { InsightPriority, InsightType } from '@/types/insights';
 
 interface Props {
@@ -30,6 +30,8 @@ export default function AccountInsights({ accountId }: Props) {
     status: 'active',
   });
   const updateStatus = useUpdateInsightStatus();
+  const scoreFeedback = useScoreFeedback();
+  const [feedbackGiven, setFeedbackGiven] = useState<Record<string, boolean>>({});
 
   const handleAcknowledge = useCallback(
     (id: string) => updateStatus.mutate({ id, status: 'acknowledged' }),
@@ -38,6 +40,15 @@ export default function AccountInsights({ accountId }: Props) {
   const handleDismiss = useCallback(
     (id: string) => updateStatus.mutate({ id, status: 'dismissed' }),
     [updateStatus],
+  );
+  const handleFeedback = useCallback(
+    (insightId: string, isHelpful: boolean) => {
+      scoreFeedback.mutate(
+        { account_id: accountId, insight_id: insightId, is_helpful: isHelpful },
+        { onSuccess: () => setFeedbackGiven((prev) => ({ ...prev, [insightId]: true })) },
+      );
+    },
+    [accountId, scoreFeedback],
   );
 
   if (isLoading) {
@@ -106,7 +117,7 @@ export default function AccountInsights({ accountId }: Props) {
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-1 shrink-0">
+              <div className="flex flex-col items-end gap-1 shrink-0">
                 <button
                   className="text-[10px] text-primary hover:underline"
                   onClick={() => handleAcknowledge(insight.id)}
@@ -121,6 +132,28 @@ export default function AccountInsights({ accountId }: Props) {
                 >
                   {fr.insights.dismiss}
                 </button>
+                {feedbackGiven[insight.id] ? (
+                  <span className="text-[10px] text-muted-foreground">{fr.insights.feedbackThanks}</span>
+                ) : (
+                  <div className="flex items-center gap-1" aria-label={fr.insights.feedbackHelpful}>
+                    <button
+                      className="text-muted-foreground hover:text-success disabled:opacity-50"
+                      onClick={() => handleFeedback(insight.id, true)}
+                      disabled={scoreFeedback.isPending}
+                      aria-label={fr.insights.feedbackHelpful}
+                    >
+                      <ThumbsUp className="h-3 w-3" />
+                    </button>
+                    <button
+                      className="text-muted-foreground hover:text-destructive disabled:opacity-50"
+                      onClick={() => handleFeedback(insight.id, false)}
+                      disabled={scoreFeedback.isPending}
+                      aria-label={fr.insights.feedbackHelpful}
+                    >
+                      <ThumbsDown className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

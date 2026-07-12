@@ -1092,6 +1092,8 @@ export const en = {
     noFilterResults: 'No insights match the selected filters',
     viewAll: (n: number) => `View all insights (${n})`,
     errorLoading: 'Unable to load insights',
+    feedbackHelpful: 'Was this insight helpful?',
+    feedbackThanks: 'Thanks for your feedback',
     statusLabel: 'Status',
     sortLabel: 'Sort',
     accountInsightsTitle: 'AI Insights',

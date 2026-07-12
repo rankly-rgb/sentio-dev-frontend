@@ -65,7 +65,7 @@ export default function Revelation() {
             <p className="text-xs text-[#6b7280] mt-1">{fr.onboardingV2.revelation.mrrAtRisk}</p>
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-            <p className="text-2xl font-bold text-[#3b5bdb]">{globalScore}</p>
+            <p className="text-2xl font-bold text-[#3b5bdb]">{Math.round(globalScore)}</p>
             <p className="text-xs text-[#6b7280] mt-1">{fr.onboardingV2.revelation.globalScore}</p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function Revelation() {
                         : 'bg-amber-100 text-amber-700'
                     }`}
                   >
-                    {fr.onboardingV2.revelation.healthScore} {acc.health_score}
+                    {fr.onboardingV2.revelation.healthScore} {Math.round(acc.health_score)}
                   </Badge>
                 </div>
               </div>

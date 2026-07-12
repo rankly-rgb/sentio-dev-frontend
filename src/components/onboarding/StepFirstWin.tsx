@@ -59,12 +59,12 @@ export default function StepFirstWin({ onConnectHubspot: _onConnectHubspot }: Pr
                   <td className="px-4 py-3 font-mono text-xs text-gray-700">{acc.masked_id}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-medium', healthBadgeClass(acc.health_score))}>
-                      {acc.health_score}
+                      {Math.round(acc.health_score)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-medium', churnBadgeClass(acc.churn_risk_score))}>
-                      {acc.churn_risk_score}
+                      {Math.round(acc.churn_risk_score)}
                     </span>
                   </td>
                 </tr>

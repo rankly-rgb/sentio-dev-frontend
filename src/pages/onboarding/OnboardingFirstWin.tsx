@@ -52,7 +52,7 @@ export default function OnboardingFirstWin() {
           </div>
           <div className="bg-[#0f172a] rounded-xl p-4 border border-[#334155] text-center">
             <p className={cn('text-xl font-bold', globalScore >= 70 ? 'text-green-400' : globalScore >= 40 ? 'text-amber-400' : 'text-red-400')}>
-              {globalScore}
+              {Math.round(globalScore)}
             </p>
             <p className="text-xs text-[#64748b] mt-1">{w.globalScoreLabel}</p>
           </div>
@@ -87,7 +87,7 @@ export default function OnboardingFirstWin() {
                     'flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full border',
                     healthBadgeClass(acc.health_score),
                   )}>
-                    {acc.health_score}
+                    {Math.round(acc.health_score)}
                   </span>
                 </li>
               ))}
