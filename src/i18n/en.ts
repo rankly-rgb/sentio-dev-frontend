@@ -28,6 +28,7 @@ export const en = {
     nrr: 'NRR',
     logoRetention: 'Logo retention',
     activeAccounts: 'Active accounts',
+    totalAccounts: 'Total accounts',
     accountsAtRisk: 'Accounts at risk',
     mrrAtRisk: 'MRR at risk',
     expansionOpportunities: 'Expansion opportunities',

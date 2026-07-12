@@ -81,7 +81,7 @@ export default function Accounts() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card data-testid="kpi-active-accounts">
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{fr.dashboard.activeAccounts}</p>
+              <p className="text-sm text-muted-foreground">{fr.dashboard.totalAccounts}</p>
               <p className="text-2xl font-bold">{summary.total_accounts}</p>
             </CardContent>
           </Card>
