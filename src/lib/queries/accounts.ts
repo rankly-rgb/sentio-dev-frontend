@@ -178,6 +178,27 @@ export async function getAccountList(params: {
   };
 }
 
+/**
+ * Charge tous les comptes de l'org via accounts-api (paginé), en réutilisant
+ * getAccountList. Sert aux agrégations org-wide (segments, distribution
+ * santé) qui ont besoin de `primary_segment` — champ confirmé disponible
+ * via accounts-api (docs/reference/accounts-api-fixtures.test), contrairement
+ * à un accès direct à la table `accounts` en PostgREST dont on ne sait pas
+ * s'il expose cette colonne (question ouverte côté backend, voir rapport de
+ * fin). Route ces lectures via l'edge function plutôt que de parier dessus.
+ */
+export async function getAllAccountsForOrg(): Promise<AccountListItem[]> {
+  const all: AccountListItem[] = [];
+  let cursor: string | null = null;
+  for (;;) {
+    const page = await getAccountList({ cursor, limit: 100 });
+    all.push(...page.data);
+    if (!page.pagination.has_more || !page.pagination.next_cursor) break;
+    cursor = page.pagination.next_cursor;
+  }
+  return all;
+}
+
 export async function getAccountDetail(accountId: string): Promise<AccountDetail | null> {
   const accountRes = await fetchWithUserJwt<{ data: AccountsApiDetailItem | null }>(`accounts-api?id=${accountId}`);
   const account = accountRes.data;

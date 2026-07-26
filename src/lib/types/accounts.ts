@@ -101,6 +101,7 @@ export interface AccountListItem extends ScoringV2Fields {
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
+  created_at: string;
   active_subscriptions: number;
   segment_name: string | null;
   priority_label: AccountPriorityLabel | null;

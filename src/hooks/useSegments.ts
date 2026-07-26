@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import type { SegmentType } from '@/lib/types/segments';
 import { SEGMENT_KEYS, SEGMENT_LABELS } from '@/lib/types/segments';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
-import type { HealthScoreStatus } from '@/lib/types/accounts';
+import { getAllAccountsForOrg } from '@/lib/queries/accounts';
 
 export interface SaaSSegment {
   name: SegmentType;
@@ -15,24 +14,11 @@ export interface SaaSSegment {
   avg_health_score: number | null;
 }
 
-// ⚠️ UNVERIFIED : voir le même avertissement dans segment-queries.ts —
-// primary_segment n'est confirmé disponible que via l'edge function
-// accounts-api (§4bis), pas explicitement comme colonne PostgREST directe.
-async function fetchSegments(organizationId: string): Promise<SaaSSegment[]> {
-  const { data, error } = await supabase
-    .from('accounts')
-    .select('health_score, health_score_status, primary_segment, mrr_cents, created_at')
-    .eq('organization_id', organizationId);
-
-  if (error) throw error;
-
-  const all = (data || []) as Array<{
-    health_score: number | null;
-    health_score_status: HealthScoreStatus;
-    primary_segment: SegmentType | null;
-    mrr_cents: number;
-    created_at: string;
-  }>;
+// Chargé via accounts-api (getAllAccountsForOrg) — voir le commentaire dans
+// segment-queries.ts sur pourquoi primary_segment n'est pas lu par un
+// .select() brut sur la table `accounts`.
+async function fetchSegments(): Promise<SaaSSegment[]> {
+  const all = await getAllAccountsForOrg();
 
   return SEGMENT_KEYS.map((name) => {
     const filter = getSegmentFilter(name);
@@ -56,7 +42,7 @@ export function useSegments() {
 
   return useQuery({
     queryKey: ['segments', orgId],
-    queryFn: () => fetchSegments(orgId!),
+    queryFn: fetchSegments,
     enabled: !!orgId,
     staleTime: 120_000,
   });

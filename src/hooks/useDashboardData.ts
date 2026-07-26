@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
+import { getAllAccountsForOrg } from '@/lib/queries/accounts';
 import type { DashboardMetrics, HealthDistribution } from '@/types/dashboard';
 import type { ChurnRiskBand, ExpansionScoreStatus, HealthScoreBand, HealthScoreStatus } from '@/lib/types/accounts';
 
@@ -81,15 +82,10 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
   };
 }
 
-async function fetchHealthDistribution(organizationId: string): Promise<HealthDistribution> {
-  const { data: accounts, error } = await supabase
-    .from('accounts')
-    .select('primary_segment, created_at')
-    .eq('organization_id', organizationId);
-
-  if (error) throw error;
-
-  const all = accounts || [];
+// Chargé via accounts-api (getAllAccountsForOrg), pas un .select() brut sur
+// `accounts` — voir le commentaire dans segment-queries.ts sur primary_segment.
+async function fetchHealthDistribution(): Promise<HealthDistribution> {
+  const all = await getAllAccountsForOrg();
 
   return {
     champions: all.filter(getSegmentFilter('champions')).length,
@@ -151,7 +147,7 @@ export function useDashboardData() {
 
   const distributionQuery = useQuery({
     queryKey: ['dashboard', 'distribution', orgId],
-    queryFn: () => fetchHealthDistribution(orgId!),
+    queryFn: fetchHealthDistribution,
     enabled: !!orgId,
     staleTime: 120_000,
   });
