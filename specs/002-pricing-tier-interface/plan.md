@@ -42,10 +42,13 @@ implication SEO/SSR
 
 **Constraints**: Zero-PII (principe I) ; TypeScript strict/ES5 (principe III) ; UI
 100% anglais (principe IV) ; toute donnée API doit respecter un contrat documenté
-dans `docs/API_CONTRACTS.md` (principe V) — **contrainte bloquante actuelle : le
-contrat complet (palier + limite de comptes + indicateur self-serve/RDV) n'existe pas
-encore**, voir Dependencies ; le frontend ne doit jamais décider lui-même du palier ou
-de la bascule self-serve/RDV (contrainte explicite de la spec, FR-007)
+dans `docs/API_CONTRACTS.md` (principe V) — contrat désormais documenté pour le
+palier (dont "Scale"), la progression de comptes et l'indicateur self-serve/RDV
+(§ "Pricing & Billing", `docs/API_CONTRACTS.md`), **marqué provisoire par le
+backend** ("spec en cours, pas encore livré", pas encore mergé) ; le mécanisme concret
+du CTA "demander un rendez-vous" reste non documenté — voir Dependencies ; le frontend
+ne doit jamais décider lui-même du palier ou de la bascule self-serve/RDV (contrainte
+explicite de la spec, FR-007)
 
 **Scale/Scope**: 3 user stories (P1/P2/P3), modification de composants existants
 (dashboard/settings pour l'affichage palier, `StripeConnect.tsx` pour le CTA d'appel
@@ -61,14 +64,15 @@ contextuel), pas de nouvelle page de routing majeure
 | II. Stack & Structure | ✅ PASS | Reste dans Vite/React/TS, modifications dans `src/pages`/`src/components` existants |
 | III. TypeScript strict, ES5 | ✅ PASS | Aucune syntaxe non-ES5 anticipée |
 | IV. English-Only UI | ✅ PASS | Tous les libellés UI seront en anglais |
-| V. API Contract Compliance | ⚠️ **GATE BLOQUANT** | Aucun contrat complet n'existe dans `docs/API_CONTRACTS.md` pour le palier + limite de comptes + indicateur self-serve/RDV. Un contrat partiel existe (`GET /trial-status`) mais insuffisant (pas de "Scale", pas de limite/progression de comptes, pas d'indicateur self-serve/RDV explicite). **Ce plan ne doit pas inventer de forme de données** — voir Dependencies. |
+| V. API Contract Compliance | ⚠️ **GATE PARTIEL** | Contrat documenté dans `docs/API_CONTRACTS.md` (§ "Pricing & Billing") : `GET /pricing-status` couvre les 4 paliers (`free\|growth\|scale\|enterprise`, `starter` supprimé), `active_accounts_count`/`max_active_accounts`/`usage_pct`, et `requires_appointment` (indicateur self-serve/RDV explicite) — **mais marqué provisoire par le backend** ("pas encore livré", non mergé) **et le mécanisme concret du CTA "demander un rendez-vous" (lien/action) n'est toujours pas documenté** (le contrat ne couvre que `POST /sentio-billing/subscribe`, côté self-serve). **Ce plan ne doit pas inventer cette forme de données** — voir Dependencies. |
 | Edits ciblés (str_replace) | ✅ PASS applicable à l'implémentation |
 | Identité graphique figée | ✅ PASS | Réutilisation des composants shadcn/ui existants (`Progress`, `Card`, `Button`), pas de nouvelle palette |
 
-**Verdict** : le plan peut être documenté et review, mais l'implémentation
-(`/speckit-tasks` puis `/speckit-implement`, hors scope de cette tâche) est bloquée
-tant que le principe V n'est pas satisfait — en particulier la clarification du
-palier "Scale" et de l'indicateur self-serve/RDV.
+**Verdict** : `/speckit-tasks` peut être lancé — le palier "Scale" et l'indicateur
+self-serve/RDV sont désormais clarifiés (3 des 4 dépendances couvertes).
+`/speckit-implement` reste bloqué tant que (a) le contrat n'est pas mergé côté
+backend et (b) le mécanisme du CTA "demander un rendez-vous" n'est pas documenté
+(voir Dependencies).
 
 ## Project Structure
 
@@ -88,13 +92,16 @@ specs/002-pricing-tier-interface/
 src/
 ├── lib/
 │   └── types/
-│       └── plan-tier.ts             # Nouveau : PlanTierStatus, AccountLimitProgress,
-│                                     # SubscriptionCtaMode ('self_serve' | 'request_meeting')
-│                                     # — formes exactes dépendantes du contrat backend,
-│                                     # NE PAS inventer ici tant que non documenté ;
-│                                     # étendre potentiellement src/lib/types/trial.ts
-│                                     # plutôt que dupliquer, à trancher une fois le
-│                                     # contrat backend connu
+│       └── plan-tier.ts             # Nouveau : PricingStatus (plan_tier: 'free'|
+│                                     # 'growth'|'scale'|'enterprise', active_accounts_count,
+│                                     # max_active_accounts, usage_pct, alert_active,
+│                                     # requires_appointment) — per docs/API_CONTRACTS.md
+│                                     # § "Pricing & Billing" 8.1 ; le mécanisme du CTA RDV
+│                                     # (lien/action derrière "demander un rendez-vous")
+│                                     # reste non documenté, NE PAS l'inventer ; noter que
+│                                     # `src/lib/types/trial.ts` (`PlanType`) est obsolète —
+│                                     # contient encore 'starter' (supprimé par le contrat)
+│                                     # et pas 'scale' ; ne pas réutiliser tel quel
 ├── hooks/
 │   └── usePlanTierStatus.ts         # Nouveau hook (query) — état de palier consommé
 │                                     # tel quel depuis l'API, aucune logique de
@@ -134,26 +141,36 @@ Aucune violation de la constitution ne nécessite de justification de complexit�
 seule non-conformité actuelle — principe V, API Contract Compliance — est un gate
 bloquant de dépendance externe, pas un choix de complexité à justifier).
 
-## Dependencies (backend — à demander explicitement, non inventées ici)
+## Dependencies (backend)
 
-Avant `/speckit-tasks` puis `/speckit-implement` sur cette feature, les points
-suivants doivent être clarifiés/documentés côté backend dans `docs/API_CONTRACTS.md` :
+Statut au 2026-07-26, contrat provisoire `docs/API_CONTRACTS.md` § "Pricing & Billing"
+(non mergé côté backend — à re-vérifier avant `/speckit-implement`) :
 
-1. **État de palier complet** : endpoint (extension de `GET /trial-status` ou nouveau
-   contrat dédié) exposant le palier actuel de l'organisation, incluant une valeur
-   "Scale" si elle doit exister distinctement d'"Enterprise" (le type frontend actuel
-   `PlanType` dans `src/lib/types/trial.ts` ne connaît que
-   `'free' | 'starter' | 'growth' | 'enterprise'`).
-2. **Limite et progression de comptes actifs suivis** : nombre de comptes actuellement
-   suivis vs limite du palier (ou indicateur "illimité"), non présent aujourd'hui dans
-   le contrat de palier existant.
-3. **Indicateur self-serve/RDV explicite** : champ exposant si l'organisation doit voir
-   un CTA self-serve ou "demander un rendez-vous" — le frontend ne doit jamais dériver
-   cette logique lui-même (FR-007), même si la bascule métier (chantier A) est déjà
-   active côté backend.
-4. **Mécanisme de "demander un rendez-vous"** : forme du lien/action (URL externe fixe,
-   endpoint de génération de lien personnalisé, etc.) à utiliser pour le CTA RDV.
+1. **État de palier complet** — ✅ documenté : `GET /pricing-status` retourne
+   `plan_tier` (`'free'|'growth'|'scale'|'enterprise'`, non nullable). Décision produit
+   confirmée dans le contrat (2026-07-26) : `starter` supprimé, ne plus jamais l'attendre
+   côté frontend — `PlanType` dans `src/lib/types/trial.ts` est donc obsolète pour ce
+   chantier (garde `'starter'`, n'a pas `'scale'`) ; ne pas le réutiliser tel quel pour
+   `plan-tier.ts`.
+2. **Limite et progression de comptes actifs suivis** — ✅ documenté :
+   `active_accounts_count` (non nullable, `COUNT(*) ... WHERE mrr_cents > 0`),
+   `max_active_accounts` (nullable, `null` = illimité), `usage_pct` (nullable, `null`
+   si illimité, peut dépasser 100 en cas de dépassement de palier), `alert_active`
+   (`true` si `usage_pct >= alert_threshold_pct`, défaut 90).
+3. **Indicateur self-serve/RDV explicite** — ✅ documenté : `requires_appointment`
+   (boolean, `true` pour `scale`/`enterprise`) — le frontend consomme ce champ tel
+   quel, ne dérive rien lui-même (FR-007 respecté par construction).
+4. **Mécanisme de "demander un rendez-vous"** — ⚠️ **toujours non documenté**. Le
+   contrat couvre `POST /sentio-billing/subscribe` + webhook `sentio-billing-webhook`
+   côté self-serve uniquement (§8.3) ; aucune forme n'est donnée pour l'action derrière
+   le CTA RDV (lien externe fixe, endpoint de génération de lien, etc.). **Ne pas
+   inventer cet endpoint/lien** — à redemander explicitement au backend avant
+   d'implémenter le clic du CTA RDV dans `SubscriptionCta.tsx`. Note : le contrat
+   renvoie vers `specs/003-pricing-billing-implementation/contracts/pricing-billing-api.md`
+   pour le détail complet de §8.3, mais ce dossier `specs/003-pricing-billing-implementation/`
+   **n'existe pas dans ce repo** (seul `specs/002-pricing-tier-interface/` existe pour ce
+   chantier) — écart à signaler au backend, pas à combler par supposition.
 
-Tant que ces contrats ne sont pas documentés, ce plan reste au niveau de la structure
-et de l'architecture frontend — aucun type de données ni shape de payload n'est fixé
-au-delà de ce qui est déjà nommé ci-dessus comme "à définir côté backend".
+`src/lib/types/plan-tier.ts` peut désormais typer `PricingStatus` sur la forme
+ci-dessus (points 1-3). Le mécanisme du CTA RDV (point 4) reste à définir tant que le
+backend ne l'a pas documenté — ne pas l'inventer dans `/speckit-tasks`.
