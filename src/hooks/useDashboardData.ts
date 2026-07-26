@@ -1,37 +1,69 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
 import type { DashboardMetrics, HealthDistribution } from '@/types/dashboard';
+import type { ChurnRiskBand, ExpansionScoreStatus, HealthScoreBand, HealthScoreStatus } from '@/lib/types/accounts';
 
 export interface TopAccount {
   id: string;
   stripe_customer_id: string;
   display_name?: string | null;
   mrr_cents: number;
-  churn_risk_score: number | null;
+  churn_risk_score: number;
+  churn_risk_band: ChurnRiskBand;
   expansion_score: number | null;
+  expansion_score_status: ExpansionScoreStatus;
   health_score: number | null;
+  health_score_band: HealthScoreBand | null;
   seat_count: number | null;
   seat_limit: number | null;
   plan_tier: string | null;
 }
 
+interface DashboardAccountRow {
+  id: string;
+  mrr_cents: number;
+  health_score: number | null;
+  health_score_status: HealthScoreStatus;
+  churn_risk_score: number;
+  churn_risk_band: ChurnRiskBand;
+  expansion_score: number | null;
+  expansion_score_status: ExpansionScoreStatus;
+}
+
+interface BriefingResponse {
+  data: {
+    portfolio: {
+      current_avg_health: number | null;
+      week_ago_avg_health: number | null;
+      health_delta_7d: number | null;
+      health_trend: 'up' | 'down' | 'stable' | 'unknown';
+    };
+    risk_accounts_7d: number;
+    p0_insights_count: number;
+  };
+}
+
 async function fetchDashboardMetrics(organizationId: string): Promise<DashboardMetrics> {
-  const { data: accounts, error } = await supabase
-    .from('accounts')
-    .select('id, mrr_cents, health_score, churn_risk_score, expansion_score')
-    .eq('organization_id', organizationId);
+  // Le dénominateur "avg health" doit être server-side (dashboard-api/briefing) —
+  // jamais recalculé côté client à partir de ?? 0 (docs/API_CONTRACTS.md S1).
+  const [briefing, accountsRes] = await Promise.all([
+    fetchWithUserJwt<BriefingResponse>('dashboard-api/briefing'),
+    supabase
+      .from('accounts')
+      .select('id, mrr_cents, health_score, health_score_status, churn_risk_score, churn_risk_band, expansion_score, expansion_score_status')
+      .eq('organization_id', organizationId),
+  ]);
 
-  if (error) throw error;
+  if (accountsRes.error) throw accountsRes.error;
 
-  const all = accounts || [];
+  const all = (accountsRes.data || []) as DashboardAccountRow[];
   const active = all.filter(a => (a.mrr_cents || 0) > 0);
-  const atRisk = all.filter(a => (a.churn_risk_score ?? 0) > 70);
+  const atRisk = all.filter(a => a.churn_risk_band === 'high');
   const totalMrr = all.reduce((s, a) => s + (a.mrr_cents || 0), 0);
-  const healthScores = all
-    .filter((a): a is typeof a & { health_score: number } => a.health_score !== null)
-    .map(a => a.health_score);
+  const scoredAccounts = all.filter(a => a.health_score_status !== 'insufficient').length;
 
   return {
     mrr_cents: totalMrr,
@@ -42,10 +74,9 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
     active_accounts: active.length,
     accounts_at_risk: atRisk.length,
     mrr_at_risk_cents: atRisk.reduce((s, a) => s + (a.mrr_cents || 0), 0),
-    expansion_opportunities: all.filter(a => (a.expansion_score ?? 0) > 75).length,
-    avg_health_score: healthScores.length > 0
-      ? Math.round(healthScores.reduce((s, h) => s + h, 0) / healthScores.length)
-      : 0,
+    expansion_opportunities: all.filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) > 75).length,
+    avg_health_score: briefing.data.portfolio.current_avg_health,
+    avg_health_scored_accounts: scoredAccounts,
     churn_rate: all.length > 0 ? (atRisk.length / all.length) * 100 : 0,
   };
 }
@@ -53,7 +84,7 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
 async function fetchHealthDistribution(organizationId: string): Promise<HealthDistribution> {
   const { data: accounts, error } = await supabase
     .from('accounts')
-    .select('health_score, churn_risk_score, expansion_score, mrr_cents, created_at')
+    .select('health_score_status, health_score_band, churn_risk_band, expansion_score, expansion_score_status, mrr_cents, created_at')
     .eq('organization_id', organizationId);
 
   if (error) throw error;
@@ -69,6 +100,7 @@ async function fetchHealthDistribution(organizationId: string): Promise<HealthDi
     unpaid: all.filter(getSegmentFilter('impayes')).length,
     churned: all.filter(getSegmentFilter('en_churn')).length,
     new_accounts: all.filter(getSegmentFilter('nouveaux')).length,
+    insufficient_data: all.filter(getSegmentFilter('donnees_insuffisantes')).length,
   };
 }
 
@@ -82,7 +114,7 @@ export interface TopAccountsResult {
 async function fetchTopAccounts(organizationId: string): Promise<TopAccountsResult> {
   const { data: accounts, error } = await supabase
     .from('accounts')
-    .select('id, stripe_customer_id, display_name, mrr_cents, churn_risk_score, expansion_score, health_score, seat_count, seat_limit, plan_tier')
+    .select('id, stripe_customer_id, display_name, mrr_cents, churn_risk_score, churn_risk_band, expansion_score, expansion_score_status, health_score, health_score_band, seat_count, seat_limit, plan_tier')
     .eq('organization_id', organizationId);
 
   if (error) throw error;
@@ -90,12 +122,12 @@ async function fetchTopAccounts(organizationId: string): Promise<TopAccountsResu
   const all = (accounts || []) as TopAccount[];
 
   const atRisk = all
-    .filter(a => (a.churn_risk_score ?? 0) >= 70 && (a.mrr_cents || 0) > 0)
-    .sort((a, b) => (b.churn_risk_score ?? 0) - (a.churn_risk_score ?? 0))
+    .filter(a => a.churn_risk_band === 'high' && (a.mrr_cents || 0) > 0)
+    .sort((a, b) => b.churn_risk_score - a.churn_risk_score)
     .slice(0, 5);
 
   const allExpansion = all
-    .filter(a => (a.expansion_score ?? 0) >= 70 && (a.health_score ?? 0) >= 60)
+    .filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) >= 70 && (a.health_score ?? 0) >= 60)
     .sort((a, b) => (b.expansion_score ?? 0) - (a.expansion_score ?? 0));
 
   return {

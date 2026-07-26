@@ -10,7 +10,10 @@ export interface DashboardMetrics {
   accounts_at_risk: number;
   mrr_at_risk_cents: number;
   expansion_opportunities: number;
-  avg_health_score: number;
+  /** null si aucun compte n'a de health_score honnêtement calculable (jamais rendu comme 0). */
+  avg_health_score: number | null;
+  /** Dénominateur pour l'affichage "Avg. health: 71 (across 42 of 47 accounts)". */
+  avg_health_scored_accounts: number;
   churn_rate: number;
 }
 
@@ -32,6 +35,8 @@ export interface HealthDistribution {
   unpaid: number;
   churned: number;
   new_accounts: number;
+  /** health_score_status = 'insufficient' — jamais fusionné avec un autre segment (§4). */
+  insufficient_data: number;
 }
 
 export interface ScoreDistribution {

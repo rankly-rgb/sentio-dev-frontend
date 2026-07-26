@@ -215,14 +215,14 @@ export default function Accounts() {
                     </TableCell>
                     <TableCell className="font-medium">{fr.format.currency(account.mrr_cents)}</TableCell>
                     <TableCell>{account.seat_count ?? '-'} / {account.seat_limit ?? '-'}</TableCell>
-                    <TableCell><ScoreBadge score={account.health_score} /></TableCell>
+                    <TableCell><ScoreBadge score={account.health_score} band={account.health_score_band} type="health" /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <AccountPriorityBadge
                         priority={account.priority_label}
                         onClick={setPriorityFilter}
                       />
                     </TableCell>
-                    <TableCell><ScoreBadge score={account.churn_risk_score} inverted /></TableCell>
+                    <TableCell><ScoreBadge score={account.churn_risk_score} band={account.churn_risk_band} type="churn" inverted /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <AccountFlagsBadges flags={account.flags} compact />
                     </TableCell>

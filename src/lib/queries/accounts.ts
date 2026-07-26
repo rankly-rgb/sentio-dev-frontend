@@ -1,9 +1,16 @@
 import { supabase } from '@/lib/supabase';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
-import type { AccountListItem, AccountDetail, AccountSummaryCards, AccountPriorityLabel } from '@/lib/types/accounts';
+import type {
+  AccountListItem,
+  AccountDetail,
+  AccountSummaryCards,
+  AccountPriorityLabel,
+  ScoringV2Fields,
+  ScoreBreakdown,
+} from '@/lib/types/accounts';
 import type { AccountFlag } from '@/types/database';
 
-interface AccountsApiItem {
+interface AccountsApiItem extends ScoringV2Fields {
   id: string;
   stripe_customer_id: string;
   display_name: string | null;
@@ -12,10 +19,6 @@ interface AccountsApiItem {
   mrr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
-  health_score: number | null;
-  churn_risk_score: number | null;
-  expansion_score: number | null;
-  product_usage_score: number | null;
   contract_end_date: string | null;
   priority_label: AccountPriorityLabel | null;
   flags: AccountFlag[];
@@ -29,23 +32,61 @@ interface AccountsListResponse {
   total_mrr_cents: number;
 }
 
+/**
+ * Champs `accounts` non relationnels exposés par `accounts-api?id=` (payload v3,
+ * docs/API_CONTRACTS.md §2/§6). Les tables liées (subscriptions/invoices/usage_events/
+ * score_history/hubspot_companies/segment_memberships) restent lues directement —
+ * elles ne portent pas de scores et ne sont pas couvertes par ce contrat.
+ */
+interface AccountsApiDetailItem extends ScoringV2Fields {
+  id: string;
+  organization_id: string;
+  stripe_customer_id: string;
+  display_name: string | null;
+  hubspot_company_id: string | null;
+  plan_tier: string | null;
+  billing_interval: string | null;
+  mrr_cents: number;
+  arr_cents: number;
+  seat_count: number | null;
+  seat_limit: number | null;
+  contract_start_date: string | null;
+  contract_end_date: string | null;
+  score_breakdown: ScoreBreakdown;
+  usage_frozen_v2: number | null;
+  engagement_frozen_v2: number | null;
+  scores_calculated_at: string | null;
+  health_score_is_new?: boolean;
+  last_stripe_sync_at: string | null;
+  last_hubspot_sync_at: string | null;
+  flags: AccountFlag[];
+  created_at: string;
+}
+
 export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
   const { data, error } = await supabase
     .from('accounts')
-    .select('id, health_score, churn_risk_score, expansion_score, mrr_cents');
+    .select('id, health_score, health_score_status, churn_risk_band, expansion_score_status, expansion_score, mrr_cents');
 
   if (error) throw error;
 
-  const accounts = data || [];
+  const accounts = (data || []) as Array<{
+    health_score: number | null;
+    health_score_status: 'complete' | 'partial' | 'insufficient';
+    churn_risk_band: 'low' | 'watch' | 'high';
+    expansion_score_status: 'available' | 'unavailable';
+    expansion_score: number | null;
+    mrr_cents: number;
+  }>;
+
+  const atRisk = accounts.filter(a => a.churn_risk_band === 'high');
   return {
     total_accounts: accounts.length,
-    at_risk_accounts: accounts.filter(a => (a.churn_risk_score ?? 0) > 70).length,
-    healthy_accounts: accounts.filter(a => (a.health_score ?? 0) > 60).length,
-    expansion_ready: accounts.filter(a => (a.expansion_score ?? 0) > 75).length,
+    at_risk_accounts: atRisk.length,
+    healthy_accounts: accounts.filter(a => a.health_score_status !== 'insufficient' && (a.health_score ?? 0) > 60).length,
+    expansion_ready: accounts.filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) > 75).length,
     total_mrr_cents: accounts.reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
-    mrr_at_risk_cents: accounts
-      .filter(a => (a.churn_risk_score ?? 0) > 70)
-      .reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
+    mrr_at_risk_cents: atRisk.reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
   };
 }
 
@@ -86,13 +127,8 @@ export async function getAccountList(params: {
 }
 
 export async function getAccountDetail(accountId: string): Promise<AccountDetail | null> {
-  const { data: account, error } = await supabase
-    .from('accounts')
-    .select('*')
-    .eq('id', accountId)
-    .maybeSingle();
-
-  if (error) throw error;
+  const accountRes = await fetchWithUserJwt<{ data: AccountsApiDetailItem | null }>(`accounts-api?id=${accountId}`);
+  const account = accountRes.data;
   if (!account) return null;
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
@@ -109,7 +145,7 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
       .limit(500),
     supabase
       .from('score_history')
-      .select('snapshot_date, health_score, churn_risk_score, expansion_score, product_usage_score, financial_score, engagement_score, contract_score, mrr_cents')
+      .select('snapshot_date, health_score, churn_risk_score, expansion_score, mrr_cents')
       .eq('account_id', accountId)
       .order('snapshot_date', { ascending: false })
       .limit(90),
@@ -131,12 +167,8 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
 
   return {
     ...account,
-    display_name: (account as { display_name?: string | null }).display_name ?? null,
-    health_score_is_new: (account as { health_score_is_new?: boolean }).health_score_is_new ?? false,
-    financial_score_narrative: (account as { financial_score_narrative?: string | null }).financial_score_narrative ?? null,
-    engagement_score_narrative: (account as { engagement_score_narrative?: string | null }).engagement_score_narrative ?? null,
-    contract_score_narrative: (account as { contract_score_narrative?: string | null }).contract_score_narrative ?? null,
-    product_usage_score_narrative: (account as { product_usage_score_narrative?: string | null }).product_usage_score_narrative ?? null,
+    display_name: account.display_name ?? null,
+    health_score_is_new: account.health_score_is_new ?? false,
     flags: Array.isArray(account.flags) ? account.flags : [],
     subscriptions: subsRes.data || [],
     recent_invoices: invoicesRes.data || [],

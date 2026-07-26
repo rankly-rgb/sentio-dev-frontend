@@ -1,5 +1,5 @@
 /** Types et constantes pour les segments clients */
-import type { SegmentType } from './accounts';
+import type { SegmentType, ChurnRiskBand, ExpansionScoreStatus, ExpansionUnavailableReason, HealthScoreBand, HealthScoreStatus, TrendDirection } from './accounts';
 
 export { type SegmentType };
 
@@ -12,6 +12,7 @@ export const SEGMENT_KEYS: readonly SegmentType[] = [
   'impayes',
   'en_churn',
   'nouveaux',
+  'donnees_insuffisantes',
 ] as const;
 
 export const SEGMENT_LABELS: Record<SegmentType, string> = {
@@ -23,6 +24,7 @@ export const SEGMENT_LABELS: Record<SegmentType, string> = {
   impayes: 'Past due',
   en_churn: 'Churning',
   nouveaux: 'New (< 90d)',
+  donnees_insuffisantes: 'Insufficient data',
 };
 
 export const SEGMENT_COLORS: Record<SegmentType, { text: string; bg: string; border: string }> = {
@@ -34,6 +36,8 @@ export const SEGMENT_COLORS: Record<SegmentType, { text: string; bg: string; bor
   impayes: { text: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200' },
   en_churn: { text: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200' },
   nouveaux: { text: 'text-indigo-700', bg: 'bg-indigo-50', border: 'border-indigo-200' },
+  // Traitement visuel neutre (gris) — F7 : ce n'est pas un segment de santé, c'est une absence de donnée.
+  donnees_insuffisantes: { text: 'text-gray-500', bg: 'bg-gray-100', border: 'border-gray-300' },
 };
 
 export interface SegmentAccount {
@@ -48,9 +52,16 @@ export interface SegmentAccount {
   seat_limit: number | null;
   contract_end_date: string | null;
   health_score: number | null;
-  churn_risk_score: number | null;
+  health_score_status: HealthScoreStatus;
+  health_score_band: HealthScoreBand | null;
+  health_score_max_points: number;
+  trend_30d: TrendDirection;
+  churn_risk_score: number;
+  churn_risk_band: ChurnRiskBand;
+  risk_signals_evaluated: number;
   expansion_score: number | null;
-  product_usage_score: number | null;
+  expansion_score_status: ExpansionScoreStatus;
+  expansion_unavailable_reason: ExpansionUnavailableReason | null;
 }
 
 export function isValidSegmentKey(key: string): key is SegmentType {

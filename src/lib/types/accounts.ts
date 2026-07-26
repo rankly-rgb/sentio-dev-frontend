@@ -12,7 +12,65 @@ export type SegmentType =
   | 'en_danger_critique'
   | 'impayes'
   | 'en_churn'
-  | 'nouveaux';
+  | 'nouveaux'
+  | 'donnees_insuffisantes';
+
+// ── Scoring Engine V2 (model_version='v3') — docs/API_CONTRACTS.md §2 ──
+
+export type HealthScoreStatus = 'complete' | 'partial' | 'insufficient';
+export type HealthScoreBand = 'healthy' | 'watch' | 'at_risk';
+export type ChurnRiskBand = 'low' | 'watch' | 'high';
+export type ExpansionScoreStatus = 'available' | 'unavailable';
+export type ExpansionUnavailableReason = 'seat_data_not_configured' | 'unlimited_plan_no_ceiling';
+export type TrendDirection = 'up' | 'flat' | 'down';
+export type RiskSignalSeverity = 'CRITIQUE' | 'MAJEUR' | 'MINEUR';
+export type ScoreDimensionStatus = 'available' | 'unavailable';
+export type ScoreDimensionKey = 'payment_health' | 'revenue_dynamics' | 'contract_renewal';
+
+export interface RiskSignal {
+  code: string;
+  label: string;
+  severity: RiskSignalSeverity;
+  points: number;
+}
+
+export interface ScoreBreakdownSignal {
+  code: string;
+  label: string;
+  /** Poids interne à la dimension (fraction de 1.0), pas le poids org sur 100. */
+  weight: number;
+  value: number | null;
+  status: ScoreDimensionStatus;
+}
+
+export interface ScoreBreakdownDimension {
+  score: number | null;
+  status: ScoreDimensionStatus;
+  /** Poids org sur 100 (voir organizations.scoring_weights). */
+  weight: number;
+  signals: ScoreBreakdownSignal[];
+}
+
+export type ScoreBreakdown = Record<ScoreDimensionKey, ScoreBreakdownDimension>;
+
+export interface ScoringV2Fields {
+  payment_health_score: number | null;
+  revenue_dynamics_score: number | null;
+  contract_renewal_score: number | null;
+  health_score: number | null;
+  health_score_status: HealthScoreStatus;
+  health_score_max_points: number;
+  health_score_band: HealthScoreBand | null;
+  /** Additif, indépendant de health_score — jamais null (S5). */
+  churn_risk_score: number;
+  churn_risk_band: ChurnRiskBand;
+  risk_signals_triggered: RiskSignal[];
+  risk_signals_evaluated: number;
+  expansion_score: number | null;
+  expansion_score_status: ExpansionScoreStatus;
+  expansion_unavailable_reason: ExpansionUnavailableReason | null;
+  trend_30d: TrendDirection;
+}
 
 export interface SegmentMembership {
   segment_id: string;
@@ -26,7 +84,7 @@ export interface SegmentMembership {
   };
 }
 
-export interface AccountListItem {
+export interface AccountListItem extends ScoringV2Fields {
   id: string;
   stripe_customer_id: string;
   display_name?: string | null;
@@ -35,10 +93,6 @@ export interface AccountListItem {
   mrr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
-  health_score: number | null;
-  churn_risk_score: number | null;
-  expansion_score: number | null;
-  product_usage_score: number | null;
   contract_end_date: string | null;
   active_subscriptions: number;
   segment_name: string | null;
@@ -46,7 +100,7 @@ export interface AccountListItem {
   flags: AccountFlag[];
 }
 
-export interface AccountDetail {
+export interface AccountDetail extends ScoringV2Fields {
   id: string;
   organization_id: string;
   stripe_customer_id: string;
@@ -60,17 +114,10 @@ export interface AccountDetail {
   seat_limit: number | null;
   contract_start_date: string | null;
   contract_end_date: string | null;
-  health_score: number | null;
-  churn_risk_score: number | null;
-  expansion_score: number | null;
-  product_usage_score: number | null;
-  financial_score: number | null;
-  engagement_score: number | null;
-  contract_score: number | null;
-  financial_score_narrative?: string | null;
-  engagement_score_narrative?: string | null;
-  contract_score_narrative?: string | null;
-  product_usage_score_narrative?: string | null;
+  score_breakdown: ScoreBreakdown;
+  /** Dimensions retirées du modèle v2 — gelées, lecture seule, ne plus recalculer (§3). */
+  usage_frozen_v2: number | null;
+  engagement_frozen_v2: number | null;
   scores_calculated_at: string | null;
   health_score_is_new?: boolean;
   last_stripe_sync_at: string | null;
@@ -117,12 +164,9 @@ export interface UsageItem {
 export interface ScoreHistoryItem {
   snapshot_date: string;
   health_score: number | null;
+  /** Nullable ici uniquement pour les lignes historiques pré-v2 (model_version='v2-explicit-no-data'). */
   churn_risk_score: number | null;
   expansion_score: number | null;
-  product_usage_score: number | null;
-  financial_score: number | null;
-  engagement_score: number | null;
-  contract_score: number | null;
   mrr_cents: number | null;
 }
 

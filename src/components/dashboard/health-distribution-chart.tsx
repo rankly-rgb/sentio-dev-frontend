@@ -15,6 +15,7 @@ export function HealthDistributionChart({ distribution }: Props) {
     { label: fr.segments.atRiskLight, count: distribution.at_risk_light, color: 'bg-warning' },
     { label: fr.segments.critical, count: distribution.critical, color: 'bg-destructive' },
     { label: fr.segments.newAccounts, count: distribution.new_accounts, color: 'bg-muted-foreground' },
+    { label: fr.segments.insufficientData, count: distribution.insufficient_data, color: 'bg-gray-300' },
   ];
 
   const total = segments.reduce((s, seg) => s + seg.count, 0);

@@ -399,7 +399,12 @@ export default function Dashboard() {
               <CardTitle>{fr.scores.healthScore}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScoreGauge value={metrics.avg_health_score} label={fr.scores.healthScore} color="hsl(var(--primary))" />
+              <ScoreGauge
+                value={metrics.avg_health_score}
+                label={fr.scores.healthScore}
+                sublabel={fr.dashboard.avgHealthDenominator(metrics.avg_health_scored_accounts, metrics.total_accounts)}
+                color="hsl(var(--primary))"
+              />
             </CardContent>
           </Card>
         )}
@@ -522,7 +527,12 @@ function TopAccountsCard({
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
-                  <ScoreBadge score={a[scoreField]} inverted={scoreField === 'churn_risk_score'} />
+                  <ScoreBadge
+                    score={a[scoreField]}
+                    band={scoreField === 'churn_risk_score' ? a.churn_risk_band : undefined}
+                    type={scoreField === 'churn_risk_score' ? 'churn' : 'expansion'}
+                    inverted={scoreField === 'churn_risk_score'}
+                  />
                 </div>
               </button>
             ))}
@@ -610,7 +620,7 @@ function ExpansionCard({
                   {/* MRR */}
                   <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
                   {/* Score */}
-                  <ScoreBadge score={a.expansion_score} />
+                  <ScoreBadge score={a.expansion_score} type="expansion" />
                 </div>
               </button>
             ))}

@@ -43,9 +43,22 @@ export interface Account {
   seat_limit: number | null;
   contract_start_date: string | null;
   contract_end_date: string | null;
+  // Scoring Engine V2 (model_version='v3') — docs/API_CONTRACTS.md §2
+  payment_health_score: number | null;
+  revenue_dynamics_score: number | null;
+  contract_renewal_score: number | null;
   health_score: number | null;
-  churn_risk_score: number | null;
+  health_score_status: 'complete' | 'partial' | 'insufficient';
+  health_score_max_points: number;
+  health_score_band: 'healthy' | 'watch' | 'at_risk' | null;
+  /** Additif, indépendant de health_score — jamais null (S5). */
+  churn_risk_score: number;
+  churn_risk_band: 'low' | 'watch' | 'high';
   expansion_score: number | null;
+  expansion_score_status: 'available' | 'unavailable';
+  expansion_unavailable_reason: string | null;
+  trend_30d: 'up' | 'flat' | 'down';
+  // Colonnes gelées §3 — ne plus mettre à jour ni afficher comme "à jour"
   product_usage_score: number | null;
   financial_score: number | null;
   engagement_score: number | null;
