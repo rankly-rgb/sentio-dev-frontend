@@ -170,3 +170,27 @@ Les deux appellent le même endpoint mais avec des shapes de réponse différent
 
 ## Quand compacter
 Préserver : liste des fichiers modifiés, commandes de test, erreurs en cours de résolution
+
+## Spec Kit
+
+Ce repo utilise [GitHub Spec Kit](https://github.com/github/spec-kit) pour structurer le
+développement des features substantielles selon un pipeline spec-driven, en cohérence avec
+l'installation faite sur sentio-backend.
+
+- **Constitution** : `.specify/memory/constitution.md` — règles non-négociables du projet
+  (zero-PII, stack, TypeScript strict/ES5, UI en anglais, contrats API, edits ciblés,
+  identité graphique figée, workflow PR/Vercel). Reprise fidèle des règles de ce fichier.
+- **Templates** : `.specify/templates/` — gabarits spec/plan/tasks utilisés par les commandes ci-dessous
+- **Skills installées** dans `.claude/skills/` :
+  - `/speckit-constitution` — établit/modifie les principes du projet (source de vérité : la constitution)
+  - `/speckit-specify` — crée la spécification de base d'une feature (le "quoi", pas le "comment")
+  - `/speckit-plan` — transforme la spec en plan d'implémentation technique
+  - `/speckit-tasks` — génère la liste de tâches actionnables à partir du plan
+  - `/speckit-implement` — exécute l'implémentation à partir des tâches générées
+  - Skills optionnelles : `/speckit-clarify` (désambiguïser avant `/speckit-plan`),
+    `/speckit-analyze` (cohérence croisée avant `/speckit-implement`),
+    `/speckit-checklist` (checklist qualité après `/speckit-plan`)
+
+**IMPORTANT** : toute feature substantielle doit passer par ce pipeline
+(`specify` → `plan` → `tasks`) avant d'exécuter `/speckit-implement`. Ne pas sauter directement
+à l'implémentation pour des features non triviales.
