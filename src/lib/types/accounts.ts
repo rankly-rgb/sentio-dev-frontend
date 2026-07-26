@@ -122,9 +122,6 @@ export interface AccountDetail extends ScoringV2Fields {
   contract_start_date: string | null;
   contract_end_date: string | null;
   score_breakdown: ScoreBreakdown;
-  /** Dimensions retirées du modèle v2 — gelées, lecture seule, ne plus recalculer (§3). */
-  usage_frozen_v2: number | null;
-  engagement_frozen_v2: number | null;
   scores_calculated_at: string | null;
   health_score_is_new?: boolean;
   last_stripe_sync_at: string | null;
