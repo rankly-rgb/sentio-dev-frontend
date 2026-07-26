@@ -58,6 +58,23 @@ export interface Account {
   expansion_score_status: 'available' | 'unavailable';
   expansion_unavailable_reason: string | null;
   trend_30d: 'up' | 'flat' | 'down';
+  /**
+   * ⚠️ UNVERIFIED (docs/API_CONTRACTS.md §4bis) : décrit comme "exposé par
+   * accounts-api", pas confirmé comme colonne PostgREST directe sur `accounts`
+   * — voir l'avertissement dans segment-queries.ts. `null` = pas encore
+   * segmenté par le cron (donnée honnête, pas un défaut fabriqué).
+   */
+  primary_segment:
+    | 'champions'
+    | 'en_expansion'
+    | 'stables'
+    | 'a_risque_leger'
+    | 'en_danger_critique'
+    | 'impayes'
+    | 'en_churn'
+    | 'nouveaux'
+    | 'donnees_insuffisantes'
+    | null;
   // Colonnes gelées §3 — ne plus mettre à jour ni afficher comme "à jour"
   product_usage_score: number | null;
   financial_score: number | null;

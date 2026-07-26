@@ -25,77 +25,48 @@ type AccountRow = {
   expansion_score: number | null;
   expansion_score_status: ExpansionScoreStatus;
   expansion_unavailable_reason: ExpansionUnavailableReason | null;
+  primary_segment: SegmentType | null;
   created_at: string;
 };
 
-type SegmentableRow = Pick<
-  AccountRow,
-  'health_score_status' | 'health_score_band' | 'churn_risk_band' | 'expansion_score_status' | 'expansion_score' | 'mrr_cents' | 'created_at'
->;
-
 /**
- * TODO(chantier 3 — primary_segment) : accounts-api expose désormais (ou
- * exposera) `primary_segment`, calculé par le cron de segmentation backend —
- * c'est la source de vérité. Dès que le champ est confirmé disponible et
- * documenté dans docs/API_CONTRACTS.md, remplacer TOUTE cette fonction
- * (et son usage dans getSegmentAccounts ci-dessous + useSegments.ts) par
- * une simple lecture de `account.primary_segment`. Supprimer en particulier
- * l'heuristique devinée "signal d'expansion actif"
- * (`expansion_score_status === 'available' && expansion_score >= 70`,
- * ligne ci-dessous) qui n'est qu'une approximation non confirmée du critère
- * réel du backend pour `champions`.
+ * Source de vérité : `primary_segment` (docs/API_CONTRACTS.md §4bis), lu tel
+ * quel depuis segment_memberships via accounts-api — la sortie persistée du
+ * cron de segmentation backend, jamais recalculée côté client.
  *
- * Jusque-là, ceci reste un filet de sécurité côté client — miroir de la
- * chaîne de priorité documentée dans docs/API_CONTRACTS.md §4 (exclusive,
- * décroissante) : en_churn → impayes → donnees_insuffisantes →
- * en_danger_critique → a_risque_leger → champions → stables (défaut).
- * Pilotée par les bandes/statuts calculés par le backend (health_score_band,
- * churn_risk_band, expansion_score_status) — jamais par des seuils
- * numériques recalculés côté client sur les scores bruts.
+ * `nouveaux` est le seul cas particulier : non-exclusif par construction
+ * (peut coexister avec n'importe quel segment de santé), il n'apparaît donc
+ * jamais dans `primary_segment` — on garde le calcul par date ici. Tous les
+ * autres segments (y compris `donnees_insuffisantes`) sont une simple
+ * égalité sur `primary_segment`. `en_expansion` ne correspond plus à rien
+ * (§4bis : n'apparaît jamais dans `primary_segment`), donc ce filtre ne
+ * retourne naturellement aucun compte pour ce segment retiré.
  */
-export function getSegmentFilter(segment: SegmentType): (a: SegmentableRow) => boolean {
-  // TODO(chantier 3 — primary_segment) : heuristique devinée, à supprimer dès
-  // que primary_segment est disponible (voir TODO au-dessus de cette fonction).
-  const hasActiveExpansionSignal = (a: SegmentableRow) =>
-    a.expansion_score_status === 'available' && (a.expansion_score ?? 0) >= 70;
-
-  const filters: Record<SegmentType, (a: SegmentableRow) => boolean> = {
-    en_churn: (a) => (a.mrr_cents ?? 0) === 0,
-    // Proxy : pas de colonne "impayé" dédiée exposée ici — aligné sur l'ancien
-    // proxy (churn critique + santé dégradée) en attendant un champ dédié.
-    impayes: (a) => a.churn_risk_band === 'high' && a.health_score_band === 'at_risk' && (a.mrr_cents ?? 0) > 0,
-    donnees_insuffisantes: (a) => a.health_score_status === 'insufficient',
-    en_danger_critique: (a) => a.churn_risk_band === 'high' && (a.mrr_cents ?? 0) > 0 && a.health_score_status !== 'insufficient',
-    a_risque_leger: (a) => a.churn_risk_band === 'watch' && (a.mrr_cents ?? 0) > 0 && a.health_score_status !== 'insufficient',
-    champions: (a) => a.health_score_band === 'healthy' && hasActiveExpansionSignal(a),
-    // Segment retiré des critères actifs v2 (fusionné dans champions) — ne
-    // produit plus de nouveaux matches côté client non plus (§3).
-    en_expansion: () => false,
-    stables: (a) =>
-      (a.mrr_cents ?? 0) > 0 &&
-      a.health_score_status !== 'insufficient' &&
-      a.churn_risk_band !== 'high' &&
-      a.churn_risk_band !== 'watch' &&
-      !(a.health_score_band === 'healthy' && hasActiveExpansionSignal(a)),
-    nouveaux: (a) => {
+export function getSegmentFilter(segment: SegmentType): (a: Pick<AccountRow, 'primary_segment' | 'created_at'>) => boolean {
+  if (segment === 'nouveaux') {
+    return (a) => {
       if (!a.created_at) return false;
       const diffMs = Date.now() - new Date(a.created_at).getTime();
       return diffMs < 90 * 24 * 60 * 60 * 1000;
-    },
-  };
-
-  return filters[segment];
+    };
+  }
+  return (a) => a.primary_segment === segment;
 }
 
+// ⚠️ UNVERIFIED : docs/API_CONTRACTS.md §4bis décrit primary_segment comme
+// "exposé par accounts-api" (calculé dans l'edge function depuis
+// segment_memberships), sans confirmer que c'est aussi une colonne/vue
+// directement lisible via une requête PostgREST sur la table `accounts` —
+// ce que fait ce fichier (bypass de l'edge function, même pattern que le
+// reste de ce fichier et qu'exportCsv.ts). Si ce n'est pas le cas, ce
+// select échouera à l'exécution et il faudra router ce fetch via
+// fetchWithUserJwt('accounts-api...') à la place. À confirmer sur preview.
 const ACCOUNT_SELECT =
   'id, stripe_customer_id, display_name, hubspot_company_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, contract_end_date, ' +
   'health_score, health_score_status, health_score_band, health_score_max_points, trend_30d, ' +
   'churn_risk_score, churn_risk_band, risk_signals_evaluated, ' +
-  'expansion_score, expansion_score_status, expansion_unavailable_reason, created_at';
+  'expansion_score, expansion_score_status, expansion_unavailable_reason, primary_segment, created_at';
 
-// TODO(chantier 3 — primary_segment) : quand disponible, remplacer ce
-// fetch+filtre client par `.eq('primary_segment', segment)` directement en
-// base (ou un appel accounts-api filtré), et supprimer getSegmentFilter.
 export async function getSegmentAccounts(segment: SegmentType, organizationId: string): Promise<SegmentAccount[]> {
   const { data, error } = await supabase
     .from('accounts')
@@ -129,6 +100,7 @@ export async function getSegmentAccounts(segment: SegmentType, organizationId: s
     expansion_score: a.expansion_score,
     expansion_score_status: a.expansion_score_status,
     expansion_unavailable_reason: a.expansion_unavailable_reason,
+    primary_segment: a.primary_segment,
   }));
   if (import.meta.env.DEV) {
     const dupeCount = filtered.length - new Set(filtered.map(a => a.stripe_customer_id)).size;

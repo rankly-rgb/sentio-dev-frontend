@@ -70,6 +70,13 @@ export interface ScoringV2Fields {
   expansion_score_status: ExpansionScoreStatus;
   expansion_unavailable_reason: ExpansionUnavailableReason | null;
   trend_30d: TrendDirection;
+  /**
+   * Lu tel quel depuis segment_memberships (docs/API_CONTRACTS.md §4bis) —
+   * jamais recalculé côté frontend. `null` = compte pas encore segmenté par
+   * le cron, pas un défaut fabriqué. `en_expansion`/`nouveaux` n'apparaissent
+   * jamais ici (voir §4bis).
+   */
+  primary_segment: SegmentType | null;
 }
 
 export interface SegmentMembership {

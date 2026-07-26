@@ -84,7 +84,7 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
 async function fetchHealthDistribution(organizationId: string): Promise<HealthDistribution> {
   const { data: accounts, error } = await supabase
     .from('accounts')
-    .select('health_score_status, health_score_band, churn_risk_band, expansion_score, expansion_score_status, mrr_cents, created_at')
+    .select('primary_segment, created_at')
     .eq('organization_id', organizationId);
 
   if (error) throw error;

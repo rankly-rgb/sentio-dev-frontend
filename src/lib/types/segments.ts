@@ -62,6 +62,7 @@ export interface SegmentAccount {
   expansion_score: number | null;
   expansion_score_status: ExpansionScoreStatus;
   expansion_unavailable_reason: ExpansionUnavailableReason | null;
+  primary_segment: SegmentType | null;
 }
 
 export function isValidSegmentKey(key: string): key is SegmentType {

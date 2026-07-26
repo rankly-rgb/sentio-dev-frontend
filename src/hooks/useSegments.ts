@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { SegmentType } from '@/lib/types/segments';
 import { SEGMENT_KEYS, SEGMENT_LABELS } from '@/lib/types/segments';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
-import type { HealthScoreBand, HealthScoreStatus } from '@/lib/types/accounts';
+import type { HealthScoreStatus } from '@/lib/types/accounts';
 
 export interface SaaSSegment {
   name: SegmentType;
@@ -15,15 +15,13 @@ export interface SaaSSegment {
   avg_health_score: number | null;
 }
 
-// TODO(chantier 3 — primary_segment) : ce hook recalcule les comptages de
-// segment côté client via getSegmentFilter (filet de sécurité, voir TODO
-// dans segment-queries.ts). Dès que `primary_segment` est disponible sur
-// accounts-api, regrouper directement par cette colonne (GROUP BY / countBy)
-// au lieu de refiltrer 8 fois le même jeu de comptes.
+// ⚠️ UNVERIFIED : voir le même avertissement dans segment-queries.ts —
+// primary_segment n'est confirmé disponible que via l'edge function
+// accounts-api (§4bis), pas explicitement comme colonne PostgREST directe.
 async function fetchSegments(organizationId: string): Promise<SaaSSegment[]> {
   const { data, error } = await supabase
     .from('accounts')
-    .select('health_score, health_score_status, health_score_band, churn_risk_band, expansion_score, expansion_score_status, mrr_cents, created_at')
+    .select('health_score, health_score_status, primary_segment, mrr_cents, created_at')
     .eq('organization_id', organizationId);
 
   if (error) throw error;
@@ -31,10 +29,7 @@ async function fetchSegments(organizationId: string): Promise<SaaSSegment[]> {
   const all = (data || []) as Array<{
     health_score: number | null;
     health_score_status: HealthScoreStatus;
-    health_score_band: HealthScoreBand | null;
-    churn_risk_band: 'low' | 'watch' | 'high';
-    expansion_score: number | null;
-    expansion_score_status: 'available' | 'unavailable';
+    primary_segment: SegmentType | null;
     mrr_cents: number;
     created_at: string;
   }>;
