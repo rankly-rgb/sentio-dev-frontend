@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { CHURN_BAND_STYLE, HEALTH_BAND_STYLE, roundScore } from '@/lib/scoring-display';
+import type { ChurnRiskBand, HealthScoreBand } from '@/lib/types/accounts';
 
 type ScoreType = 'health' | 'churn' | 'expansion';
 
 interface ScoreBadgeProps {
   score: number | null | undefined;
+  /**
+   * Bande calculée par le backend (health_score_band / churn_risk_band).
+   * Quand fournie pour type 'health'|'churn', pilote la couleur/label —
+   * ne jamais recalculer de seuils côté frontend pour ces deux types.
+   */
+  band?: HealthScoreBand | ChurnRiskBand | null;
   inverted?: boolean;
   type?: ScoreType;
   showLabel?: boolean;
@@ -14,34 +22,36 @@ interface ScoreBadgeProps {
   isNew?: boolean;
 }
 
-const LABELS: Record<ScoreType, [string, string, string]> = {
-  health: ['Healthy', 'Attention', 'Critical'],
-  churn: ['High', 'Moderate', 'Low'],
-  expansion: ['Strong', 'Moderate', 'Low'],
-};
-
-function getColorAndLabel(score: number, scoreType: ScoreType | undefined, inverted: boolean): { color: string; label: string; pulseClass: string } {
-  if (scoreType === 'churn') {
-    if (score >= 70) return { color: 'bg-destructive/15 text-destructive', label: LABELS.churn[0], pulseClass: 'animate-pulse-ring ring-destructive/30' };
-    if (score >= 40) return { color: 'bg-warning/15 text-warning', label: LABELS.churn[1], pulseClass: 'animate-pulse-ring ring-warning/30' };
-    return { color: 'bg-success/15 text-success', label: LABELS.churn[2], pulseClass: 'animate-pulse-ring ring-success/30' };
-  }
-  if (scoreType === 'expansion') {
-    if (score >= 70) return { color: 'bg-blue-100 text-blue-700', label: LABELS.expansion[0], pulseClass: 'animate-pulse-ring ring-blue-300/50' };
-    if (score >= 40) return { color: 'bg-slate-100 text-slate-600', label: LABELS.expansion[1], pulseClass: 'animate-pulse-ring ring-slate-300/50' };
-    return { color: 'bg-slate-100 text-slate-600', label: LABELS.expansion[2], pulseClass: 'animate-pulse-ring ring-slate-300/50' };
-  }
-  if (scoreType === 'health' || !inverted) {
-    if (score >= 70) return { color: 'bg-success/15 text-success', label: LABELS.health[0], pulseClass: 'animate-pulse-ring ring-success/30' };
-    if (score >= 40) return { color: 'bg-warning/15 text-warning', label: LABELS.health[1], pulseClass: 'animate-pulse-ring ring-warning/30' };
-    return { color: 'bg-destructive/15 text-destructive', label: LABELS.health[2], pulseClass: 'animate-pulse-ring ring-destructive/40' };
-  }
-  if (score <= 30) return { color: 'bg-success/15 text-success', label: '', pulseClass: 'animate-pulse-ring ring-success/30' };
-  if (score <= 60) return { color: 'bg-warning/15 text-warning', label: '', pulseClass: 'animate-pulse-ring ring-warning/30' };
-  return { color: 'bg-destructive/15 text-destructive', label: '', pulseClass: 'animate-pulse-ring ring-destructive/40' };
+// Expansion n'a pas de bande backend dans le contrat V2 — seuils de
+// présentation uniquement, contrairement à health/churn.
+function expansionColorAndLabel(score: number): { color: string; label: string } {
+  if (score >= 70) return { color: 'bg-blue-100 text-blue-700', label: 'Strong' };
+  if (score >= 40) return { color: 'bg-slate-100 text-slate-600', label: 'Moderate' };
+  return { color: 'bg-slate-100 text-slate-600', label: 'Low' };
 }
 
-export default function ScoreBadge({ score, inverted = false, type: scoreType, showLabel = false, size = 'sm', className, isNew = false }: ScoreBadgeProps) {
+function healthPulseClass(band: HealthScoreBand): string {
+  if (band === 'at_risk') return 'animate-pulse-ring ring-destructive/40';
+  if (band === 'watch') return 'animate-pulse-ring ring-warning/30';
+  return 'animate-pulse-ring ring-success/30';
+}
+
+function churnPulseClass(band: ChurnRiskBand): string {
+  if (band === 'high') return 'animate-pulse-ring ring-destructive/30';
+  if (band === 'watch') return 'animate-pulse-ring ring-warning/30';
+  return 'animate-pulse-ring ring-success/30';
+}
+
+export default function ScoreBadge({
+  score,
+  band,
+  inverted = false,
+  type: scoreType,
+  showLabel = false,
+  size = 'sm',
+  className,
+  isNew = false,
+}: ScoreBadgeProps) {
   const [pulsing, setPulsing] = useState(isNew);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -56,7 +66,32 @@ export default function ScoreBadge({ score, inverted = false, type: scoreType, s
 
   if (score == null) return <span className="text-muted-foreground">—</span>;
 
-  const { color, label, pulseClass } = getColorAndLabel(score, scoreType, inverted);
+  let color: string;
+  let label: string;
+  let pulseClass: string;
+
+  if (scoreType === 'churn' && band) {
+    const style = CHURN_BAND_STYLE[band as ChurnRiskBand];
+    color = style.color;
+    label = style.label;
+    pulseClass = churnPulseClass(band as ChurnRiskBand);
+  } else if ((scoreType === 'health' || !inverted) && band) {
+    const style = HEALTH_BAND_STYLE[band as HealthScoreBand];
+    color = style.color;
+    label = style.label;
+    pulseClass = healthPulseClass(band as HealthScoreBand);
+  } else if (scoreType === 'expansion') {
+    const style = expansionColorAndLabel(score);
+    color = style.color;
+    label = style.label;
+    pulseClass = 'animate-pulse-ring ring-blue-300/50';
+  } else {
+    // Fallback présentation uniquement quand aucune bande backend n'est
+    // fournie par l'appelant — n'affecte aucune décision produit.
+    color = score >= 70 ? 'bg-success/15 text-success' : score >= 40 ? 'bg-warning/15 text-warning' : 'bg-destructive/15 text-destructive';
+    label = '';
+    pulseClass = 'animate-pulse-ring ring-muted/30';
+  }
 
   return (
     <Badge
@@ -70,7 +105,7 @@ export default function ScoreBadge({ score, inverted = false, type: scoreType, s
         className,
       )}
     >
-      {Math.round(score)}{showLabel && label ? ` ${label}` : ''}
+      {roundScore(score)}{showLabel && label ? ` ${label}` : ''}
     </Badge>
   );
 }

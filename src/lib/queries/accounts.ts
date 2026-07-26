@@ -1,9 +1,23 @@
 import { supabase } from '@/lib/supabase';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
-import type { AccountListItem, AccountDetail, AccountSummaryCards, AccountPriorityLabel } from '@/lib/types/accounts';
+import type {
+  AccountListItem,
+  AccountDetail,
+  AccountSummaryCards,
+  AccountPriorityLabel,
+  ScoringV2Fields,
+  ScoreBreakdown,
+  SegmentType,
+  HealthScoreStatus,
+  HealthScoreBand,
+  ChurnRiskBand,
+  ExpansionScoreStatus,
+  ExpansionUnavailableReason,
+  TrendDirection,
+} from '@/lib/types/accounts';
 import type { AccountFlag } from '@/types/database';
 
-interface AccountsApiItem {
+interface AccountsApiItem extends ScoringV2Fields {
   id: string;
   stripe_customer_id: string;
   display_name: string | null;
@@ -12,10 +26,6 @@ interface AccountsApiItem {
   mrr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
-  health_score: number | null;
-  churn_risk_score: number | null;
-  expansion_score: number | null;
-  product_usage_score: number | null;
   contract_end_date: string | null;
   priority_label: AccountPriorityLabel | null;
   flags: AccountFlag[];
@@ -29,23 +39,106 @@ interface AccountsListResponse {
   total_mrr_cents: number;
 }
 
+/**
+ * Shape réelle de `GET accounts-api?id=` (payload v3), confirmée via
+ * docs/reference/accounts-api-fixtures.test — extraite des `expect()` sur
+ * handleGetOne (3 fixtures complete/partial/insufficient), PAS une
+ * hypothèse. Les scores sont imbriqués sous `scores.<dimension>`, pas plats
+ * sur `data` (contrairement à l'hypothèse initiale par analogie avec le
+ * §2/§7 du contrat, qui décrit les colonnes DB, pas la forme JSON exposée).
+ *
+ * `scores.churn_risk.signals_triggered/signals_evaluated` : placement NON
+ * confirmé par une assertion du fichier de fixtures (aucun `expect()` ne
+ * les couvre) — non repris ici. `risk_signals_triggered`/`risk_signals_evaluated`
+ * sont sourcés depuis `score_history` à la place (voir getAccountDetail),
+ * dont la forme plate EST confirmée par un exemple JSON complet dans
+ * docs/API_CONTRACTS.md §7.
+ *
+ * `usage_frozen_v2`/`engagement_frozen_v2` retirés : absents des fixtures,
+ * non consommés par l'UI (cartes "Coming in V2" statiques, F3) — surface
+ * non vérifiée inutile.
+ */
+interface AccountsApiScoreValue {
+  value: number | null;
+}
+
+interface AccountsApiHealthScore {
+  value: number | null;
+  status: HealthScoreStatus;
+  band: HealthScoreBand | null;
+  max_points: number;
+  trend_30d: TrendDirection;
+}
+
+interface AccountsApiChurnRisk {
+  value: number;
+  band: ChurnRiskBand;
+}
+
+interface AccountsApiExpansion {
+  value: number | null;
+  status: ExpansionScoreStatus;
+  unavailable_reason: ExpansionUnavailableReason | null;
+}
+
+interface AccountsApiScores {
+  health: AccountsApiHealthScore;
+  payment_health: AccountsApiScoreValue;
+  revenue_dynamics: AccountsApiScoreValue;
+  contract_renewal: AccountsApiScoreValue;
+  churn_risk: AccountsApiChurnRisk;
+  expansion: AccountsApiExpansion;
+}
+
+interface AccountsApiDetailItem {
+  id: string;
+  organization_id: string;
+  stripe_customer_id: string;
+  display_name: string | null;
+  hubspot_company_id: string | null;
+  plan_tier: string | null;
+  billing_interval: string | null;
+  mrr_cents: number;
+  arr_cents: number;
+  seat_count: number | null;
+  seat_limit: number | null;
+  contract_start_date: string | null;
+  contract_end_date: string | null;
+  primary_segment: SegmentType | null;
+  scores: AccountsApiScores;
+  score_breakdown: ScoreBreakdown;
+  scores_calculated_at: string | null;
+  health_score_is_new?: boolean;
+  last_stripe_sync_at: string | null;
+  last_hubspot_sync_at: string | null;
+  flags: AccountFlag[];
+  created_at: string;
+}
+
 export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
   const { data, error } = await supabase
     .from('accounts')
-    .select('id, health_score, churn_risk_score, expansion_score, mrr_cents');
+    .select('id, health_score, health_score_status, churn_risk_band, expansion_score_status, expansion_score, mrr_cents');
 
   if (error) throw error;
 
-  const accounts = data || [];
+  const accounts = (data || []) as Array<{
+    health_score: number | null;
+    health_score_status: 'complete' | 'partial' | 'insufficient';
+    churn_risk_band: 'low' | 'watch' | 'high';
+    expansion_score_status: 'available' | 'unavailable';
+    expansion_score: number | null;
+    mrr_cents: number;
+  }>;
+
+  const atRisk = accounts.filter(a => a.churn_risk_band === 'high');
   return {
     total_accounts: accounts.length,
-    at_risk_accounts: accounts.filter(a => (a.churn_risk_score ?? 0) > 70).length,
-    healthy_accounts: accounts.filter(a => (a.health_score ?? 0) > 60).length,
-    expansion_ready: accounts.filter(a => (a.expansion_score ?? 0) > 75).length,
+    at_risk_accounts: atRisk.length,
+    healthy_accounts: accounts.filter(a => a.health_score_status !== 'insufficient' && (a.health_score ?? 0) > 60).length,
+    expansion_ready: accounts.filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) > 75).length,
     total_mrr_cents: accounts.reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
-    mrr_at_risk_cents: accounts
-      .filter(a => (a.churn_risk_score ?? 0) > 70)
-      .reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
+    mrr_at_risk_cents: atRisk.reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
   };
 }
 
@@ -85,14 +178,30 @@ export async function getAccountList(params: {
   };
 }
 
-export async function getAccountDetail(accountId: string): Promise<AccountDetail | null> {
-  const { data: account, error } = await supabase
-    .from('accounts')
-    .select('*')
-    .eq('id', accountId)
-    .maybeSingle();
+/**
+ * Charge tous les comptes de l'org via accounts-api (paginé), en réutilisant
+ * getAccountList. Sert aux agrégations org-wide (segments, distribution
+ * santé) qui ont besoin de `primary_segment` — champ confirmé disponible
+ * via accounts-api (docs/reference/accounts-api-fixtures.test), contrairement
+ * à un accès direct à la table `accounts` en PostgREST dont on ne sait pas
+ * s'il expose cette colonne (question ouverte côté backend, voir rapport de
+ * fin). Route ces lectures via l'edge function plutôt que de parier dessus.
+ */
+export async function getAllAccountsForOrg(): Promise<AccountListItem[]> {
+  const all: AccountListItem[] = [];
+  let cursor: string | null = null;
+  for (;;) {
+    const page = await getAccountList({ cursor, limit: 100 });
+    all.push(...page.data);
+    if (!page.pagination.has_more || !page.pagination.next_cursor) break;
+    cursor = page.pagination.next_cursor;
+  }
+  return all;
+}
 
-  if (error) throw error;
+export async function getAccountDetail(accountId: string): Promise<AccountDetail | null> {
+  const accountRes = await fetchWithUserJwt<{ data: AccountsApiDetailItem | null }>(`accounts-api?id=${accountId}`);
+  const account = accountRes.data;
   if (!account) return null;
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
@@ -107,9 +216,13 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
       .gte('event_date', thirtyDaysAgo)
       .order('event_date', { ascending: false })
       .limit(500),
+    // risk_signals_triggered/evaluated colonnes plates confirmées par
+    // l'exemple JSON complet de docs/API_CONTRACTS.md §7 (contrairement à
+    // leur placement dans accounts-api?id=, non couvert par une assertion
+    // des fixtures) — la ligne la plus récente sert de valeur "actuelle".
     supabase
       .from('score_history')
-      .select('snapshot_date, health_score, churn_risk_score, expansion_score, product_usage_score, financial_score, engagement_score, contract_score, mrr_cents')
+      .select('snapshot_date, health_score, churn_risk_score, expansion_score, mrr_cents, risk_signals_triggered, risk_signals_evaluated')
       .eq('account_id', accountId)
       .order('snapshot_date', { ascending: false })
       .limit(90),
@@ -129,19 +242,64 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
   if (hubspotRes.error) throw new Error(`Error loading hubspot: ${hubspotRes.error.message}`);
   if (segmentsRes.error) throw new Error(`Error loading segments: ${segmentsRes.error.message}`);
 
+  const scoreHistoryRows = scoreRes.data || [];
+  // La ligne la plus récente porte les signaux "actuels" — score_history est
+  // trié snapshot_date DESC, donc [0] est le dernier calcul (voir commentaire
+  // sur le select ci-dessus).
+  const latestSignals = scoreHistoryRows[0] as (typeof scoreHistoryRows[number] & {
+    risk_signals_triggered?: AccountDetail['risk_signals_triggered'];
+    risk_signals_evaluated?: number;
+  }) | undefined;
+
   return {
-    ...account,
-    display_name: (account as { display_name?: string | null }).display_name ?? null,
-    health_score_is_new: (account as { health_score_is_new?: boolean }).health_score_is_new ?? false,
-    financial_score_narrative: (account as { financial_score_narrative?: string | null }).financial_score_narrative ?? null,
-    engagement_score_narrative: (account as { engagement_score_narrative?: string | null }).engagement_score_narrative ?? null,
-    contract_score_narrative: (account as { contract_score_narrative?: string | null }).contract_score_narrative ?? null,
-    product_usage_score_narrative: (account as { product_usage_score_narrative?: string | null }).product_usage_score_narrative ?? null,
+    id: account.id,
+    organization_id: account.organization_id,
+    stripe_customer_id: account.stripe_customer_id,
+    display_name: account.display_name ?? null,
+    hubspot_company_id: account.hubspot_company_id,
+    plan_tier: account.plan_tier,
+    billing_interval: account.billing_interval,
+    mrr_cents: account.mrr_cents,
+    arr_cents: account.arr_cents,
+    seat_count: account.seat_count,
+    seat_limit: account.seat_limit,
+    contract_start_date: account.contract_start_date,
+    contract_end_date: account.contract_end_date,
+    primary_segment: account.primary_segment,
+    score_breakdown: account.score_breakdown,
+    scores_calculated_at: account.scores_calculated_at,
+    health_score_is_new: account.health_score_is_new ?? false,
+    last_stripe_sync_at: account.last_stripe_sync_at,
+    last_hubspot_sync_at: account.last_hubspot_sync_at,
     flags: Array.isArray(account.flags) ? account.flags : [],
+    created_at: account.created_at,
+    // Champs imbriqués sous `scores.*` dans la réponse réelle — aplatis ici
+    // pour le type interne AccountDetail (voir commentaire sur AccountsApiScores).
+    health_score: account.scores.health.value,
+    health_score_status: account.scores.health.status,
+    health_score_band: account.scores.health.band,
+    health_score_max_points: account.scores.health.max_points,
+    trend_30d: account.scores.health.trend_30d,
+    payment_health_score: account.scores.payment_health.value,
+    revenue_dynamics_score: account.scores.revenue_dynamics.value,
+    contract_renewal_score: account.scores.contract_renewal.value,
+    churn_risk_score: account.scores.churn_risk.value,
+    churn_risk_band: account.scores.churn_risk.band,
+    expansion_score: account.scores.expansion.value,
+    expansion_score_status: account.scores.expansion.status,
+    expansion_unavailable_reason: account.scores.expansion.unavailable_reason,
+    risk_signals_triggered: latestSignals?.risk_signals_triggered ?? [],
+    risk_signals_evaluated: latestSignals?.risk_signals_evaluated ?? 0,
     subscriptions: subsRes.data || [],
     recent_invoices: invoicesRes.data || [],
     recent_usage: usageRes.data || [],
-    score_history: scoreRes.data || [],
+    score_history: scoreHistoryRows.map((h) => ({
+      snapshot_date: h.snapshot_date,
+      health_score: h.health_score,
+      churn_risk_score: h.churn_risk_score,
+      expansion_score: h.expansion_score,
+      mrr_cents: h.mrr_cents,
+    })),
     hubspot_data: hubspotRes.data ?? null,
     segments: (segmentsRes.data || []).map((s) => ({
       segment_id: s.segment_id as string,

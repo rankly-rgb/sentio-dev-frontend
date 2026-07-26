@@ -1,9 +1,8 @@
 import { useState, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAccountDetail } from '@/hooks/useAccountDetail';
 import { useManualSync } from '@/hooks/useManualSync';
 import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
-import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useRemoveAccountFlag } from '@/hooks/useAccountFlags';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import AccountNotesSection from '@/components/accounts/AccountNotesSection';
@@ -14,16 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import ScoreBadge from '@/components/ScoreBadge';
+import AccountScoreCard from '@/components/account-detail/AccountScoreCard';
 import AccountName from '@/components/AccountName';
 import InsightCard from '@/components/insights/InsightCard';
-import { ArrowLeft, Calculator, BrainCircuit, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Calculator, BrainCircuit } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -65,70 +58,6 @@ function formatScoreHistory(history: ScoreHistoryItem[], days: number) {
     }));
 }
 
-/** Score gauge color based on value (0-100) */
-function scoreProgressColor(value: number, inverted: boolean): string {
-  const v = Math.round(value);
-  if (!inverted) {
-    if (v >= 71) return 'bg-green-500';
-    if (v >= 51) return 'bg-yellow-500';
-    if (v >= 31) return 'bg-orange-500';
-    return 'bg-red-500';
-  }
-  // Inverted (churn risk): high = bad
-  if (v >= 71) return 'bg-red-500';
-  if (v >= 51) return 'bg-orange-500';
-  if (v >= 31) return 'bg-yellow-500';
-  return 'bg-green-500';
-}
-
-function ScoreBreakdown({ score, label, weight, healthScore }: {
-  score: number | null;
-  label: string;
-  weight: string;
-  healthScore: number | null;
-}) {
-  const fr = useT();
-  const isNull = score === null || score === undefined;
-  const hasHealthScore = healthScore !== null && healthScore !== undefined;
-
-  // Determine display text for null values
-  let displayText: string;
-  if (!isNull) {
-    displayText = `${Math.round(score)}/100`;
-  } else if (hasHealthScore) {
-    displayText = `${fr.accountDetail.scoreNotCalculated}`;
-  } else {
-    displayText = fr.accountDetail.noScores;
-  }
-
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">
-          {isNull ? (
-            <span className="text-muted-foreground">— /100</span>
-          ) : (
-            displayText
-          )}
-          {' '}
-          <span className="text-xs text-muted-foreground">×{weight}</span>
-        </span>
-      </div>
-      {isNull ? (
-        <Progress value={0} className="h-2 opacity-40" />
-      ) : (
-        <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
-          <div
-            className={`h-full transition-all ${scoreProgressColor(score, false)}`}
-            style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function AccountDetail() {
@@ -137,8 +66,6 @@ export default function AccountDetail() {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const { data: account, isLoading, error } = useAccountDetail(accountId);
-  const { organization } = useOrganizationSettings();
-  const trackerConnected = organization?.usage_tracker_connected ?? false;
   const { calculateScores, isCalculating } = useManualSync();
   const removeFlag = useRemoveAccountFlag();
   const [historyDays, setHistoryDays] = useState<30 | 60 | 90>(30);
@@ -233,7 +160,7 @@ export default function AccountDetail() {
         </Button>
       </div>
 
-      {/* KPI cards */}
+      {/* MRR */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
@@ -241,78 +168,15 @@ export default function AccountDetail() {
             <p className="text-xl font-bold">{fr.format.currency(account.mrr_cents)}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{fr.scores.healthScore}</p>
-            <ScoreBadge score={account.health_score} size="lg" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{fr.scores.churnRisk}</p>
-            <ScoreBadge score={account.churn_risk_score} inverted size="lg" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{fr.scores.expansionScore}</p>
-            <ScoreBadge score={account.expansion_score} size="lg" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">{fr.scores.productUsage}</p>
-            {!trackerConnected ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-2xl font-bold text-muted-foreground cursor-help">—</span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{fr.integrations.tracker.usageScoreUnavailable}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ) : (
-              <ScoreBadge score={account.product_usage_score} size="lg" />
-            )}
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Score breakdown */}
+      {/* Score breakdown (Scoring Engine V2) */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">{fr.accountDetail.scoreBreakdown}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {trackerConnected ? (
-            <ScoreBreakdown score={account.product_usage_score} label={fr.scores.productUsage} weight="35%" healthScore={account.health_score} />
-          ) : (
-            <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>{fr.scores.productUsage}</span>
-                </div>
-                <Badge variant="secondary" className="bg-blue-50 text-blue-600 text-xs font-medium hover:bg-blue-50">
-                  {fr.integrations.tracker.comingSoon}
-                </Badge>
-              </div>
-              <p className="text-xs text-gray-400">{fr.integrations.tracker.breakdownPlaceholder}</p>
-              <div className="flex justify-end">
-                <Link
-                  to="/settings/integrations#tracker"
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  {fr.integrations.tracker.connectCta}
-                </Link>
-              </div>
-            </div>
-          )}
-          <ScoreBreakdown score={account.financial_score} label={fr.scores.financialHealth} weight={trackerConnected ? '25%' : '34%'} healthScore={account.health_score} />
-          <ScoreBreakdown score={account.engagement_score} label={fr.scores.engagementScore} weight={trackerConnected ? '20%' : '33%'} healthScore={account.health_score} />
-          <ScoreBreakdown score={account.contract_score} label={fr.scores.contractScore} weight={trackerConnected ? '20%' : '33%'} healthScore={account.health_score} />
+        <CardContent>
+          <AccountScoreCard account={account} />
         </CardContent>
       </Card>
 

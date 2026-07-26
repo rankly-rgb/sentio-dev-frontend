@@ -96,7 +96,7 @@ export default function AccountDetailPanel({ isOpen, onClose, account, isLoading
 
                 {/* 2. Score Card */}
                 <Section title={fr.scores.healthScore}>
-                  <AccountScoreCard account={account} trackerConnected={trackerConnected} />
+                  <AccountScoreCard account={account} />
                 </Section>
 
                 {/* 3. AI Summary */}

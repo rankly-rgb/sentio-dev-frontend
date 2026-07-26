@@ -20,6 +20,7 @@ import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { exportCsvWithEmail, exportSequenceTemplate } from '@/lib/exportCsv';
 import type { SegmentType, SegmentAccount } from '@/lib/types/segments';
 import { SEGMENT_COLORS } from '@/lib/types/segments';
+import type { ExpansionScoreStatus } from '@/lib/types/accounts';
 
 type SortField = 'mrr_cents' | 'health_score' | 'churn_risk_score' | 'expansion_score' | 'plan_tier';
 type SortOrder = 'asc' | 'desc';
@@ -87,6 +88,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
   );
 
   const isCritical = segment === 'en_danger_critique';
+  const isInsufficientData = segment === 'donnees_insuffisantes';
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -194,6 +196,15 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
         </Card>
       )}
 
+      {/* Empty-state explicatif — pas un segment de santé, une absence de donnée (F7) */}
+      {isInsufficientData && (
+        <Card className="border-gray-300 bg-gray-50">
+          <CardContent className="py-3 text-sm text-gray-600">
+            {fr.segmentDetail.insufficientDataExplainer}
+          </CardContent>
+        </Card>
+      )}
+
       {/* KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -279,13 +290,13 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
                   {a.contract_end_date ? fr.format.date(a.contract_end_date) : fr.accounts.monthly}
                 </td>
                 <td className="px-3 py-2">
-                  <ScoreBadge score={a.health_score} />
+                  <ScoreBadge score={a.health_score} band={a.health_score_band} type="health" />
                 </td>
                 <td className="px-3 py-2">
-                  <ScoreBadge score={a.churn_risk_score} inverted />
+                  <ScoreBadge score={a.churn_risk_score} band={a.churn_risk_band} type="churn" inverted />
                 </td>
                 <td className="px-3 py-2">
-                  <ExpansionBadge score={a.expansion_score} />
+                  <ExpansionBadge score={a.expansion_score} status={a.expansion_score_status} />
                 </td>
               </tr>
             ))}
@@ -318,8 +329,8 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
   );
 }
 
-function ExpansionBadge({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-muted-foreground">-</span>;
+function ExpansionBadge({ score, status }: { score: number | null; status: ExpansionScoreStatus }) {
+  if (status === 'unavailable' || score === null) return <span className="text-muted-foreground">—</span>;
   const color = score >= 75 ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground';
   return (
     <Badge variant="outline" className={`font-semibold border-0 ${color}`}>

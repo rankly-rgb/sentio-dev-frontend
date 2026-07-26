@@ -62,6 +62,7 @@ export const en = {
     criticalAlertTitle: (n: number) => `${n} account${n > 1 ? 's' : ''} in critical danger`,
     criticalAlertMrr: (mrr: string) => `— ${mrr} MRR at risk`,
     criticalAlertCta: 'View accounts →',
+    avgHealthDenominator: (scored: number, total: number) => `across ${scored} of ${total} accounts`,
   },
 
   benchmark: {
@@ -101,6 +102,26 @@ export const en = {
     contractScoreTooltip: 'Based on contract tenure, subscribed plan and number of seats used',
     productUsageTooltip: 'Based on frequency and depth of product usage',
     healthScoreTooltip: 'Weighted average of sub-scores: financial, engagement, contract and product usage',
+    // Scoring Engine V2 (docs/API_CONTRACTS.md)
+    paymentHealth: 'Payment health',
+    revenueDynamics: 'Revenue dynamics',
+    contractRenewal: 'Contract renewal',
+    paymentHealthTooltip: 'Invoice status, on-time payment history and dunning over the last months',
+    revenueDynamicsTooltip: 'MRR trend, contraction and expansion signals',
+    contractRenewalTooltip: 'Billing interval, renewal proximity and contract tenure',
+    partialScoreBadge: 'Partial score',
+    partialScoreTooltip: (n: number, total: number, pending: string) =>
+      `Computed on ${n} of ${total} dimensions. ${pending} pending.`,
+    insufficientData: 'Insufficient data',
+    insufficientDataDetail: 'Score available once payment history syncs',
+    dimensionUnavailableSoon: 'Score coming soon',
+    dimensionUnavailableHistory: 'Not enough data (requires 3+ months of history)',
+    comingWithHubspot: 'Coming with HubSpot integration (V2)',
+    comingWithUsageTracking: 'Coming with usage tracking (V2)',
+    basedOnSignals: (n: number) => `Based on ${n} signal${n === 1 ? '' : 's'} evaluated`,
+    noActiveRiskSignals: 'No active risk signals',
+    expansionUnlockCta: 'Configure your plan mapping',
+    trendLabel: 'Trend (30d)',
   },
 
   segments: {
@@ -114,6 +135,7 @@ export const en = {
     unpaid: 'Overdue',
     churned: 'Churned',
     newAccounts: 'New (< 90d)',
+    insufficientData: 'Insufficient data',
   },
 
   segmentDetail: {
@@ -129,6 +151,7 @@ export const en = {
     noAccounts: 'No accounts in this segment',
     truncatedBanner: (count: number) =>
       `${count} accounts in this segment — only the first 100 are shown. Use CSV export for the full list.`,
+    insufficientDataExplainer: 'These accounts don’t have enough Stripe payment history yet to compute an honest health score. They’ll move to a real segment automatically once enough billing data syncs.',
   },
 
   accounts: {

@@ -1,88 +1,51 @@
-import { supabase } from '@/lib/supabase';
+import { getAllAccountsForOrg } from '@/lib/queries/accounts';
 import type { SegmentType } from '@/lib/types/segments';
 import type { SegmentAccount } from '@/lib/types/segments';
-
-type AccountRow = {
-  id: string;
-  stripe_customer_id: string;
-  display_name?: string | null;
-  hubspot_company_id: string | null;
-  plan_tier: string | null;
-  billing_interval: string | null;
-  mrr_cents: number;
-  seat_count: number | null;
-  seat_limit: number | null;
-  contract_end_date: string | null;
-  health_score: number | null;
-  churn_risk_score: number | null;
-  expansion_score: number | null;
-  product_usage_score: number | null;
-  created_at: string;
-};
+import type { AccountListItem } from '@/lib/types/accounts';
 
 /**
- * Source de vérité pour les filtres de segment.
- * Alignés sur le backend scoring.ts — ne pas modifier sans vérifier la cohérence.
+ * Source de vérité : `primary_segment` (docs/API_CONTRACTS.md §4bis), lu tel
+ * quel depuis segment_memberships via accounts-api — la sortie persistée du
+ * cron de segmentation backend, jamais recalculée côté client.
+ *
+ * `nouveaux` est le seul cas particulier : non-exclusif par construction
+ * (peut coexister avec n'importe quel segment de santé), il n'apparaît donc
+ * jamais dans `primary_segment` — on garde le calcul par date ici. Tous les
+ * autres segments (y compris `donnees_insuffisantes`) sont une simple
+ * égalité sur `primary_segment`. `en_expansion` ne correspond plus à rien
+ * (§4bis : n'apparaît jamais dans `primary_segment`), donc ce filtre ne
+ * retourne naturellement aucun compte pour ce segment retiré.
  */
-export function getSegmentFilter(segment: SegmentType): (a: Pick<AccountRow, 'health_score' | 'churn_risk_score' | 'expansion_score' | 'mrr_cents' | 'created_at'>) => boolean {
-  const filters: Record<SegmentType, (a: Pick<AccountRow, 'health_score' | 'churn_risk_score' | 'expansion_score' | 'mrr_cents' | 'created_at'>) => boolean> = {
-    // health >= 80 AND churn_risk < 50
-    champions: (a) => (a.health_score ?? 0) >= 80 && (a.churn_risk_score ?? 100) < 50,
-    // expansion >= 70 AND health 60-79 AND churn_risk < 50
-    en_expansion: (a) =>
-      (a.expansion_score ?? 0) >= 70 &&
-      (a.health_score ?? 0) >= 60 &&
-      (a.health_score ?? 0) < 80 &&
-      (a.churn_risk_score ?? 100) < 50,
-    // mrr > 0 AND churn_risk < 50 AND health < 80 AND NOT(expansion >= 70 AND health >= 60)
-    stables: (a) => {
-      const health = a.health_score ?? 0;
-      const churn = a.churn_risk_score ?? 100;
-      const expansion = a.expansion_score ?? 0;
-      return (a.mrr_cents ?? 0) > 0 && churn < 50 && health < 80 &&
-        !(expansion >= 70 && health >= 60);
-    },
-    // churn_risk 50-69 AND mrr > 0
-    a_risque_leger: (a) => {
-      const churn = a.churn_risk_score ?? 0;
-      return churn >= 50 && churn < 70 && (a.mrr_cents ?? 0) > 0;
-    },
-    // churn_risk >= 70 AND mrr > 0
-    en_danger_critique: (a) => (a.churn_risk_score ?? 0) >= 70 && (a.mrr_cents ?? 0) > 0,
-    // churn_risk > 80 AND health < 50 AND mrr > 0 (proxy score)
-    impayes: (a) => (a.churn_risk_score ?? 0) > 80 && (a.health_score ?? 0) < 50 && (a.mrr_cents ?? 0) > 0,
-    // mrr = 0
-    en_churn: (a) => (a.mrr_cents ?? 0) === 0,
-    // created < 90 jours (non-exclusif)
-    nouveaux: (a) => {
+export function getSegmentFilter(segment: SegmentType): (a: Pick<AccountListItem, 'primary_segment' | 'created_at'>) => boolean {
+  if (segment === 'nouveaux') {
+    return (a) => {
       if (!a.created_at) return false;
       const diffMs = Date.now() - new Date(a.created_at).getTime();
       return diffMs < 90 * 24 * 60 * 60 * 1000;
-    },
-  };
-
-  return filters[segment];
+    };
+  }
+  return (a) => a.primary_segment === segment;
 }
 
-const ACCOUNT_SELECT =
-  'id, stripe_customer_id, display_name, hubspot_company_id, plan_tier, billing_interval, mrr_cents, seat_count, seat_limit, contract_end_date, health_score, churn_risk_score, expansion_score, product_usage_score, created_at' as const;
-
-export async function getSegmentAccounts(segment: SegmentType, organizationId: string): Promise<SegmentAccount[]> {
-  const { data, error } = await supabase
-    .from('accounts')
-    .select(ACCOUNT_SELECT)
-    .eq('organization_id', organizationId)
-    .order('mrr_cents', { ascending: false });
-
-  if (error) throw error;
-
+/**
+ * Chargé via accounts-api (getAllAccountsForOrg) plutôt qu'un .select() brut
+ * sur la table `accounts` : primary_segment n'est confirmé disponible que via
+ * cette edge function (docs/API_CONTRACTS.md §4bis + fixtures backend), la
+ * question de savoir si c'est aussi une colonne PostgREST directe reste
+ * ouverte côté backend — on ne parie pas dessus.
+ *
+ * `hubspot_company_id` n'existe pas sur le payload accounts-api liste ;
+ * mis à `null` ici (non affiché dans l'UI actuelle — colonnes HubSpot
+ * commentées "V2 - HubSpot" dans SegmentDetailView).
+ */
+export async function getSegmentAccounts(segment: SegmentType, _organizationId: string): Promise<SegmentAccount[]> {
+  const all = await getAllAccountsForOrg();
   const filter = getSegmentFilter(segment);
-  const rows = (data || []) as AccountRow[];
-  const filtered = rows.filter(filter).map((a) => ({
+  const filtered = all.filter(filter).map((a) => ({
     id: a.id,
     stripe_customer_id: a.stripe_customer_id,
     display_name: a.display_name ?? null,
-    hubspot_company_id: a.hubspot_company_id,
+    hubspot_company_id: null,
     plan_tier: a.plan_tier,
     billing_interval: a.billing_interval,
     mrr_cents: a.mrr_cents,
@@ -90,13 +53,17 @@ export async function getSegmentAccounts(segment: SegmentType, organizationId: s
     seat_limit: a.seat_limit,
     contract_end_date: a.contract_end_date,
     health_score: a.health_score,
+    health_score_status: a.health_score_status,
+    health_score_band: a.health_score_band,
+    health_score_max_points: a.health_score_max_points,
+    trend_30d: a.trend_30d,
     churn_risk_score: a.churn_risk_score,
+    churn_risk_band: a.churn_risk_band,
+    risk_signals_evaluated: a.risk_signals_evaluated,
     expansion_score: a.expansion_score,
-    product_usage_score: a.product_usage_score,
+    expansion_score_status: a.expansion_score_status,
+    expansion_unavailable_reason: a.expansion_unavailable_reason,
+    primary_segment: a.primary_segment,
   }));
-  if (import.meta.env.DEV) {
-    const dupeCount = filtered.length - new Set(filtered.map(a => a.stripe_customer_id)).size;
-    if (dupeCount > 0) console.warn(`[sentio] segment(${segment}): ${dupeCount} duplicate stripe_customer_id(s) detected`);
-  }
-  return Array.from(new Map(filtered.map(a => [a.stripe_customer_id, a])).values());
+  return filtered.sort((a, b) => b.mrr_cents - a.mrr_cents);
 }

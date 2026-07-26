@@ -12,5 +12,6 @@ export function useSegmentLabels(): Record<SegmentType, string> {
     impayes: t.segments.unpaid,
     en_churn: t.segments.churned,
     nouveaux: t.segments.newAccounts,
+    donnees_insuffisantes: t.segments.insufficientData,
   };
 }
