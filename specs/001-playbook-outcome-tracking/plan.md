@@ -44,11 +44,12 @@ constitution) ; TypeScript strict/ES5 (principe III) ; UI 100% anglais (principe
 toute donnée API doit respecter un contrat documenté (principe V) — contrat désormais
 documenté dans `API_CONTRACTS.md` (§ "Playbook Outcome Tracking", fichier à la racine
 de ce repo, fusionné le 2026-07-27 depuis `sentio-dev-backend` — `main` +
-`feat/playbook-outcome-tracking` + `feat/pricing-billing-implementation` ; distinct de
+`feat/playbook-outcome-tracking` (rafraîchi au commit `da6decd`, qui ajoute §8.1.1
+`unmark-executed`) + `feat/pricing-billing-implementation` ; distinct de
 `docs/API_CONTRACTS.md`, qui est le contrat Scoring Engine V2, sans rapport), **marqué
 provisoire par le backend** ("spec en cours, pas encore livré", pas encore mergé côté
-`sentio-dev-backend`) ; un écart de portée produit subsiste sur l'annulation du
-marquage (FR-003) — voir Dependencies plus bas
+`sentio-dev-backend`) ; FR-003 (annulation du marquage) est désormais couvert par
+§8.1.1 — voir Dependencies plus bas
 
 **Scale/Scope**: 3 user stories (P1/P2/P3), 1 nouvelle vue dédiée, modifications sur
 les composants playbooks existants (`ActionList`/cartes playbook), pas de nouvelle
@@ -64,16 +65,15 @@ page de routing majeure au-delà de la vue de résolution
 | II. Stack & Structure | ✅ PASS | Reste dans Vite/React/TS, nouvelle vue dans `src/pages/` |
 | III. TypeScript strict, ES5 | ✅ PASS | Aucune syntaxe non-ES5 anticipée (pas de spread de `Set` prévu) |
 | IV. English-Only UI | ✅ PASS | Tous les libellés UI seront en anglais (`fr.ts` gardé pour cohérence interne du repo mais UI produit reste en-US) |
-| V. API Contract Compliance | ⚠️ **GATE PARTIEL** | Contrat documenté dans `API_CONTRACTS.md` (§ "Playbook Outcome Tracking") pour la fenêtre d'attribution (`GET .../attribution-status`), le taux de résolution (`GET /playbook-outcome-stats`), la réponse au nudge (`POST .../nudge-response`), et désormais le marquage manuel "exécuté" (`POST .../mark-executed`, §8.1) — **mais marqué provisoire par le backend** ("pas encore livré", non mergé côté `sentio-dev-backend`), **et le contrat exclut explicitement toute action d'annulation du marquage** (pas de `unmark-executed` en V1), ce qui laisse un écart avec FR-003 de la spec. **Ce plan ne doit pas inventer cette forme de données** — voir Dependencies. |
+| V. API Contract Compliance | ⚠️ **GATE PARTIEL** | Contrat documenté dans `API_CONTRACTS.md` (§ "Playbook Outcome Tracking") pour la fenêtre d'attribution (`GET .../attribution-status`), le taux de résolution (`GET /playbook-outcome-stats`), la réponse au nudge (`POST .../nudge-response`), le marquage manuel "exécuté" (`POST .../mark-executed`, §8.1), et désormais son annulation (`POST .../unmark-executed`, §8.1.1 — fenêtre de 5 minutes, deux cas `409` de conflit : résolution auto déjà détectée, réponse au nudge déjà enregistrée) — **mais marqué provisoire par le backend** ("pas encore livré", non mergé côté `sentio-dev-backend`). Les 4 dépendances backend sont désormais couvertes, FR-003 inclus. |
 | Edits ciblés (str_replace) | ✅ PASS applicable à l'implémentation, sans impact sur le plan lui-même |
 | Identité graphique figée | ✅ PASS | Réutilisation des composants shadcn/ui existants (Button, Card, Badge), pas de nouvelle palette |
 
 **Verdict** : `/speckit-tasks` peut être lancé sur la base du contrat provisoire
 documenté (les 4 dépendances backend sont désormais couvertes, y compris le marquage
-manuel "exécuté"). `/speckit-implement` reste bloqué tant que (a) le contrat n'est pas
-mergé côté backend, et pour la seule portion "annulation du marquage" (FR-003), tant que
-(b) product/backend n'a pas tranché entre abandonner FR-003 pour ce chantier ou ajouter
-la sous-route dédiée que la note du contrat anticipe déjà (voir Dependencies).
+manuel "exécuté" et son annulation). `/speckit-implement` reste bloqué uniquement tant
+que le contrat n'est pas mergé côté backend sur `main` (voir Dependencies) — plus aucun
+écart de portée produit ne subsiste sur FR-003.
 
 ## Project Structure
 
@@ -96,9 +96,7 @@ src/
 │   │   └── playbook.ts              # Étendre avec les types d'exécution manuelle
 │   │                                 # (ExecutionMark, AttributionWindow, NudgeResponse)
 │   │                                 # — formes désormais typables depuis API_CONTRACTS.md
-│   │                                 # § 8.1-8.4 (mark-executed inclus) ; pas de type
-│   │                                 # d'annulation (FR-003) tant que le gap produit
-│   │                                 # n'est pas résolu
+│   │                                 # § 8.1-8.4, y compris §8.1.1 unmark-executed (FR-003)
 │   └── queries/
 │       └── playbook-queries.ts      # Nouvelles fonctions de fetch (marquer exécuté,
 │                                     # récupérer taux de résolution, répondre au nudge)
@@ -142,24 +140,30 @@ gate bloquant de dépendance externe, pas un choix de complexité à justifier).
 
 Statut au 2026-07-27, contrat provisoire `API_CONTRACTS.md` § "Playbook Outcome
 Tracking" (fichier à la racine de ce repo — fusion de `sentio-dev-backend`
-`main` + `feat/playbook-outcome-tracking` + `feat/pricing-billing-implementation` ;
-distinct de `docs/API_CONTRACTS.md`, le contrat Scoring Engine V2 sans rapport ; à
-re-vérifier avant `/speckit-implement` que la branche backend est bien mergée sur
-`main`) :
+`main` + `feat/playbook-outcome-tracking` (rafraîchi au commit `da6decd`) +
+`feat/pricing-billing-implementation` ; distinct de `docs/API_CONTRACTS.md`, le
+contrat Scoring Engine V2 sans rapport ; à re-vérifier avant `/speckit-implement`
+que la branche backend est bien mergée sur `main`) :
 
-1. **Marquage manuel "exécuté"** — ✅ documenté : `POST
-   /playbook-execute/{execution_id}/mark-executed` (§8.1), sous-route dédiée sur la
-   fonction `playbook-execute` existante, distincte de `POST /playbook-execute`
-   (déclenchement d'actions automatisées) — ne réutilise jamais
-   `execution_source: "manual"`. Effet : fixe `executed_at = now()` et
-   `attribution_deadline_at = executed_at + attribution_window_days` (défaut 14 jours)
-   si pas déjà marqué ; idempotent (`200`, pas de nouvel horodatage) si déjà marqué.
-   Réponse `{ execution_id, executed_at, attribution_deadline_at }`. **Écart avec
-   FR-003** : le contrat précise explicitement qu'aucune action d'annulation n'existe
-   en V1 ("pas de besoin produit identifié à ce jour") — si un besoin d'annulation est
-   confirmé, le contrat recommande une sous-route dédiée (`POST .../unmark-executed`)
-   plutôt que de la deviner côté frontend. Ce point reste à trancher avec
-   backend/product avant d'implémenter T012.
+1. **Marquage manuel "exécuté" et son annulation** — ✅ documenté (§8.1 + §8.1.1) :
+   - `POST /playbook-execute/{execution_id}/mark-executed` (§8.1), sous-route dédiée
+     sur la fonction `playbook-execute` existante, distincte de `POST
+     /playbook-execute` (déclenchement d'actions automatisées) — ne réutilise jamais
+     `execution_source: "manual"`. Effet : fixe `executed_at = now()` et
+     `attribution_deadline_at = executed_at + attribution_window_days` (défaut 14
+     jours) si pas déjà marqué ; idempotent (`200`, pas de nouvel horodatage) si déjà
+     marqué. Réponse `{ execution_id, executed_at, attribution_deadline_at }`.
+   - `POST /playbook-execute/{execution_id}/unmark-executed` (§8.1.1, décision
+     produit actée le 2026-07-27) — couvre FR-003. Fenêtre d'autorisation
+     délibérément restreinte à **5 minutes après `executed_at`** (pas toute la
+     fenêtre d'attribution de 14 jours), pour ne rattraper qu'un clic accidentel sans
+     permettre de fausser rétroactivement le taux de résolution "exécuté" de §8.3
+     (SC-006). Remet `executed_at`/`attribution_deadline_at` à `null` ; idempotent si
+     déjà non-marqué. Deux cas `409` de conflit, prioritaires sur l'expiration des 5
+     minutes dans l'ordre de vérification : résolution déjà détectée automatiquement
+     (`account_converted = true`) et réponse au nudge déjà enregistrée
+     (`nudge_response IS NOT NULL`) — le frontend doit gater l'affordance UI sur ces
+     deux signaux, pas seulement réagir au `409` après coup.
 2. **État de la fenêtre d'attribution** — ✅ documenté : `GET
    /playbook-execute/{execution_id}/attribution-status` retourne `execution_id`,
    `executed_at` (nullable), `attribution_deadline_at` (nullable, figé au marquage),
@@ -180,6 +184,5 @@ re-vérifier avant `/speckit-implement` que la branche backend est bien mergée 
    côte dans `OutcomeNudge.tsx`, jamais fusionnés.
 
 `src/lib/types/playbook.ts` peut désormais typer `ExecutionMark`, `AttributionStatus`,
-`PlaybookOutcomeStats` et `NudgeResponse` sur la forme ci-dessus (points 1-4). Aucun
-type d'annulation de marquage n'existe côté contrat — ne pas en inventer un pour T012
-tant que le gap FR-003 (point 1) n'est pas tranché.
+`PlaybookOutcomeStats` et `NudgeResponse` sur la forme ci-dessus (points 1-4), y
+compris le type de réponse `unmark-executed` (§8.1.1, point 1) pour T012.
