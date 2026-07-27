@@ -45,10 +45,11 @@ implication SEO/SSR
 dans `docs/API_CONTRACTS.md` (principe V) — contrat désormais documenté pour le
 palier (dont "Scale"), la progression de comptes et l'indicateur self-serve/RDV
 (§ "Pricing & Billing", `docs/API_CONTRACTS.md`), **marqué provisoire par le
-backend** ("spec en cours, pas encore livré", pas encore mergé) ; le mécanisme concret
-du CTA "demander un rendez-vous" reste non documenté — voir Dependencies ; le frontend
-ne doit jamais décider lui-même du palier ou de la bascule self-serve/RDV (contrainte
-explicite de la spec, FR-007)
+backend** ("spec en cours, pas encore livré", pas encore mergé) ; le CTA "demander
+un rendez-vous" ouvre un lien externe statique via `VITE_APPOINTMENT_BOOKING_URL`
+(pas d'appel API — voir Dependencies #4) ; le frontend ne doit jamais décider
+lui-même du palier ou de la bascule self-serve/RDV (contrainte explicite de la
+spec, FR-007)
 
 **Scale/Scope**: 3 user stories (P1/P2/P3), modification de composants existants
 (dashboard/settings pour l'affichage palier, `StripeConnect.tsx` pour le CTA d'appel
@@ -64,15 +65,16 @@ contextuel), pas de nouvelle page de routing majeure
 | II. Stack & Structure | ✅ PASS | Reste dans Vite/React/TS, modifications dans `src/pages`/`src/components` existants |
 | III. TypeScript strict, ES5 | ✅ PASS | Aucune syntaxe non-ES5 anticipée |
 | IV. English-Only UI | ✅ PASS | Tous les libellés UI seront en anglais |
-| V. API Contract Compliance | ⚠️ **GATE PARTIEL** | Contrat documenté dans `docs/API_CONTRACTS.md` (§ "Pricing & Billing") : `GET /pricing-status` couvre les 4 paliers (`free\|growth\|scale\|enterprise`, `starter` supprimé), `active_accounts_count`/`max_active_accounts`/`usage_pct`, et `requires_appointment` (indicateur self-serve/RDV explicite) — **mais marqué provisoire par le backend** ("pas encore livré", non mergé) **et le mécanisme concret du CTA "demander un rendez-vous" (lien/action) n'est toujours pas documenté** (le contrat ne couvre que `POST /sentio-billing/subscribe`, côté self-serve). **Ce plan ne doit pas inventer cette forme de données** — voir Dependencies. |
+| V. API Contract Compliance | ⚠️ **GATE PARTIEL** | Contrat documenté dans `docs/API_CONTRACTS.md` (§ "Pricing & Billing") : `GET /pricing-status` couvre les 4 paliers (`free\|growth\|scale\|enterprise`, `starter` supprimé), `active_accounts_count`/`max_active_accounts`/`usage_pct`, et `requires_appointment` (indicateur self-serve/RDV explicite) — **mais marqué provisoire par le backend** ("pas encore livré", non mergé). Le mécanisme du CTA "demander un rendez-vous" (point 4 des Dependencies) est désormais hors gate : lien externe statique via `VITE_APPOINTMENT_BOOKING_URL`, sans appel API. |
 | Edits ciblés (str_replace) | ✅ PASS applicable à l'implémentation |
 | Identité graphique figée | ✅ PASS | Réutilisation des composants shadcn/ui existants (`Progress`, `Card`, `Button`), pas de nouvelle palette |
 
-**Verdict** : `/speckit-tasks` peut être lancé — le palier "Scale" et l'indicateur
-self-serve/RDV sont désormais clarifiés (3 des 4 dépendances couvertes).
-`/speckit-implement` reste bloqué tant que (a) le contrat n'est pas mergé côté
-backend et (b) le mécanisme du CTA "demander un rendez-vous" n'est pas documenté
-(voir Dependencies).
+**Verdict** : `/speckit-tasks` peut être lancé — le palier "Scale", l'indicateur
+self-serve/RDV et le mécanisme du CTA RDV sont désormais clarifiés (4 des 4
+dépendances couvertes, voir Dependencies). `/speckit-implement` reste bloqué
+uniquement tant que le contrat `docs/API_CONTRACTS.md` § "Pricing & Billing"
+n'est pas mergé côté backend (US1/US2/US3-display en dépendent) ; le clic du
+CTA RDV (T017) n'a plus de dépendance backend.
 
 ## Project Structure
 
@@ -96,9 +98,7 @@ src/
 │                                     # 'growth'|'scale'|'enterprise', active_accounts_count,
 │                                     # max_active_accounts, usage_pct, alert_active,
 │                                     # requires_appointment) — per docs/API_CONTRACTS.md
-│                                     # § "Pricing & Billing" 8.1 ; le mécanisme du CTA RDV
-│                                     # (lien/action derrière "demander un rendez-vous")
-│                                     # reste non documenté, NE PAS l'inventer ; noter que
+│                                     # § "Pricing & Billing" 8.1 ; noter que
 │                                     # `src/lib/types/trial.ts` (`PlanType`) est obsolète —
 │                                     # contient encore 'starter' (supprimé par le contrat)
 │                                     # et pas 'scale' ; ne pas réutiliser tel quel
@@ -111,7 +111,9 @@ src/
 │       ├── PlanTierProgress.tsx     # Nouveau — affichage palier + progression
 │       │                             # vers limite de comptes (Story 1)
 │       └── SubscriptionCta.tsx      # Nouveau — CTA self-serve ou "demander un
-│                                     # rendez-vous" selon palier/contexte (Stories 2-3)
+│                                     # rendez-vous" selon palier/contexte (Stories 2-3) ;
+│                                     # le clic RDV ouvre VITE_APPOINTMENT_BOOKING_URL
+│                                     # (lien externe statique, pas d'appel API)
 └── pages/
     └── onboarding/
         └── StripeConnect.tsx        # Existant — modification ciblée (str_replace)
@@ -160,17 +162,18 @@ Statut au 2026-07-26, contrat provisoire `docs/API_CONTRACTS.md` § "Pricing & B
 3. **Indicateur self-serve/RDV explicite** — ✅ documenté : `requires_appointment`
    (boolean, `true` pour `scale`/`enterprise`) — le frontend consomme ce champ tel
    quel, ne dérive rien lui-même (FR-007 respecté par construction).
-4. **Mécanisme de "demander un rendez-vous"** — ⚠️ **toujours non documenté**. Le
-   contrat couvre `POST /sentio-billing/subscribe` + webhook `sentio-billing-webhook`
-   côté self-serve uniquement (§8.3) ; aucune forme n'est donnée pour l'action derrière
-   le CTA RDV (lien externe fixe, endpoint de génération de lien, etc.). **Ne pas
-   inventer cet endpoint/lien** — à redemander explicitement au backend avant
-   d'implémenter le clic du CTA RDV dans `SubscriptionCta.tsx`. Note : le contrat
-   renvoie vers `specs/003-pricing-billing-implementation/contracts/pricing-billing-api.md`
-   pour le détail complet de §8.3, mais ce dossier `specs/003-pricing-billing-implementation/`
-   **n'existe pas dans ce repo** (seul `specs/002-pricing-tier-interface/` existe pour ce
-   chantier) — écart à signaler au backend, pas à combler par supposition.
+4. **Mécanisme de "demander un rendez-vous"** — ✅ **résolu, aucune dépendance
+   backend**. Décision produit (2026-07-27) : le CTA RDV ouvre un lien externe
+   statique (type Calendly), configuré via la variable d'environnement
+   `VITE_APPOINTMENT_BOOKING_URL` — pas d'appel API, pas d'endpoint de génération
+   de lien. `SubscriptionCta.tsx` lit cette variable et ouvre l'URL dans un nouvel
+   onglet au clic (`window.open(url, '_blank', 'noopener,noreferrer')`). La valeur
+   réelle de l'URL est un placeholder documenté dans `.env.example` ("à remplacer
+   avant implémentation") — à ne jamais deviner ni coder en dur. Ce point ne
+   dépend donc plus du contrat backend `POST /sentio-billing/subscribe` (§8.3) ni
+   du dossier `specs/003-pricing-billing-implementation/` (toujours absent de ce
+   repo, écart sans impact désormais pour ce chantier).
 
 `src/lib/types/plan-tier.ts` peut désormais typer `PricingStatus` sur la forme
-ci-dessus (points 1-3). Le mécanisme du CTA RDV (point 4) reste à définir tant que le
-backend ne l'a pas documenté — ne pas l'inventer dans `/speckit-tasks`.
+ci-dessus (points 1-3). Le mécanisme du CTA RDV (point 4) est un lien externe
+statique via variable d'environnement, sans dépendance backend — voir T017.

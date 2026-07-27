@@ -28,7 +28,7 @@ description: "Task list for feature implementation"
 
 **Purpose**: Confirm preconditions before touching code
 
-- [ ] T001 Confirm `docs/API_CONTRACTS.md` § "Pricing & Billing" is merged (not "pas encore livré") before opening implementation PRs; if still provisional, implementation may proceed for US1/US2 (contract available) but the RDV CTA's click action in US3 (T017) remains blocked
+- [ ] T001 Confirm `docs/API_CONTRACTS.md` § "Pricing & Billing" is merged (not "pas encore livré") before opening implementation PRs; if still provisional, implementation may proceed for US1/US2 (contract available) — US3's RDV CTA (T017) no longer depends on this backend contract (static external link via env var)
 - [ ] T002 [P] Confirm React Query v5, react-router-dom, shadcn/ui (`Progress`, `Card`, `Button`) are already available in `package.json` (no new dependencies expected per plan.md)
 
 ---
@@ -103,10 +103,10 @@ description: "Task list for feature implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] **BLOCKED — contract missing**: wire the "request a meeting" CTA's click action in `SubscriptionCta.tsx` (link/endpoint per plan.md Dependencies #4). Do not invent the URL or endpoint shape. Re-request the mechanism from backend before implementing (also flag to backend that the contract's own pointer, `specs/003-pricing-billing-implementation/contracts/pricing-billing-api.md`, does not exist in this repo)
-- [ ] T018 [US3] Extend `SubscriptionCta.tsx` to render only the RDV CTA (no self-serve alternative) when `requires_appointment === true`, on every screen including `/onboarding/stripe` (overrides US2's Stripe-only call proposal for this tier) (depends on T013; button rendered but its action stays disabled/placeholder pending T017)
+- [ ] T017 [US3] Wire the "request a meeting" CTA's click action in `SubscriptionCta.tsx`: on click, open `import.meta.env.VITE_APPOINTMENT_BOOKING_URL` in a new tab (`window.open(url, '_blank', 'noopener,noreferrer')`) — no backend call, no endpoint. Product decision (2026-07-27): the CTA is a static external link (e.g. Calendly-type), not a backend-driven mechanism. Read the URL from the env var only; do not hardcode it. The env var's placeholder value is documented in `.env.example` ("to be replaced before implementation") — do not invent a real URL
+- [ ] T018 [US3] Extend `SubscriptionCta.tsx` to render only the RDV CTA (no self-serve alternative) when `requires_appointment === true`, on every screen including `/onboarding/stripe` (overrides US2's Stripe-only call proposal for this tier) (depends on T013 and T017)
 
-**Checkpoint**: All three user stories independently functional (US3's CTA click action remains blocked per T017 pending backend contract)
+**Checkpoint**: All three user stories independently functional
 
 ---
 
@@ -129,7 +129,7 @@ description: "Task list for feature implementation"
 - **Foundational (Phase 2)**: Depends on Setup — BLOCKS all user stories
 - **US1 (Phase 3)**: Depends on Foundational (T003-T005). Fully unblocked — contract complete for tier/progression display
 - **US2 (Phase 4)**: Depends on Foundational and on US1's `SubscriptionCta.tsx` base (T013 created here, extended in US3) — fully unblocked, `requires_appointment` documented
-- **US3 (Phase 5)**: Depends on Foundational and on US2's `SubscriptionCta.tsx` (T013). Display logic (T018) unblocked; RDV click action (T017) blocked on backend contract
+- **US3 (Phase 5)**: Depends on Foundational and on US2's `SubscriptionCta.tsx` (T013). Fully unblocked — RDV click action (T017) opens a static external link via `VITE_APPOINTMENT_BOOKING_URL`, no backend dependency
 - **Polish (Phase 6)**: Depends on all desired stories being complete
 
 ### Parallel Opportunities
@@ -153,13 +153,13 @@ description: "Task list for feature implementation"
 1. Setup + Foundational → Foundation ready
 2. US1 → Test independently → Deploy/Demo (MVP)
 3. US2 → Test independently → Deploy/Demo (self-serve CTA + Stripe-screen call proposal, fully unblocked)
-4. US3 display logic (T015, T016, T018) → Deploy once ready; RDV CTA's actual click action (T017) only once the backend documents the mechanism — until then, render the CTA in a disabled/placeholder state rather than a guessed link
+4. US3 (T015-T018) → Deploy once ready; RDV CTA opens `VITE_APPOINTMENT_BOOKING_URL` (static external link, no backend mechanism needed)
 
 ---
 
 ## Notes
 
 - [P] tasks = different files, no dependencies
-- T017 must not be implemented against a guessed URL/endpoint — re-open the backend contract request from plan.md Dependencies #4 first, and flag the broken `specs/003-pricing-billing-implementation/` reference in the contract doc
+- T017: product decision (2026-07-27) — the RDV CTA opens an external link (Calendly-type) read from `VITE_APPOINTMENT_BOOKING_URL`, no backend call. Placeholder value in `.env.example` must be replaced with the real URL before implementation ships
 - Commit after each task or logical group
 - Stop at any checkpoint to validate a story independently
