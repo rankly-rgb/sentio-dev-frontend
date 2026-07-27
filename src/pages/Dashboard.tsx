@@ -37,6 +37,8 @@ import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
 import { BenchmarkSection } from '@/components/dashboard/BenchmarkSection';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
+import PlanTierProgress from '@/components/billing/PlanTierProgress';
+import SubscriptionCta from '@/components/billing/SubscriptionCta';
 import { SEGMENT_COLORS } from '@/lib/types/segments';
 import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
@@ -363,6 +365,16 @@ export default function Dashboard() {
 
       {/* Benchmarks sectoriels */}
       <BenchmarkSection data={benchmarkData ?? null} isLoading={benchmarkLoading} error={benchmarkError} />
+
+      {/* Pricing tier — palier actuel, progression, CTA self-serve/RDV */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <PlanTierProgress />
+        <Card>
+          <CardContent className="p-4 flex items-center">
+            <SubscriptionCta />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Segment quick-links */}
       <div>

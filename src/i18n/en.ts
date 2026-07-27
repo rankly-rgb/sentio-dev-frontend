@@ -1175,6 +1175,34 @@ export const en = {
     trialExpiredError: 'Access blocked — trial expired. Please update your subscription.',
   },
 
+  pricingTiers: {
+    tierName: {
+      free: 'Free',
+      growth: 'Growth',
+      scale: 'Scale',
+      enterprise: 'Enterprise',
+    } as Record<string, string>,
+    currentPlan: 'Current plan',
+    accountsTracked: (count: number, max: number) => `${count} / ${max} accounts tracked`,
+    unlimited: 'Unlimited accounts',
+    loadError: 'Could not load your plan status.',
+    manageSubscription: 'Manage subscription',
+    upgradeToGrowth: 'Upgrade to Growth',
+    downgradeToFree: 'Downgrade to Free',
+    requestMeeting: 'Request a meeting',
+    callProposalTitle: 'Want a higher account limit or a custom plan?',
+    callProposalBody: 'Our team can walk you through Growth, Scale, and Enterprise options once your Stripe key is connected.',
+    // The backend endpoint creates a real Stripe subscription (payment_behavior:
+    // default_incomplete) but never returns a client_secret or Checkout URL, so there is
+    // currently no way to collect a payment method from this button — see
+    // SubscriptionCta.tsx for the full explanation.
+    upgradePendingTitle: 'Online payment coming soon',
+    upgradePendingBody: 'Upgrading to Growth online isn’t available yet — we’ve started the process on our side, but need to finish building payment collection before it can complete. Contact us in the meantime if you’d like to upgrade sooner.',
+    upgradeError: 'Could not start the upgrade. Please try again or contact us.',
+    downgradeSuccess: 'Your plan is now Free.',
+    downgradeError: 'Could not downgrade your plan. Please try again or contact us.',
+  },
+
   ops: {
     title: 'Ops Admin',
     tabs: {

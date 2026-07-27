@@ -8,6 +8,7 @@ import WizardLayout from '@/components/onboarding/WizardLayout';
 import { useOnboardingStatusFull, useVerifyStripeToken, useStripeOAuthInitiate } from '@/hooks/useOnboardingWizard';
 import { cn } from '@/lib/utils';
 import type { WizardStep } from '@/lib/types/onboarding-wizard';
+import SubscriptionCta from '@/components/billing/SubscriptionCta';
 
 const VALID_PREFIXES = ['rk_live_', 'rk_test_', 'sk_live_', 'sk_test_'];
 
@@ -203,6 +204,13 @@ export default function StripeConnect() {
         <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-900/30 border border-emerald-500/20 rounded-lg px-3 py-2">
           <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0" />
           {w.zeroPiiBadge}
+        </div>
+
+        {/* FR-005 — commercial call proposal, shown only on this screen, alongside
+            (never instead of) the self-serve flow; RDV-only tiers (Scale/Enterprise)
+            still only ever see the RDV CTA here (FR-006 overrides this addition) */}
+        <div className="border-t border-[#334155] pt-5">
+          <SubscriptionCta context="stripe-connect" />
         </div>
       </div>
     </WizardLayout>
