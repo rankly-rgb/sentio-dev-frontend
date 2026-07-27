@@ -555,3 +555,44 @@ export interface PlaybookListResponse {
   page: number;
   per_page: number;
 }
+
+// --- Outcome tracking (chantier C — manual execution mark, attribution window,
+// resolution rate, confirmation nudge) — per API_CONTRACTS.md § "Playbook Outcome
+// Tracking" 8.1-8.4 ---
+
+export type AttributionStatusValue = 'not_executed' | 'active' | 'expired' | 'resolved';
+
+export interface AttributionStatus {
+  execution_id: string;
+  executed_at: string | null;
+  attribution_deadline_at: string | null;
+  attribution_status: AttributionStatusValue;
+  time_remaining_seconds: number | null;
+}
+
+// Shared response shape for both mark-executed (§8.1) and unmark-executed (§8.1.1)
+export interface ExecutionMarkResult {
+  execution_id: string;
+  executed_at: string | null;
+  attribution_deadline_at: string | null;
+}
+
+export interface PlaybookOutcomeStatsGroup {
+  sample_size: number;
+  resolved_count: number;
+  resolution_rate: number | null;
+  sample_size_warning: boolean;
+}
+
+export interface PlaybookOutcomeStats {
+  playbook_id: string;
+  executed: PlaybookOutcomeStatsGroup;
+  not_executed: PlaybookOutcomeStatsGroup;
+}
+
+export type NudgeResponseValue = 'resolved' | 'not_resolved' | 'unsure';
+
+export interface NudgeResponseResult {
+  nudge_response: NudgeResponseValue | null;
+  nudge_responded_at: string | null;
+}

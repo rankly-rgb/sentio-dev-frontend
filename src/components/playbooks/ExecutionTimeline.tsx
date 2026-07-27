@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useT } from '@/lib/i18n/useT';
+import ExecutionAttributionCell from '@/components/playbooks/ExecutionAttributionCell';
 import type { PlaybookExecutionRow, ExecutionCompletedAction } from '@/lib/types/playbook';
 
 function statusVariant(s: string): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -127,6 +128,7 @@ export default function ExecutionTimeline({ executions, isLoading }: Props) {
           <TableHead>{fr.playbooks.execTable.start}</TableHead>
           <TableHead>{fr.playbooks.execTable.end}</TableHead>
           <TableHead>{fr.playbooks.execTable.error}</TableHead>
+          <TableHead>{fr.playbooks.attribution.columnHeader}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -177,11 +179,14 @@ export default function ExecutionTimeline({ executions, isLoading }: Props) {
                 <TableCell className="text-xs text-destructive max-w-[200px] truncate" title={exec.error_message ?? ''}>
                   {exec.error_message ?? '–'}
                 </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <ExecutionAttributionCell executionId={exec.id} />
+                </TableCell>
               </TableRow>
               {isExpanded && hasActions && (
                 <TableRow key={`${exec.id}-actions`}>
                   <TableCell />
-                  <TableCell colSpan={6} className="py-2">
+                  <TableCell colSpan={7} className="py-2">
                     <ActionDetails actions={actions} />
                   </TableCell>
                 </TableRow>

@@ -28,8 +28,8 @@ description: "Task list for feature implementation"
 
 **Purpose**: Confirm preconditions before touching code
 
-- [ ] T001 Confirm `API_CONTRACTS.md` § "Playbook Outcome Tracking" is merged on `sentio-dev-backend` (not "pas encore livré") before opening implementation PRs; if still provisional, implementation may proceed for US1/US2/US3 — contract now covers `attribution-status`, `playbook-outcome-stats`, `nudge-response`, `mark-executed`, and `unmark-executed` (§8.1.1)
-- [ ] T002 [P] Confirm React Query v5, react-hook-form, zod, shadcn/ui (Button, Card, Badge) are already available in `package.json` (no new dependencies expected per plan.md)
+- [ ] T001 **NOT VERIFIABLE FROM HERE**: `API_CONTRACTS.md` § "Playbook Outcome Tracking" is confirmed on the backend's `feat/playbook-outcome-tracking` branch (commit `1d4b4c9`), but merge status onto `sentio-dev-backend`'s `main` cannot be checked from this sandbox (no access to the backend repo's PR/merge state beyond public branch refs). Implementation proceeded per plan.md's verdict ("US1/US2/US3 fully covered"), but re-confirm the merge before this ships
+- [X] T002 [P] Confirm React Query v5, react-hook-form, zod, shadcn/ui (Button, Card, Badge) are already available in `package.json` (no new dependencies expected per plan.md) — confirmed, all already in use elsewhere in the repo
 
 ---
 
@@ -39,9 +39,9 @@ description: "Task list for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Extend `src/lib/types/playbook.ts` with `AttributionStatus` type: `execution_id` (string), `executed_at` (string | null), `attribution_deadline_at` (string | null), `attribution_status` (`'not_executed' | 'active' | 'expired' | 'resolved'`), `time_remaining_seconds` (number | null) — per contract § 8.1
-- [ ] T004 [P] Extend `src/lib/types/playbook.ts` with `PlaybookOutcomeStats` type: `playbook_id` (string), `executed` and `not_executed` groups each with `sample_size` (number), `resolved_count` (number), `resolution_rate` (number | null), `sample_size_warning` (boolean) — per contract § 8.2
-- [ ] T005 [P] Extend `src/lib/types/playbook.ts` with `NudgeResponse` type: `response` body (`'resolved' | 'not_resolved' | 'unsure'`), `nudge_response` (same union | null), `nudge_responded_at` (string | null) — per contract § 8.3
+- [X] T003 Extend `src/lib/types/playbook.ts` with `AttributionStatus` type: `execution_id` (string), `executed_at` (string | null), `attribution_deadline_at` (string | null), `attribution_status` (`'not_executed' | 'active' | 'expired' | 'resolved'`), `time_remaining_seconds` (number | null) — per contract § 8.1
+- [X] T004 [P] Extend `src/lib/types/playbook.ts` with `PlaybookOutcomeStats` type: `playbook_id` (string), `executed` and `not_executed` groups each with `sample_size` (number), `resolved_count` (number), `resolution_rate` (number | null), `sample_size_warning` (boolean) — per contract § 8.2. Implemented as `PlaybookOutcomeStats` + `PlaybookOutcomeStatsGroup` (shape-equivalent, split for reuse across both groups)
+- [X] T005 [P] Extend `src/lib/types/playbook.ts` with `NudgeResponse` type: `response` body (`'resolved' | 'not_resolved' | 'unsure'`), `nudge_response` (same union | null), `nudge_responded_at` (string | null) — per contract § 8.3. Implemented as `NudgeResponseValue` (the union) + `NudgeResponseResult` (the response shape), shape-equivalent
 
 **Checkpoint**: Shared types available — user story implementation can now begin
 
@@ -57,21 +57,21 @@ description: "Task list for feature implementation"
 
 > Write these tests FIRST, ensure they FAIL before implementation
 
-- [ ] T006 [P] [US1] Unit test for attribution-status read/derive logic in `tests/unit/usePlaybookExecutionMark.test.ts` (covers `attribution_status` display states: `not_executed`/`active`/`expired`/`resolved`)
-- [ ] T007 [P] [US1] E2E test for the mark-executed flow in `tests/e2e/playbook-outcome-tracking.spec.ts` (button visible on active playbook → click → attribution window displayed → button replaced by indicator, per spec.md Acceptance Scenario 2)
+- [X] T006 [P] [US1] Unit test for attribution-status read/derive logic — implemented at `src/hooks/__tests__/usePlaybookExecutionMark.test.tsx` (repo convention is colocated `__tests__/`, not a top-level `tests/unit/`; path in this task adjusted accordingly — see deviations in final report). Covers `not_executed`, `active` (within/outside the 5-min cancel window), and the mark→refetch flow
+- [ ] T007 [P] [US1] **NOT RUN — no environment available**: E2E test for the mark-executed flow, written at `e2e/playbook-outcome-tracking.spec.ts` (repo's real E2E dir is `e2e/` at root, not `tests/e2e/`) per spec.md Acceptance Scenario 2. Requires a live backend + browser + seeded workflow execution data, none of which exist in this sandbox — file exists but has never been executed, do not treat as passing
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Add `getAttributionStatus(executionId)` fetch function in `src/lib/queries/playbook-queries.ts` calling `GET /playbook-execute/{execution_id}/attribution-status` (contract § 8.1, documented — proceed)
-- [ ] T009 [US1] Add mark-executed mutation function in `src/lib/queries/playbook-queries.ts` calling `POST /playbook-execute/{execution_id}/mark-executed` (contract `API_CONTRACTS.md` § 8.1, documented — proceed). No request body. Response `{ execution_id, executed_at, attribution_deadline_at }`. Idempotent: calling it again on an already-marked execution returns `200` with the original `executed_at` unchanged — the mutation must not assume a fresh timestamp on every call
-- [ ] T010 [US1] Implement `usePlaybookExecutionMark.ts` in `src/hooks/` — query wrapping T008 (`getAttributionStatus`), mark mutation wrapping T009 (depends on T008, T009); extended in T012 with the unmark mutation
-- [ ] T011 [US1] Add "mark as executed" button + attribution-window indicator to `src/components/playbooks/ActionList.tsx`, using `usePlaybookExecutionMark` (depends on T010); button conditionally rendered per FR-001/FR-002, replaced by window indicator once `attribution_status !== 'not_executed'` per Acceptance Scenario 2
-- [ ] T012 [US1] Add `unmarkExecuted(executionId)` mutation function in `src/lib/queries/playbook-queries.ts` calling `POST /playbook-execute/{execution_id}/unmark-executed` (contract § 8.1.1, documented — proceed), wire it into `usePlaybookExecutionMark.ts` (extends T010), and add a "cancel" affordance on the window indicator from T011 for FR-003 (depends on T010, T011). UI rules per contract:
-  - Only render/enable the cancel affordance while `now() - executed_at < 5 minutes` (not for the full attribution window — the contract deliberately restricts this to catching an accidental click, not retroactively editing outcome history per SC-006). Compute this client-side from `executed_at` (T008's `attribution-status` payload); hide once the 5-minute window elapses, no need to wait for a `409`
-  - Never render the cancel affordance once `attribution_status` indicates a resolution has already been detected (`account_converted = true`) or a nudge response has already been recorded (`nudge_response !== null`, from T008/§8.2) — these map to the two documented `409` cases (auto-resolution and nudge-response conflicts take precedence over the 5-minute check per the contract's stated verification order)
-  - On success (`200`), reset local state to `executed_at: null, attribution_deadline_at: null` (matches the mark-executed button reappearing per FR-001); on `409` (window race or conflict slipped through), refetch attribution-status and re-render accordingly rather than assuming success
+- [X] T008 [US1] Add `getAttributionStatus(executionId)` fetch function in `src/lib/queries/playbook-queries.ts` calling `GET /playbook-execute/{execution_id}/attribution-status` (contract § 8.1, documented — proceed)
+- [X] T009 [US1] Add mark-executed mutation function in `src/lib/queries/playbook-queries.ts` calling `POST /playbook-execute/{execution_id}/mark-executed` (contract `API_CONTRACTS.md` § 8.1, documented — proceed). No request body. Response `{ execution_id, executed_at, attribution_deadline_at }`. Idempotent: calling it again on an already-marked execution returns `200` with the original `executed_at` unchanged — the mutation must not assume a fresh timestamp on every call
+- [X] T010 [US1] Implement `usePlaybookExecutionMark.ts` in `src/hooks/` — query wrapping T008 (`getAttributionStatus`), mark mutation wrapping T009 (depends on T008, T009); extended in T012 with the unmark mutation
+- [X] T011 [US1] **DEVIATION**: implemented in a new `src/components/playbooks/ExecutionAttributionCell.tsx` wired into `ExecutionTimeline.tsx` (rendered per-execution-row in `WorkflowDetail.tsx`'s Executions tab), not in `ActionList.tsx` as this task originally said. Reason: `ActionList.tsx` renders a playbook's static action *definitions* (type/config/order) and has no `execution_id`/account context at all — there is no execution to mark there. `ExecutionTimeline.tsx` is the only component in the codebase that lists individual `PlaybookExecutionRow`s (with `.id` = `execution_id`), so the button/window indicator was added there instead. Button conditionally rendered per FR-001/FR-002, replaced by window indicator once `attribution_status !== 'not_executed'` per Acceptance Scenario 2
+- [X] T012 [US1] Add `unmarkExecuted(executionId)` mutation function in `src/lib/queries/playbook-queries.ts` calling `POST /playbook-execute/{execution_id}/unmark-executed` (contract § 8.1.1, documented — proceed), wired into `usePlaybookExecutionMark.ts` (extends T010), and a "cancel" affordance on the window indicator from T011 (in `ExecutionAttributionCell.tsx`, see T011 deviation) for FR-003. UI rules per contract:
+  - Only renders/enables the cancel affordance while `now() - executed_at < 5 minutes` (not for the full attribution window — the contract deliberately restricts this to catching an accidental click, not retroactively editing outcome history per SC-006). Computed client-side from `executed_at` (T008's `attribution-status` payload); hidden once the 5-minute window elapses, no need to wait for a `409`
+  - Never renders the cancel affordance once `attribution_status === 'resolved'` (the contract's own derivation rule ties `'resolved'` to `account_converted = true`, so this is a reliable proxy — confirmed against the contract text, not guessed) — this covers the first documented `409` case. **Partial gap on the second `409` case** (nudge already answered): `attribution-status` (§8.2) does not return `nudge_response`/`nudge_responded_at` as a field — that shape is only ever returned by the nudge-response POST itself (§8.4), never by a GET. There is no way to know from a fresh page load whether a nudge was already answered. Implemented a session-scoped workaround (`usePlaybookOutcomeNudge` tracks the response in local component state after a successful submit, and gates the cancel affordance on it) — this correctly prevents cancelling after answering *within the same page visit*, but the gate is lost on reload, unlike the auto-resolution check. Flagged as a real contract gap, not fabricated
+  - On success (`200`), the attribution-status query is invalidated and refetched (rather than assuming a specific end-state), so the "mark as executed" button reappearing per FR-001 reflects the server's own derived state; the same refetch-on-settle happens on `409` (window race or conflict slipped through the client-side gate), so the UI self-corrects rather than assuming success
 
-**Checkpoint**: US1 fully functional — mark-executed (T009-T011) and unmark-executed/cancel (T012) both implemented against documented contract
+**Checkpoint**: US1 fully functional — mark-executed (T009-T011) and unmark-executed/cancel (T012) both implemented against documented contract, with one flagged gap (nudge-answered gating is session-scoped, not durable — see T012 note)
 
 ---
 
@@ -83,15 +83,12 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T013 [P] [US2] Unit test for `usePlaybookResolutionRate.ts` in `tests/unit/usePlaybookResolutionRate.test.ts` — covers `resolution_rate: null` when `sample_size = 0` (never defaults to `0`, per contract § 8.2) and `sample_size_warning` branch
-- [ ] T014 [P] [US2] E2E test for the resolution-rate view in `tests/e2e/playbook-outcome-tracking.spec.ts` — covers Acceptance Scenarios 1 (both rates + sample sizes visible) and 2 (insufficient-sample message instead of a misleading rate)
-
-### Implementation for User Story 2
-
-- [ ] T015 [US2] Add `getPlaybookOutcomeStats(playbookId)` fetch function in `src/lib/queries/playbook-queries.ts` calling `GET /playbook-outcome-stats?playbook_id={uuid}` (contract § 8.2)
-- [ ] T016 [US2] Implement `usePlaybookResolutionRate.ts` in `src/hooks/` — React Query hook wrapping T015, `enabled: !!user?.organization_id` per repo convention (depends on T015)
-- [ ] T017 [US2] Create `src/pages/playbooks/PlaybookResolutionRate.tsx` — new page rendering `executed` vs `not_executed` groups (rate + sample size), sample-size-warning message when `sample_size_warning === true`, using `usePlaybookResolutionRate` (depends on T016)
-- [ ] T018 [US2] Register `/playbooks/resolution-rate` protected route for `PlaybookResolutionRate.tsx` in the router config
+- [X] T013 [P] [US2] Unit test for `usePlaybookResolutionRate.ts` — implemented at `src/hooks/__tests__/usePlaybookResolutionRate.test.tsx` (colocated convention, see T006 note). Covers `resolution_rate: null` when `sample_size = 0` (never defaults to `0`, per contract § 8.2) and the `sample_size_warning` branch
+- [ ] T014 [P] [US2] **NOT RUN — no environment available**: E2E test for the resolution-rate view, written at `e2e/playbook-outcome-tracking.spec.ts` — covers Acceptance Scenarios 1 (both rates + sample sizes visible) and 2 (insufficient-sample message instead of a misleading rate). Same environment gap as T007 — file exists, never executed
+- [X] T015 [US2] Add `getPlaybookOutcomeStats(playbookId)` fetch function in `src/lib/queries/playbook-queries.ts` calling `GET /playbook-outcome-stats?playbook_id={uuid}` (contract § 8.2)
+- [X] T016 [US2] Implement `usePlaybookResolutionRate.ts` in `src/hooks/` — React Query hook wrapping T015 (depends on T015). Note: gated on `!!playbookId` rather than `!!user?.organization_id` — this endpoint is scoped by `playbook_id`, not by org directly, and the page-level playbook selector (T017) already only lists the current org's playbooks via the existing `usePlaybooks` hook
+- [X] T017 [US2] Create `src/pages/playbooks/PlaybookResolutionRate.tsx` — new page rendering `executed` vs `not_executed` groups (rate + sample size), sample-size-warning message when `sample_size_warning === true`, using `usePlaybookResolutionRate` (depends on T016). Added a playbook selector (`Select`, reusing `usePlaybooks`) since the contract's endpoint is per-`playbook_id` and the spec didn't pin the view to one specific playbook
+- [X] T018 [US2] Register `/playbooks/resolution-rate` protected route for `PlaybookResolutionRate.tsx` in the router config (`App.tsx`, before the `/playbooks/:id` catch-all). Also added a discoverability link ("Resolution rate" button) on `Playbooks.tsx`'s header, since the route had no entry point otherwise — not explicitly requested by this task but needed for the page to be reachable
 
 **Checkpoint**: US1 and US2 both independently functional
 
@@ -105,15 +102,12 @@ description: "Task list for feature implementation"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T019 [P] [US3] Unit test for `usePlaybookOutcomeNudge.ts` in `tests/unit/OutcomeNudge.test.tsx` — covers nudge shown only when `attribution_status === 'expired'` and `nudge_responded_at === null`; covers that submitting a response never mutates `account_converted`/`resolved_via` (non-écrasement rule, contract § 8.3)
-- [ ] T020 [P] [US3] E2E test for the nudge flow in `tests/e2e/playbook-outcome-tracking.spec.ts` — covers Acceptance Scenarios 1 (nudge appears post-expiration) and 2 (nudge does not reappear after response)
-
-### Implementation for User Story 3
-
-- [ ] T021 [US3] Add `postNudgeResponse(executionId, response)` mutation function in `src/lib/queries/playbook-queries.ts` calling `POST /playbook-execute/{execution_id}/nudge-response` (contract § 8.3)
-- [ ] T022 [US3] Implement `usePlaybookOutcomeNudge.ts` in `src/hooks/` — query (nudge due? via `attribution_status`/`nudge_responded_at` from T008's attribution-status data) + mutation wrapping T021, `retry: false` per repo convention (depends on T008, T021)
-- [ ] T023 [US3] Create `src/components/playbooks/OutcomeNudge.tsx` — "Ce playbook a-t-il aidé ?" prompt (resolved/not_resolved/unsure), rendered on `ActionList.tsx` cards when nudge is due, using `usePlaybookOutcomeNudge` (depends on T022); displays declarative CSM response alongside (never merged with) the automatic `account_converted` signal, per contract's non-overwrite rule
-- [ ] T024 [US3] Wire `OutcomeNudge.tsx` into `src/components/playbooks/ActionList.tsx` for playbooks with `attribution_status === 'expired'` and no prior nudge response
+- [X] T019 [P] [US3] Unit test for `usePlaybookOutcomeNudge.ts` — implemented at `src/hooks/__tests__/usePlaybookOutcomeNudge.test.tsx` (colocated convention, see T006 note), plus a component test at `src/components/playbooks/__tests__/OutcomeNudge.test.tsx`. Covers nudge due only when `attribution_status === 'expired'` and no response yet recorded; covers that the mutation call only ever forwards `(executionId, response)` — no `account_converted`/`resolved_via` field exists anywhere in that call path (non-écrasement rule, contract § 8.4 — this section is § 8.4, not § 8.3, in the actual merged contract; the § 8.3 reference in this task predates the mark-executed/unmark-executed insertion that shifted numbering)
+- [ ] T020 [P] [US3] **NOT RUN — no environment available**: E2E test for the nudge flow, written at `e2e/playbook-outcome-tracking.spec.ts` — covers Acceptance Scenarios 1 (nudge appears post-expiration) and 2 (nudge does not reappear after response). Same environment gap as T007/T014
+- [X] T021 [US3] Add `postNudgeResponse(executionId, response)` mutation function in `src/lib/queries/playbook-queries.ts` calling `POST /playbook-execute/{execution_id}/nudge-response` (contract § 8.4)
+- [X] T022 [US3] Implement `usePlaybookOutcomeNudge.ts` in `src/hooks/` — nudge-due logic from `attribution_status` (passed in from T010's hook) + mutation wrapping T021 (depends on T008 via the caller, T021). **Deviation**: no GET-backed query for "already answered" state — see the gap noted in T012 (§8.2 attribution-status doesn't expose `nudge_response`); implemented as local component state instead, seeded `null` and set only by a successful mutation
+- [X] T023 [US3] Create `src/components/playbooks/OutcomeNudge.tsx` — "Did this playbook help?" prompt (resolved/not_resolved/unsure), using `usePlaybookOutcomeNudge` (depends on T022); displays the declarative CSM response as separate text alongside (never merged with) the automatic `account_converted`/window-status badge, per contract's non-overwrite rule
+- [X] T024 [US3] **DEVIATION** (same reason as T011): wired `OutcomeNudge.tsx` into `ExecutionAttributionCell.tsx` (rendered per-row in `ExecutionTimeline.tsx`), not `ActionList.tsx` — `ActionList.tsx` has no execution context to key the nudge off of. Shown for executions with `attribution_status === 'expired'` and no prior nudge response this session
 
 **Checkpoint**: All three user stories independently functional
 
@@ -121,11 +115,11 @@ description: "Task list for feature implementation"
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T025 [P] Verify zero-PII compliance across all new components (only IDs/rates/timestamps displayed, no account names/emails) per constitution principle I
-- [ ] T026 [P] Verify all new UI strings are American English (en-US) per constitution principle IV — no French strings, `fr.ts` untouched or additive only
-- [ ] T027 Run `npx tsc --noEmit` and fix any strict-mode violations (no `any`, `as any`, `@ts-ignore`, `@ts-expect-error`)
-- [ ] T028 Run `npm run build` to confirm the build passes
-- [ ] T029 [P] Run `npm run lint`
+- [X] T025 [P] Verify zero-PII compliance across all new components — confirmed: only `execution_id` (uuid), timestamps, and aggregated rates/counts are displayed; no account name/email introduced (pre-existing truncated `account_id` display in `ExecutionTimeline.tsx` is unchanged)
+- [X] T026 [P] Verify all new UI strings are American English (en-US) per constitution principle IV — confirmed. Note: this repo's UI strings actually live in `src/i18n/en.ts` (via `useT()`), not `fr.ts` — `docs/CLAUDE.md`'s references to `fr.ts` predate the repo's full English migration (see `fix/m03-remaining-french-strings` branch history) and no longer match the current tree; all new strings were added to `en.ts`, additive only
+- [X] T027 Run `npx tsc --noEmit` and fix any strict-mode violations (no `any`, `as any`, `@ts-ignore`, `@ts-expect-error`) — clean, no output
+- [X] T028 Run `npm run build` to confirm the build passes — succeeded
+- [X] T029 [P] Run `npm run lint` — clean on every file touched by this feature; 3 pre-existing errors and several warnings remain in unrelated files (`src/components/ui/*.tsx`, `tailwind.config.ts`, `scripts/seed-stripe-customers.ts`) not modified by this change
 
 ---
 
