@@ -16,6 +16,8 @@ import type {
   TransitionStatusResponse,
   ApproveExecutionResponse,
   RejectExecutionResponse,
+  PlaybookExportPreview,
+  PlaybookRun,
 } from '@/lib/types/playbook';
 
 // --- CRUD ---
@@ -239,4 +241,28 @@ export async function rejectExecution(
     `playbook-crud/${playbookId}/reject-execution`,
     { method: 'POST', body: { execution_id: executionId, reason } },
   );
+}
+
+// --- CSV export (chantier A) ---
+
+export async function previewPlaybookExport(playbookId: string): Promise<PlaybookExportPreview> {
+  const res = await fetchWithUserJwt<{ data: PlaybookExportPreview }>('export-playbook-csv', {
+    method: 'POST',
+    body: { playbook_id: playbookId, preview: true },
+  });
+  return res.data;
+}
+
+export async function listPlaybookRuns(playbookId: string): Promise<PlaybookRun[]> {
+  const res = await fetchWithUserJwt<{ data: { runs: PlaybookRun[] } }>(
+    `export-playbook-csv?playbook_id=${playbookId}`,
+  );
+  return res.data.runs;
+}
+
+export async function markPlaybookRunExecuted(runId: string): Promise<{ success: boolean; updated: boolean }> {
+  return fetchWithUserJwt<{ success: boolean; updated: boolean }>('export-playbook-csv', {
+    method: 'PATCH',
+    body: { run_id: runId },
+  });
 }

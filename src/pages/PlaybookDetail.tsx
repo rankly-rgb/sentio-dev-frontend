@@ -15,6 +15,7 @@ import PlaybookAffectedAccounts from '@/components/playbooks/PlaybookAffectedAcc
 import PlaybookActionsSection from '@/components/playbooks/PlaybookActionsSection';
 import PlaybookExecutionStats from '@/components/playbooks/PlaybookExecutionStats';
 import PlaybookConfiguration from '@/components/playbooks/PlaybookConfiguration';
+import PlaybookExportPanel from '@/components/playbooks/PlaybookExportPanel';
 import PlaybookForm from '@/components/playbooks/PlaybookForm';
 import ExecutePlaybookModal from '@/components/playbooks/ExecutePlaybookModal';
 import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
@@ -145,6 +146,7 @@ export default function PlaybookDetail() {
         <div className="space-y-6">
           <PlaybookExecutionStats stats={detail.execution_stats} />
           <PlaybookConfiguration playbook={detail.playbook} />
+          <PlaybookExportPanel playbookId={detail.playbook.id} />
         </div>
       </div>
 

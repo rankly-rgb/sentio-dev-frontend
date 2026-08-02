@@ -555,3 +555,30 @@ export interface PlaybookListResponse {
   page: number;
   per_page: number;
 }
+
+// --- CSV export (chantier A) ---
+export interface PlaybookExportAccount {
+  id: string;
+  display_name: string | null;
+  mrr_cents: number | null;
+  health_score: number | null;
+  churn_risk_score: number | null;
+}
+
+export interface PlaybookExportPreview {
+  accounts_count: number;
+  mrr_at_risk_cents: number;
+  accounts: PlaybookExportAccount[];
+}
+
+export type PlaybookRunStatus = 'exported' | 'executed';
+
+export interface PlaybookRun {
+  id: string;
+  target_label: string | null;
+  accounts_count: number;
+  mrr_at_risk_cents: number;
+  status: PlaybookRunStatus;
+  exported_at: string;
+  executed_at: string | null;
+}

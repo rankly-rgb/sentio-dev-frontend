@@ -125,6 +125,42 @@ export async function exportCsvWithEmail(options: ExportCsvOptions = {}): Promis
   triggerBlobDownload(blob, buildDateFilename('sentio-export'));
 }
 
+export async function exportPlaybookCsv(playbookId: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Session expired, please log in again');
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), EXPORT_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/export-playbook-csv`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ playbook_id: playbookId }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('The export took too long, please retry');
+    }
+    throw new Error('Network error — check your connection');
+  }
+  clearTimeout(timeoutId);
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: `Error ${res.status}` }));
+    throw new Error((body as { error?: string }).error ?? `Error ${res.status}`);
+  }
+
+  const blob = await res.blob();
+  triggerBlobDownload(blob, buildDateFilename('sentio-playbook-export'));
+}
+
 export async function exportSequenceTemplate(): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error('Session expired, please log in again');

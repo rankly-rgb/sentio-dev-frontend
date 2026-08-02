@@ -1294,20 +1294,22 @@ export const en = {
   },
 
   playbookExport: {
-    sectionTitle: 'Affected accounts',
-    totalAccounts: 'Affected accounts',
+    sectionTitle: 'CSV Export',
+    targetedAccounts: 'Targeted accounts',
     mrrAtRisk: 'MRR at risk',
-    filterPriority: 'Minimum priority',
-    filterSegment: 'Segment',
-    filterContract: 'Contract',
-    all: 'All',
-    monthly: 'Monthly',
-    annual: 'Annual',
-    exportCsv: 'Export CSV — HubSpot ready',
-    exportJson: 'Export JSON',
+    noTargets: "No accounts currently match this playbook's targeting.",
+    exportCsv: 'Export CSV',
     exporting: 'Exporting…',
     toastSuccess: (count: number, mrr: string) =>
       `Export downloaded — ${count} accounts, ${mrr} MRR at risk.`,
+    runHistory: 'Export history',
+    noRuns: 'No exports yet.',
+    statusExported: 'Exported',
+    statusExecuted: 'Sent',
+    markExecuted: 'Mark as sent',
+    markingExecuted: 'Marking…',
+    exportedOn: (date: string) => `Exported on ${date}`,
+    executedOn: (date: string) => `Sent on ${date}`,
   },
 
   integrations: {

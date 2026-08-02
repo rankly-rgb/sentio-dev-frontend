@@ -17,7 +17,11 @@ import {
   transitionPlaybookStatus,
   approveExecution,
   rejectExecution,
+  previewPlaybookExport,
+  listPlaybookRuns,
+  markPlaybookRunExecuted,
 } from '@/lib/queries/playbook-queries';
+import { exportPlaybookCsv } from '@/lib/exportCsv';
 import type {
   PlaybookFilters,
   PlaybookStatus,
@@ -32,6 +36,8 @@ const KEYS = {
   templates: (orgId: string) => ['playbooks', 'templates', orgId] as const,
   detail: (id: string) => ['playbooks', 'detail', id] as const,
   executions: (id: string) => ['playbooks', 'executions', id] as const,
+  exportPreview: (id: string) => ['playbooks', 'export-preview', id] as const,
+  runs: (id: string) => ['playbooks', 'runs', id] as const,
 };
 
 export function usePlaybooks(filters: PlaybookFilters = {}) {
@@ -279,5 +285,55 @@ export function useRejectExecution() {
         toast.error('Rejection error: ' + e.message);
       }
     },
+  });
+}
+
+// --- CSV export (chantier A) ---
+
+export function usePlaybookExportPreview(playbookId: string | undefined) {
+  return useQuery({
+    queryKey: KEYS.exportPreview(playbookId ?? ''),
+    queryFn: () => previewPlaybookExport(playbookId ?? ''),
+    enabled: !!playbookId,
+    staleTime: 30_000,
+  });
+}
+
+export function usePlaybookRuns(playbookId: string | undefined) {
+  return useQuery({
+    queryKey: KEYS.runs(playbookId ?? ''),
+    queryFn: () => listPlaybookRuns(playbookId ?? ''),
+    enabled: !!playbookId,
+    staleTime: 15_000,
+  });
+}
+
+export function useExportPlaybookCsv(playbookId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => exportPlaybookCsv(playbookId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEYS.runs(playbookId) });
+      toast.success('Export downloaded');
+    },
+    retry: false,
+    onError: (e: Error) => toast.error('Export error: ' + e.message),
+  });
+}
+
+export function useMarkPlaybookRunExecuted(playbookId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (runId: string) => markPlaybookRunExecuted(runId),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: KEYS.runs(playbookId) });
+      if (data.updated) {
+        toast.success('Run marked as sent');
+      } else {
+        toast.error('This run was already marked, or no longer exists');
+      }
+    },
+    retry: false,
+    onError: (e: Error) => toast.error('Error: ' + e.message),
   });
 }
