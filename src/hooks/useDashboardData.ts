@@ -102,6 +102,8 @@ async function fetchHealthDistribution(): Promise<HealthDistribution> {
 
 export interface TopAccountsResult {
   atRisk: TopAccount[];
+  atRiskTotalCount: number;
+  atRiskTotalMrrCents: number;
   expansion: TopAccount[];
   expansionTotalCount: number;
   expansionTotalMrrCents: number;
@@ -117,17 +119,18 @@ async function fetchTopAccounts(organizationId: string): Promise<TopAccountsResu
 
   const all = (accounts || []) as TopAccount[];
 
-  const atRisk = all
+  const allAtRisk = all
     .filter(a => a.churn_risk_band === 'high' && (a.mrr_cents || 0) > 0)
-    .sort((a, b) => b.churn_risk_score - a.churn_risk_score)
-    .slice(0, 5);
+    .sort((a, b) => b.churn_risk_score - a.churn_risk_score);
 
   const allExpansion = all
     .filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) >= 70 && (a.health_score ?? 0) >= 60)
     .sort((a, b) => (b.expansion_score ?? 0) - (a.expansion_score ?? 0));
 
   return {
-    atRisk,
+    atRisk: allAtRisk.slice(0, 5),
+    atRiskTotalCount: allAtRisk.length,
+    atRiskTotalMrrCents: allAtRisk.reduce((s, a) => s + (a.mrr_cents || 0), 0),
     expansion: allExpansion.slice(0, 5),
     expansionTotalCount: allExpansion.length,
     expansionTotalMrrCents: allExpansion.reduce((s, a) => s + (a.mrr_cents || 0), 0),

@@ -242,15 +242,15 @@ export default function Dashboard() {
       {!trackerConnected && <TrackerBanner />}
 
       {/* Critical accounts alert banner */}
-      {(topAccounts?.atRisk?.length ?? 0) > 0 && (
+      {(topAccounts?.atRiskTotalCount ?? 0) > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
           <div>
             <span className="font-semibold text-red-700">
-              {fr.dashboard.criticalAlertTitle(topAccounts!.atRisk.length)}
+              {fr.dashboard.criticalAlertTitle(topAccounts!.atRiskTotalCount)}
             </span>
             <span className="text-red-600 ml-2">
               {fr.dashboard.criticalAlertMrr(
-                fr.format.currency(topAccounts!.atRisk.reduce((s, a) => s + (a.mrr_cents || 0), 0))
+                fr.format.currency(topAccounts!.atRiskTotalMrrCents)
               )}
             </span>
           </div>
