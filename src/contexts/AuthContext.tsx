@@ -10,6 +10,7 @@ interface AuthUser {
   email: string;
   organization_id: string;
   organization_name: string;
+  currency: string;
   full_name: string | null;
   role: string;
 }
@@ -48,7 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role,
           organizations:organization_id (
             id,
-            name
+            name,
+            currency
           )
         `)
         .eq('auth_user_id', authUserId)
@@ -68,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         organization_id: profile.organization_id,
         organization_name: orgData?.name || 'Unknown organization',
+        currency: orgData?.currency || 'usd',
         full_name: profile.full_name,
         role: profile.role,
       };

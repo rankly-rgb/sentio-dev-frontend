@@ -1,10 +1,11 @@
 import { Info } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookDetailExecutionStats } from '@/lib/types/playbook';
 
-function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'EUR' });
+function formatCurrency(cents: number, currency: string): string {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() });
 }
 
 function StatCard({
@@ -30,6 +31,8 @@ interface Props {
 
 export default function PlaybookExecutionStats({ stats }: Props) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const allZero =
     stats.total === 0 &&
     stats.completed === 0 &&
@@ -64,11 +67,11 @@ export default function PlaybookExecutionStats({ stats }: Props) {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{fr.playbooks.mrrRecovered}</span>
-            <span className="font-medium">{formatCurrency(stats.mrr_recovered_cents)}</span>
+            <span className="font-medium">{formatCurrency(stats.mrr_recovered_cents, currency)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">{fr.playbooks.mrrExpansion}</span>
-            <span className="font-medium">{formatCurrency(stats.mrr_expansion_cents)}</span>
+            <span className="font-medium">{formatCurrency(stats.mrr_expansion_cents, currency)}</span>
           </div>
         </div>
 

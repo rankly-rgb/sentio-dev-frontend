@@ -3,6 +3,7 @@ import { getAccountLabel } from '@/lib/account-display';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
 import { useOnboardingFirstWin, useMarkOnboardingField } from '@/hooks/useOnboardingFlow';
@@ -22,6 +23,8 @@ function scoreBadgeLabel(score: number, labels: { criticalRisk: string; moderate
 
 function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; index: number }) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const name = getAccountLabel(account);
   const badgeClass = scoreBadgeClass(account.health_score);
   const badgeLabel = scoreBadgeLabel(account.health_score, fr.onboarding.done);
@@ -37,8 +40,8 @@ function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; i
           <span className="font-medium text-sm text-[#111827] truncate">{name}</span>
         </div>
         <span className="text-sm font-semibold text-[#111827] flex-shrink-0 whitespace-nowrap">
-          {account.mrr.toLocaleString('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
-          /mois
+          {account.mrr.toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: 0 })}
+          /mo
         </span>
       </div>
 
@@ -67,6 +70,8 @@ function AccountCard({ account, index }: { account: OnboardingFirstWinAccount; i
 
 export default function Done() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const navigate = useNavigate();
   const { data: firstWin, isPending: isLoading } = useOnboardingFirstWin();
   const { mutate: markField, isPending: isMarking } = useMarkOnboardingField();
@@ -127,7 +132,7 @@ export default function Done() {
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 text-center">
               <p className={`text-2xl font-bold ${firstWin.mrr_at_risk > 0 ? 'text-[#ef4444]' : 'text-[#111827]'}`}>
-                {firstWin.mrr_at_risk.toLocaleString('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
+                {firstWin.mrr_at_risk.toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: 0 })}
               </p>
               <p className="text-xs text-[#6b7280] mt-1">{fr.onboarding.done.mrrAtRisk}</p>
             </div>

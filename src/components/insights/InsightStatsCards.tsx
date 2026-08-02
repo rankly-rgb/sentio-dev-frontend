@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import type { InsightStats } from '@/types/insights';
 import { AlertTriangle, TrendingUp, BrainCircuit, DollarSign } from 'lucide-react';
 
@@ -11,6 +12,8 @@ interface InsightStatsCardsProps {
 
 export default function InsightStatsCards({ stats, isLoading }: InsightStatsCardsProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -36,7 +39,7 @@ export default function InsightStatsCards({ stats, isLoading }: InsightStatsCard
     },
     {
       label: fr.insights.stats.mrrAtRisk,
-      value: stats ? fr.format.currency(stats.total_mrr_impact_cents) : '0 €',
+      value: fr.format.currency(stats?.total_mrr_impact_cents ?? 0, currency),
       icon: DollarSign,
       className: 'text-orange-600',
       raw: true,

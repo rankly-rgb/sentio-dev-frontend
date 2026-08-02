@@ -427,7 +427,7 @@ export const en = {
       emailHubspotSubject: 'Email subject (optional)',
       emailHubspotSubjectPlaceholder: 'Alert — Churn risk {churn_risk}%',
       emailHubspotBody: 'Email body (HTML, optional)',
-      emailHubspotBodyPlaceholder: '<p>This account needs your attention.</p><p>Health: {health_score} | MRR: {mrr_eur} EUR</p>',
+      emailHubspotBodyPlaceholder: '<p>This account needs your attention.</p><p>Health: {health_score} | MRR: {mrr_eur} USD</p>',
       emailHubspotDefaultHint: 'If left empty, a default email with account metrics will be used.',
       emailHubspotPrerequisite: 'Prerequisite: HubSpot must be connected and each Stripe account must have an associated hubspot_company_id. The email is sent to the contact linked to the company in HubSpot.',
       hubspotNotConnectedWarning: "HubSpot is not connected. 'Email via HubSpot' and 'Create HubSpot task' actions will be skipped at execution time. Connect HubSpot in Settings > Integrations.",
@@ -1247,7 +1247,7 @@ export const en = {
     allPriorities: 'All priorities',
     allSegments: 'All segments',
     allCategories: 'All categories',
-    mrrMinPlaceholder: 'Min MRR (€)',
+    mrrMinPlaceholder: 'Min MRR ($)',
     resetFilters: 'Reset',
     colStripeId: 'Stripe ID',
     colPlan: 'Plan',
@@ -1820,8 +1820,10 @@ export const en = {
 
   format: {
     number: (value: number) => value.toLocaleString('en-US'),
-    currency: (cents: number) =>
-      (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'EUR' }),
+    // currency defaults to USD (US-market pivot) -- pass the org's actual
+    // currency (useAuth().user?.currency) wherever it's available.
+    currency: (cents: number, currency: string = 'usd') =>
+      (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
     percentage: (value: number) => `${value.toFixed(1)}%`,
     date: (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US'),
     dateTime: (dateStr: string) => new Date(dateStr).toLocaleString('en-US'),

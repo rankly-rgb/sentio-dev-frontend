@@ -7,9 +7,10 @@ import { useT } from '@/lib/i18n/useT';
 import { en } from '@/i18n/en';
 import { cn } from '@/lib/utils';
 import { useTodayStatus } from '@/hooks/useTodayStatus';
+import { useAuth } from '@/contexts/AuthContext';
 
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString('en-US', { style: 'currency', currency: 'EUR' });
+function formatCurrency(amount: number, currency: string): string {
+  return amount.toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() });
 }
 
 function HeroSkeleton() {
@@ -28,6 +29,8 @@ function HeroSkeleton() {
 
 export default function TodayHeroCard() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const { data, isLoading, error, refetch } = useTodayStatus();
 
   if (isLoading) {
@@ -76,7 +79,7 @@ export default function TodayHeroCard() {
               </p>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                 <span className="text-muted-foreground">
-                  {fr.today.hero.mrrExposed} : <strong className="text-foreground">{formatCurrency(urgent.mrr)}</strong>
+                  {fr.today.hero.mrrExposed} : <strong className="text-foreground">{formatCurrency(urgent.mrr, currency)}</strong>
                 </span>
                 <Badge variant={isCritical ? 'destructive' : 'outline'} className={!isCritical ? 'border-orange-300 text-orange-700' : undefined}>
                   {fr.today.hero.riskScore} : {Math.round(urgent.risk_score)}%
@@ -107,7 +110,7 @@ export default function TodayHeroCard() {
             <p className="text-sm font-semibold text-green-700">{fr.today.hero.stableTitle}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               <span className="text-muted-foreground">
-                {fr.today.hero.mrrSecured} : <strong className="text-foreground">{formatCurrency(data.total_mrr_cents / 100)}</strong>
+                {fr.today.hero.mrrSecured} : <strong className="text-foreground">{formatCurrency(data.total_mrr_cents / 100, currency)}</strong>
               </span>
               <span className="text-muted-foreground">{fr.today.hero.championsCount(data.champions_count)}</span>
             </div>

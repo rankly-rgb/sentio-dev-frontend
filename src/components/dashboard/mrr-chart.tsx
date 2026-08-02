@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { fetchMrrTrend } from '@/lib/queries/mrr';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,8 +29,8 @@ function formatDateFull(dateStr: string): string {
   return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function formatMrrEur(cents: number): string {
-  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+function formatMrr(cents: number, currency: string): string {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: 0 });
 }
 
 function computeSummary(points: MrrTrendPoint[]): MrrTrendSummary | null {
@@ -61,12 +62,14 @@ interface ChartPoint {
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: ChartPoint }> }) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   if (!active || !payload || payload.length === 0) return null;
   const point = payload[0].payload;
   return (
     <div className="rounded-lg border bg-background p-3 shadow-md text-sm">
       <p className="font-medium">{formatDateFull(point.date)}</p>
-      <p className="text-indigo-600 font-semibold">{formatMrrEur(point.mrr_cents)}</p>
+      <p className="text-indigo-600 font-semibold">{formatMrr(point.mrr_cents, currency)}</p>
       <p className="text-muted-foreground">{point.account_count} {fr.mrr.accounts}</p>
     </div>
   );
@@ -74,6 +77,8 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
 
 export function MrrChart() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const PERIODS = [
     { label: fr.mrr.period7d, days: 7 },
     { label: fr.mrr.period30d, days: 30 },
@@ -140,7 +145,7 @@ export function MrrChart() {
               <div className="flex items-center gap-6 mb-4 flex-wrap">
                 <div>
                   <p className="text-xs text-muted-foreground">{fr.mrr.currentMrr}</p>
-                  <p className="text-2xl font-bold">{formatMrrEur(summary.end)}</p>
+                  <p className="text-2xl font-bold">{formatMrr(summary.end, currency)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{fr.mrr.delta}</p>
@@ -151,7 +156,7 @@ export function MrrChart() {
                       <TrendingDown className="h-4 w-4 text-destructive" />
                     )}
                     <span className={`text-lg font-semibold ${summary.delta >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
-                      {summary.delta >= 0 ? '+' : ''}{formatMrrEur(summary.delta)}
+                      {summary.delta >= 0 ? '+' : ''}{formatMrr(summary.delta, currency)}
                     </span>
                     {summary.deltaPct !== null && (
                       <span className={`text-sm ${summary.delta >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
@@ -185,7 +190,7 @@ export function MrrChart() {
                     tick={{ fontSize: 11 }}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(v: number) => `${Math.round(v).toLocaleString('en-US')} €`}
+                    tickFormatter={(v: number) => formatMrr(v * 100, currency)}
                     className="text-muted-foreground"
                     width={80}
                   />

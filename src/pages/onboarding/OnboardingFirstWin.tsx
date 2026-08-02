@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAccountLabel } from '@/lib/account-display';
 import { Loader2 } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import WizardLayout from '@/components/onboarding/WizardLayout';
 import { useOnboardingStatusFull } from '@/hooks/useOnboardingWizard';
 import { useOnboardingFirstWin, useMarkOnboardingField } from '@/hooks/useOnboardingFlow';
@@ -14,14 +15,16 @@ function healthBadgeClass(score: number) {
   return 'bg-red-500/20 text-red-400 border-red-500/30';
 }
 
-function formatCurrency(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(cents / 100);
+function formatCurrency(cents: number, currency: string) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: 0 }).format(cents / 100);
 }
 
 export default function OnboardingFirstWin() {
   const t = useT();
   const w = t.onboardingWizard.firstWin;
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
 
   const { data: statusData } = useOnboardingStatusFull();
   const { data: firstWin, isLoading } = useOnboardingFirstWin();
@@ -47,7 +50,7 @@ export default function OnboardingFirstWin() {
         {/* KPI row */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-[#0f172a] rounded-xl p-4 border border-[#334155] text-center">
-            <p className="text-xl font-bold text-red-400">{formatCurrency(mrrAtRisk)}</p>
+            <p className="text-xl font-bold text-red-400">{formatCurrency(mrrAtRisk, currency)}</p>
             <p className="text-xs text-[#64748b] mt-1">{w.mrrAtRiskLabel}</p>
           </div>
           <div className="bg-[#0f172a] rounded-xl p-4 border border-[#334155] text-center">

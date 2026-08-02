@@ -1,4 +1,5 @@
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { PlaybookDetailEligibleAccounts } from '@/lib/types/playbook';
 
@@ -11,8 +12,8 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'EUR' });
+function formatCurrency(cents: number, currency: string): string {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() });
 }
 
 interface Props {
@@ -21,6 +22,8 @@ interface Props {
 
 export default function PlaybookAffectedAccounts({ eligible }: Props) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -35,7 +38,7 @@ export default function PlaybookAffectedAccounts({ eligible }: Props) {
           />
           <StatCard
             label={fr.playbooks.mrrAtRisk}
-            value={formatCurrency(eligible.mrr_at_risk_cents)}
+            value={formatCurrency(eligible.mrr_at_risk_cents, currency)}
           />
           <StatCard
             label={fr.playbooks.urgencyUrgent}
