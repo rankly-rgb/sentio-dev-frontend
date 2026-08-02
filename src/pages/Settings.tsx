@@ -31,11 +31,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { CheckCircle, XCircle, UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 
-const RESTRICTED_KEY_PREFIXES = ['rk_live_', 'rk_test_'];
+const STRIPE_KEY_PREFIXES = ['rk_live_', 'rk_test_', 'sk_live_', 'sk_test_'];
 const MIN_KEY_SUFFIX_LENGTH = 20;
 
-function isRestrictedKeyFormat(key: string): boolean {
-  return RESTRICTED_KEY_PREFIXES.some(
+function isStripeKeyFormat(key: string): boolean {
+  return STRIPE_KEY_PREFIXES.some(
     (prefix) => key.startsWith(prefix) && key.length >= prefix.length + MIN_KEY_SUFFIX_LENGTH,
   );
 }
@@ -111,8 +111,8 @@ export default function Settings() {
 
   async function handleUpdateStripeKey() {
     const trimmed = stripeKeyInput.trim();
-    if (!isRestrictedKeyFormat(trimmed)) {
-      setStripeKeyClientError('The key must be a restricted Stripe key (rk_live_... or rk_test_...)');
+    if (!isStripeKeyFormat(trimmed)) {
+      setStripeKeyClientError('The key must start with rk_live_, rk_test_, sk_live_, or sk_test_');
       return;
     }
     setStripeKeyClientError(null);
