@@ -16,8 +16,8 @@ function replaceVariables(text: string): string {
 
 export default function EmailPreview({ subject, bodyHtml }: Props) {
   const fr = useT();
-  const previewSubject = replaceVariables(subject || '(aucun objet)');
-  const previewBody = replaceVariables(bodyHtml || '<p style="color:#999">Aucun contenu</p>');
+  const previewSubject = replaceVariables(subject || '(no subject)');
+  const previewBody = replaceVariables(bodyHtml || '<p style="color:#999">No content</p>');
 
   return (
     <Card className="border-slate-200 bg-slate-50">
