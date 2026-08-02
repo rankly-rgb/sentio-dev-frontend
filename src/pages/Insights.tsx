@@ -155,10 +155,10 @@ export default function Insights() {
             ))}
           </div>
 
-          {!showAll && pagination && pagination.total > DEFAULT_VISIBLE ? (
+          {!showAll && pagination && pagination.total_count > DEFAULT_VISIBLE ? (
             <div className="flex justify-center pt-2">
               <Button variant="outline" size="sm" onClick={handleShowAll}>
-                {fr.insights.viewAll(pagination.total)}
+                {fr.insights.viewAll(pagination.total_count)}
               </Button>
             </div>
           ) : showAll && pagination ? (

@@ -10,13 +10,14 @@ interface InsightsPaginationProps {
 
 export default function InsightsPagination({ pagination, onPageChange }: InsightsPaginationProps) {
   const fr = useT();
-  const { page, total_pages, total } = pagination;
+  const { page, per_page, total_count } = pagination;
+  const total_pages = Math.max(1, Math.ceil(total_count / per_page));
   if (total_pages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between pt-4">
       <p className="text-sm text-muted-foreground">
-        Page {page} {fr.common.of} {total_pages} — {total} {fr.insights.results}
+        Page {page} {fr.common.of} {total_pages} — {total_count} {fr.insights.results}
       </p>
       <div className="flex gap-1.5">
         <Button
