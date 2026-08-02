@@ -181,10 +181,11 @@ export const en = {
   },
 
   accountPriority: {
-    critique: 'Critical',
-    surveillance: 'Watch',
+    churned: 'Churned',
+    critical: 'Critical',
+    watch: 'Watch',
     stable: 'Stable',
-    nouveau: 'New',
+    new: 'New',
   },
 
   accountDetail: {
