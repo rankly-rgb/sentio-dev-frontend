@@ -1,95 +1,56 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { listPlaybooks } from '@/lib/queries/playbook-queries';
-import {
-  computeTodayActions,
-  buildTodayActionsSummary,
-} from '@/lib/types/today-actions';
-import type { Account } from '@/types/database';
+import { getTodayActions } from '@/lib/queries/today-actions-queries';
+import { filterTodayActions } from '@/lib/types/today-actions';
 import type { TodayActionsSummary, TodayActionsFilters } from '@/lib/types/today-actions';
-import { getSegmentFilter } from '@/lib/queries/segment-queries';
-import type { SegmentType } from '@/lib/types/segments';
-import { isValidSegmentKey } from '@/lib/types/segments';
-
-async function fetchAllAccounts(organizationId: string): Promise<Account[]> {
-  const { data, error } = await supabase
-    .from('accounts')
-    .select('*')
-    .eq('organization_id', organizationId)
-    .limit(10000);
-
-  if (error) throw error;
-  return (data ?? []) as Account[];
-}
 
 export function useTodayActions(filters?: TodayActionsFilters) {
   const { user } = useAuth();
   const orgId = user?.organization_id ?? '';
 
-  const accountsQuery = useQuery({
-    queryKey: ['today-actions', 'accounts', orgId],
-    queryFn: () => fetchAllAccounts(orgId),
+  const actionsQuery = useQuery({
+    queryKey: ['today-actions', orgId],
+    queryFn: () => getTodayActions(),
     enabled: !!orgId,
     staleTime: 60_000,
   });
 
-  const playbooksQuery = useQuery({
-    queryKey: ['today-actions', 'playbooks', orgId],
-    queryFn: () => listPlaybooks(orgId, { per_page: 100 }),
-    enabled: !!orgId,
-    staleTime: 60_000,
-  });
+  const allActions = actionsQuery.data?.data.actions ?? null;
 
   const summary: TodayActionsSummary | null = useMemo(() => {
-    if (!accountsQuery.data || !playbooksQuery.data) return null;
+    if (!allActions) return null;
 
-    let actions = computeTodayActions(accountsQuery.data, playbooksQuery.data.data);
+    const filtered = filters
+      ? filterTodayActions(allActions, filters)
+      : allActions;
 
-    // Apply filters
-    if (filters?.priority) {
-      actions = actions.filter((a) => a.priority === filters.priority);
+    const by_priority: TodayActionsSummary['by_priority'] = { P0: 0, P1: 0, P2: 0 };
+    const by_category: TodayActionsSummary['by_category'] = {};
+    let mrr_at_risk_cents = 0;
+    for (const action of filtered) {
+      by_priority[action.priority]++;
+      if (action.priority === 'P0' || action.priority === 'P1') {
+        mrr_at_risk_cents += action.mrr_cents ?? 0;
+      }
+      for (const pb of action.matching_playbooks) {
+        const cat = pb.category ?? 'other';
+        by_category[cat] = (by_category[cat] ?? 0) + 1;
+      }
     }
 
-    if (filters?.segment && isValidSegmentKey(filters.segment)) {
-      const segFilter = getSegmentFilter(filters.segment as SegmentType);
-      // Build a lookup of account IDs in this segment
-      const accountsInSegment = new Set(
-        accountsQuery.data.filter(segFilter).map((a) => a.id),
-      );
-      actions = actions.filter((a) => accountsInSegment.has(a.account_id));
-    }
-
-    if (filters?.category) {
-      actions = actions.filter((a) =>
-        a.matching_playbooks.some((pb) => pb.category === filters.category),
-      );
-    }
-
-    if (filters?.mrrMin !== undefined && filters.mrrMin > 0) {
-      const minCents = filters.mrrMin * 100;
-      actions = actions.filter((a) => a.mrr_cents >= minCents);
-    }
-
-    return buildTodayActionsSummary(actions);
-  }, [accountsQuery.data, playbooksQuery.data, filters?.priority, filters?.segment, filters?.category, filters?.mrrMin]);
-
-  // Unfiltered count for sidebar badge
-  const totalUnfilteredCount = useMemo(() => {
-    if (!accountsQuery.data || !playbooksQuery.data) return 0;
-    return computeTodayActions(accountsQuery.data, playbooksQuery.data.data).length;
-  }, [accountsQuery.data, playbooksQuery.data]);
+    return { total: filtered.length, by_priority, by_category, mrr_at_risk_cents, actions: filtered };
+  }, [allActions, filters]);
 
   return {
     summary,
-    totalCount: totalUnfilteredCount,
-    playbooks: playbooksQuery.data?.data ?? [],
-    isLoading: accountsQuery.isLoading || playbooksQuery.isLoading,
-    error: accountsQuery.error ?? playbooksQuery.error,
+    allActions: allActions ?? [],
+    status: actionsQuery.data?.data.status ?? null,
+    totalCount: allActions?.length ?? 0,
+    isLoading: actionsQuery.isLoading,
+    error: actionsQuery.error,
     refetch: () => {
-      accountsQuery.refetch();
-      playbooksQuery.refetch();
+      actionsQuery.refetch();
     },
   };
 }

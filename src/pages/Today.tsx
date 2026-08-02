@@ -34,7 +34,7 @@ export default function Today() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<TodayActionsFilters>({});
   const [exporting, setExporting] = useState(false);
-  const { summary, playbooks, isLoading, error } = useTodayActions(filters);
+  const { summary, allActions, isLoading, error } = useTodayActions(filters);
   const { isOpen, account: panelAccount, isLoading: panelLoading, openPanel, closePanel } = useAccountDetailPanel();
 
   const p0Ref = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export default function Today() {
     refMap[priority].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const availableCategories = getUniqueCategories(playbooks);
+  const availableCategories = getUniqueCategories(allActions);
 
   // Group actions by priority
   const actionsByPriority: Record<PriorityCode, NonNullable<typeof summary>['actions']> = {
