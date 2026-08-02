@@ -64,11 +64,11 @@ export function usePlaybookTemplates() {
   });
 }
 
-export function usePlaybookTemplatesV1(locale: 'fr' | 'en' = 'en') {
+export function usePlaybookTemplatesV1() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['playbooks', 'templates-v1', user?.organization_id ?? '', locale],
-    queryFn: () => listPlaybookTemplatesV1(locale),
+    queryKey: ['playbooks', 'templates-v1', user?.organization_id ?? ''],
+    queryFn: () => listPlaybookTemplatesV1(),
     enabled: !!user?.organization_id,
     staleTime: 120_000,
   });

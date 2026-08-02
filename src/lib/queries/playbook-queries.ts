@@ -54,8 +54,8 @@ interface PlaybookTemplatesV1Response {
   };
 }
 
-export async function listPlaybookTemplatesV1(locale: 'fr' | 'en' = 'en'): Promise<PlaybookTemplate[]> {
-  const res = await fetchWithUserJwt<PlaybookTemplatesV1Response>(`playbook-templates?locale=${locale}`);
+export async function listPlaybookTemplatesV1(): Promise<PlaybookTemplate[]> {
+  const res = await fetchWithUserJwt<PlaybookTemplatesV1Response>('playbook-templates');
   return res.data.templates;
 }
 

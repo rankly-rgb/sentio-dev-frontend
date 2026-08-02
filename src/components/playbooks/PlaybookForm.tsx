@@ -52,10 +52,8 @@ interface Props {
 
 export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflowProp, onSubmit, isSubmitting }: Props) {
   const fr = useT();
-  const [nameFr, setNameFr] = useState(initialData?.name_fr ?? initialData?.title ?? '');
-  const [nameEn, setNameEn] = useState(initialData?.name_en ?? initialData?.title_en ?? '');
-  const [descriptionFr, setDescriptionFr] = useState(initialData?.description_fr ?? initialData?.description ?? '');
-  const [descriptionEn, setDescriptionEn] = useState(initialData?.description_en ?? '');
+  const [title, setTitle] = useState(initialData?.title_en ?? initialData?.title ?? '');
+  const [description, setDescription] = useState(initialData?.description_en ?? initialData?.description ?? '');
   const [playbookType, setPlaybookType] = useState<PlaybookType>(initialData?.playbook_type ?? 'manual');
   const [priority, setPriority] = useState<PlaybookPriority>(initialData?.priority ?? 'medium');
   const [templateCategory, setTemplateCategory] = useState<TemplateCategory | ''>(initialData?.template_category ?? '');
@@ -75,10 +73,10 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
     e.preventDefault();
 
     const payload: CreatePlaybookPayload | UpdatePlaybookPayload = {
-      name_fr: nameFr || undefined,
-      name_en: nameEn || undefined,
-      description_fr: descriptionFr || undefined,
-      description_en: descriptionEn || undefined,
+      title: title || undefined,
+      title_en: title || undefined,
+      description: description || undefined,
+      description_en: description || undefined,
       playbook_type: playbookType,
       priority,
       template_category: templateCategory || undefined,
@@ -106,56 +104,25 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
           <CardTitle className="text-base">{fr.playbooks.details}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Name — bilingual side-by-side */}
-          <div>
-            <p className="text-sm font-medium mb-2">{fr.playbooks.form.title}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">🇫🇷 {fr.playbooks.form.titleFr}</label>
-                <Input
-                  value={nameFr}
-                  onChange={(e) => setNameFr(e.target.value)}
-                  placeholder={fr.playbooks.form.titlePlaceholder}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">🇬🇧 {fr.playbooks.form.titleEn}</label>
-                <Input
-                  value={nameEn}
-                  onChange={(e) => setNameEn(e.target.value)}
-                  placeholder={fr.playbooks.form.titleEnPlaceholder}
-                />
-              </div>
-            </div>
-            {/* Soft bilingual hint */}
-            {(nameFr.trim() ? !nameEn.trim() : !!nameEn.trim()) && (
-              <p className="text-xs text-amber-600 mt-1.5">{fr.playbooks.form.bilingualHint}</p>
-            )}
+          {/* Name */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">{fr.playbooks.form.title}</label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={fr.playbooks.form.titlePlaceholder}
+            />
           </div>
 
-          {/* Description — bilingual side-by-side */}
-          <div>
-            <p className="text-sm font-medium mb-2">{fr.playbooks.form.description}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">🇫🇷 {fr.playbooks.form.descriptionFr}</label>
-                <Textarea
-                  value={descriptionFr}
-                  onChange={(e) => setDescriptionFr(e.target.value)}
-                  placeholder={fr.playbooks.form.descriptionPlaceholder}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">🇬🇧 {fr.playbooks.form.descriptionEn}</label>
-                <Textarea
-                  value={descriptionEn}
-                  onChange={(e) => setDescriptionEn(e.target.value)}
-                  placeholder={fr.playbooks.form.descriptionEnPlaceholder}
-                  rows={3}
-                />
-              </div>
-            </div>
+          {/* Description */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">{fr.playbooks.form.description}</label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={fr.playbooks.form.descriptionPlaceholder}
+              rows={3}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -283,7 +250,7 @@ export default function PlaybookForm({ mode, initialData, isWorkflow: isWorkflow
 
       {/* Submit */}
       <div className="flex justify-end gap-3">
-        <Button type="submit" disabled={isSubmitting || (!nameFr.trim() && !nameEn.trim())}>
+        <Button type="submit" disabled={isSubmitting || !title.trim()}>
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

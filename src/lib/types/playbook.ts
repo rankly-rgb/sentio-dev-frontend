@@ -144,15 +144,10 @@ export interface Playbook {
   // Locale-resolved by the backend — always use these for display
   display_name: string;
   display_description: string;
-  // Bilingual raw fields (for edit form)
-  name_fr: string | null;
-  name_en: string | null;
-  description_fr: string | null;
-  description_en: string | null;
-  // Legacy fields — kept for backward compat (buildFullDetailFromPlaybook etc.)
   title: string;
   title_en: string | null;
   description: string | null;
+  description_en: string | null;
   status: PlaybookStatus;
   playbook_type: PlaybookType;
   priority: PlaybookPriority;
@@ -191,9 +186,9 @@ export interface Playbook {
 // --- API payloads ---
 export interface CreatePlaybookPayload {
   organization_id: string;
-  name_fr?: string;
-  name_en?: string;
-  description_fr?: string;
+  title?: string;
+  title_en?: string;
+  description?: string;
   description_en?: string;
   playbook_type: PlaybookType;
   priority: PlaybookPriority;
@@ -210,9 +205,9 @@ export interface CreatePlaybookPayload {
 }
 
 export interface UpdatePlaybookPayload {
-  name_fr?: string;
-  name_en?: string;
-  description_fr?: string;
+  title?: string;
+  title_en?: string;
+  description?: string;
   description_en?: string;
   status?: PlaybookStatus;
   playbook_type?: PlaybookType;
