@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductMappingTable from '@/components/settings/ProductMappingTable';
+import BillingSection from '@/components/settings/BillingSection';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { useIntegrationStatus } from '@/hooks/useIntegrations';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
@@ -102,6 +103,7 @@ export default function Settings() {
           <TabsTrigger value="notifications">{fr.settings.notifications}</TabsTrigger>
           <TabsTrigger value="team">{fr.settings.team}</TabsTrigger>
           <TabsTrigger value="plans-sieges">{fr.settings.plans.tabLabel}</TabsTrigger>
+          <TabsTrigger value="billing">{fr.settings.billing.tabLabel}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="organization" className="mt-4 space-y-4">
@@ -301,6 +303,10 @@ export default function Settings() {
               <ProductMappingTable />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="billing" className="mt-4 space-y-4">
+          <BillingSection />
         </TabsContent>
       </Tabs>
     </div>

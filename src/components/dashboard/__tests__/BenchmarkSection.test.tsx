@@ -64,7 +64,7 @@ describe('BenchmarkSection', () => {
     render(<BenchmarkSection data={data} />);
 
     expect(
-      screen.getAllByText('Peer data available from 3 organisations').length,
+      screen.getAllByText('Peer data available from 3 organizations').length,
     ).toBeGreaterThanOrEqual(1);
   });
 
