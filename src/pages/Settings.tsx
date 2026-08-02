@@ -1,10 +1,12 @@
 // import { Link } from 'react-router-dom'; // V2 - utilisé par les liens Integrations/Webhook/Destinations
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import ProductMappingTable from '@/components/settings/ProductMappingTable';
 import BillingSection from '@/components/settings/BillingSection';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
-import { useIntegrationStatus } from '@/hooks/useIntegrations';
+import { useIntegrationsConfig } from '@/hooks/useOnboardingFlow';
+import { useUpdateStripeConnection, useDisconnectStripeConnection } from '@/hooks/useStripeConnection';
 import { useHubspotSyncFreshness } from '@/hooks/useHubspotSyncFreshness';
 import { useUpdateNotificationPreferences, useSendTestAlert } from '@/hooks/useNotificationPreferences';
 import { useT } from '@/lib/i18n/useT';
@@ -17,7 +19,26 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, XCircle, UserPlus } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { CheckCircle, XCircle, UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
+
+const RESTRICTED_KEY_PREFIXES = ['rk_live_', 'rk_test_'];
+const MIN_KEY_SUFFIX_LENGTH = 20;
+
+function isRestrictedKeyFormat(key: string): boolean {
+  return RESTRICTED_KEY_PREFIXES.some(
+    (prefix) => key.startsWith(prefix) && key.length >= prefix.length + MIN_KEY_SUFFIX_LENGTH,
+  );
+}
 
 export default function Settings() {
   const fr = useT();
@@ -25,16 +46,24 @@ export default function Settings() {
   const initialTab = searchParams.get('tab') ?? 'organization';
   const [activeTab, setActiveTab] = useState(initialTab);
   const { organization, team, isLoading } = useOrganizationSettings();
-  const { data: integrationStatus, isLoading: integrationLoading } = useIntegrationStatus();
+  const { data: integrationsConfig, isLoading: integrationLoading } = useIntegrationsConfig();
   useHubspotSyncFreshness(); // V2 - HubSpot : hook conservé pour V2, résultat non utilisé en V1
 
   const updatePrefs = useUpdateNotificationPreferences();
   const sendTest = useSendTestAlert();
+  const updateStripeKey = useUpdateStripeConnection();
+  const disconnectStripe = useDisconnectStripeConnection();
 
   const [notificationEmail, setNotificationEmail] = useState('');
   const [churnAlertEnabled, setChurnAlertEnabled] = useState(false);
   const [weeklyDigestEnabled, setWeeklyDigestEnabled] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+
+  const [showStripeKeyForm, setShowStripeKeyForm] = useState(false);
+  const [stripeKeyInput, setStripeKeyInput] = useState('');
+  const [showStripeKeyValue, setShowStripeKeyValue] = useState(false);
+  const [stripeKeyClientError, setStripeKeyClientError] = useState<string | null>(null);
+  const [confirmStripeDisconnect, setConfirmStripeDisconnect] = useState(false);
 
   useEffect(() => {
     if (organization) {
@@ -80,6 +109,33 @@ export default function Settings() {
     }
   }
 
+  async function handleUpdateStripeKey() {
+    const trimmed = stripeKeyInput.trim();
+    if (!isRestrictedKeyFormat(trimmed)) {
+      setStripeKeyClientError('The key must be a restricted Stripe key (rk_live_... or rk_test_...)');
+      return;
+    }
+    setStripeKeyClientError(null);
+    try {
+      await updateStripeKey.mutateAsync(trimmed);
+      toast.success(fr.settings.stripeUpdateKeySuccess);
+      setShowStripeKeyForm(false);
+      setStripeKeyInput('');
+    } catch {
+      // Erreur affichée inline via updateStripeKey.error ci-dessous
+    }
+  }
+
+  async function handleDisconnectStripe() {
+    try {
+      await disconnectStripe.mutateAsync();
+      toast.success(fr.settings.stripeDisconnectSuccess);
+      setConfirmStripeDisconnect(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to disconnect');
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6 p-6">
@@ -89,7 +145,9 @@ export default function Settings() {
     );
   }
 
-  const stripeConnected = integrationStatus?.stripe?.connected ?? false;
+  const stripeConnected = integrationsConfig?.data.stripe_configured ?? false;
+  const stripeAccountId = integrationsConfig?.data.stripe_account_id ?? null;
+  const stripeConnectionMethod = integrationsConfig?.data.stripe_connection_method ?? null;
   // V2 - HubSpot : const hubspotConnected = integrationStatus?.hubspot?.connected ?? false;
 
   return (
@@ -137,14 +195,121 @@ export default function Settings() {
                 )}
               </div>
             </CardHeader>
-            <CardContent>
-              {stripeConnected && integrationStatus?.stripe.provider_account_id && (
-                <p className="text-sm text-muted-foreground font-mono">
-                  {integrationStatus.stripe.provider_account_id}
-                </p>
+            <CardContent className="space-y-3">
+              {stripeConnected && (
+                <>
+                  {stripeConnectionMethod && (
+                    <p className="text-sm text-muted-foreground">
+                      {stripeConnectionMethod === 'api_key'
+                        ? fr.settings.stripeConnectionMethodApiKey
+                        : fr.settings.stripeConnectionMethodOAuth}
+                    </p>
+                  )}
+                  {stripeAccountId && (
+                    <p className="text-sm text-muted-foreground font-mono">{stripeAccountId}</p>
+                  )}
+                </>
+              )}
+
+              {!showStripeKeyForm ? (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowStripeKeyForm(true);
+                      setStripeKeyClientError(null);
+                    }}
+                  >
+                    {fr.settings.stripeUpdateKey}
+                  </Button>
+                  {stripeConnected && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => setConfirmStripeDisconnect(true)}
+                    >
+                      {fr.settings.stripeDisconnect}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2 max-w-md">
+                  <Label htmlFor="stripe-update-key">{fr.settings.stripeUpdateKeyTitle}</Label>
+                  <p className="text-xs text-muted-foreground">{fr.settings.stripeUpdateKeyDescription}</p>
+                  <div className="relative">
+                    <Input
+                      id="stripe-update-key"
+                      type={showStripeKeyValue ? 'text' : 'password'}
+                      placeholder={fr.settings.stripeUpdateKeyPlaceholder}
+                      value={stripeKeyInput}
+                      onChange={(e) => {
+                        setStripeKeyInput(e.target.value);
+                        setStripeKeyClientError(null);
+                      }}
+                      className="pr-10 font-mono text-sm"
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowStripeKeyValue(!showStripeKeyValue)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showStripeKeyValue ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {(stripeKeyClientError || updateStripeKey.error) && (
+                    <p className="text-sm text-destructive">
+                      {stripeKeyClientError ?? updateStripeKey.error?.message}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleUpdateStripeKey}
+                      disabled={updateStripeKey.isPending || !stripeKeyInput.trim()}
+                    >
+                      {updateStripeKey.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                      {updateStripeKey.isPending ? fr.settings.stripeUpdateKeySaving : fr.settings.stripeUpdateKeySave}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowStripeKeyForm(false);
+                        setStripeKeyInput('');
+                        setStripeKeyClientError(null);
+                      }}
+                      disabled={updateStripeKey.isPending}
+                    >
+                      {fr.settings.stripeUpdateKeyCancel}
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
+
+          <AlertDialog open={confirmStripeDisconnect} onOpenChange={setConfirmStripeDisconnect}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{fr.settings.stripeDisconnectConfirmTitle}</AlertDialogTitle>
+                <AlertDialogDescription>{fr.settings.stripeDisconnectConfirmDesc}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{fr.common.cancel}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDisconnectStripe}
+                  disabled={disconnectStripe.isPending}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {disconnectStripe.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                  {fr.settings.stripeDisconnect}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {/* V2 - HubSpot
           <Card>

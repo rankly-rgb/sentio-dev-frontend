@@ -22,6 +22,8 @@ export interface OnboardingFirstWinAccount {
 export interface IntegrationsConfigStatus {
   stripe_configured: boolean;
   hubspot_configured: boolean;
+  stripe_account_id: string | null;
+  stripe_connection_method: 'api_key' | 'oauth' | null;
 }
 
 export interface OnboardingFirstWin {
