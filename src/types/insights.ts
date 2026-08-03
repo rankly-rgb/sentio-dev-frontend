@@ -37,13 +37,13 @@ export interface Insight {
 export interface InsightsPagination {
   page: number;
   per_page: number;
-  total: number;
-  total_pages: number;
+  total_count: number;
 }
 
 export interface InsightsListResponse {
   data: Insight[];
   pagination: InsightsPagination;
+  critical_count: number;
 }
 
 export interface InsightStats {

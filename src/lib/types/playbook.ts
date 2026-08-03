@@ -128,13 +128,13 @@ export const EMAIL_VARIABLES = {
 export const EMAIL_PREVIEW_DATA: Record<string, string> = {
   'account.account_name': 'Acme Corp',
   'account.health_score': '42',
-  'account.mrr': '2 490 €',
+  'account.mrr': '$2,490',
   'account.plan_tier': 'Growth',
   'account.seat_count': '25',
-  'account.contract_end_date': '15/04/2026',
+  'account.contract_end_date': 'Apr 15, 2026',
   'org.org_name': 'Sentio',
-  'csm.csm_name': 'Marie Dupont',
-  'csm.csm_email': 'marie@sentio.ai',
+  'csm.csm_name': 'Alex Morgan',
+  'csm.csm_email': 'alex@sentio.ai',
 };
 
 // --- Main Playbook interface ---

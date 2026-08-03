@@ -2,7 +2,7 @@
 
 import type { AccountFlag } from '@/types/database';
 
-export type AccountPriorityLabel = 'critique' | 'surveillance' | 'stable' | 'nouveau';
+export type AccountPriorityLabel = 'churned' | 'critical' | 'watch' | 'stable' | 'new';
 
 export type SegmentType =
   | 'champions'

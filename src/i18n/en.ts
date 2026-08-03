@@ -181,10 +181,11 @@ export const en = {
   },
 
   accountPriority: {
-    critique: 'Critical',
-    surveillance: 'Watch',
+    churned: 'Churned',
+    critical: 'Critical',
+    watch: 'Watch',
     stable: 'Stable',
-    nouveau: 'New',
+    new: 'New',
   },
 
   accountDetail: {
@@ -358,8 +359,8 @@ export const en = {
     conditions: 'Conditions',
     details: 'Details',
     automation: 'Automation',
-    noPlaybooks: 'No playbooks',
-    noPlaybooksDesc: 'Create your first playbook to automate your retention actions.',
+    noPlaybooks: 'No playbooks yet',
+    noPlaybooksDesc: 'Activate a suggestion above or create your own to automate your retention actions.',
     noExecutions: 'No executions',
     executionStats: 'Execution statistics',
     totalExecutions: 'Total executions',
