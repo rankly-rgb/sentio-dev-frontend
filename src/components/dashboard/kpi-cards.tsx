@@ -1,5 +1,4 @@
 import { useT } from '@/lib/i18n/useT';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DashboardMetrics } from '@/types/dashboard';
@@ -11,8 +10,7 @@ interface KpiCardsProps {
 
 export function KpiCards({ metrics }: KpiCardsProps) {
   const fr = useT();
-  const { user } = useAuth();
-  const currency = user?.currency ?? 'usd';
+  const currency = metrics.currency ?? 'usd';
   const kpis = [
     {
       key: 'mrr',
@@ -33,9 +31,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'nrr',
       label: fr.dashboard.nrr,
-      value: fr.format.percentage(metrics.nrr_percentage),
-      icon: metrics.nrr_percentage >= 100 ? TrendingUp : TrendingDown,
-      color: metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
+      value: metrics.nrr_percentage !== null ? fr.format.percentage(metrics.nrr_percentage) : '—',
+      icon: (metrics.nrr_percentage ?? 0) >= 100 ? TrendingUp : TrendingDown,
+      color: metrics.nrr_percentage === null ? 'text-muted-foreground' : metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
       tooltip: fr.dashboard.tooltips.nrr,
     },
     {
@@ -73,9 +71,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'churn-rate',
       label: fr.dashboard.churnRate,
-      value: fr.format.percentage(metrics.churn_rate),
+      value: metrics.churn_rate !== null ? fr.format.percentage(metrics.churn_rate) : '—',
       icon: TrendingDown,
-      color: metrics.churn_rate > 5 ? 'text-destructive' : 'text-muted-foreground',
+      color: (metrics.churn_rate ?? 0) > 5 ? 'text-destructive' : 'text-muted-foreground',
       tooltip: fr.dashboard.tooltips.churnRate,
     },
   ];

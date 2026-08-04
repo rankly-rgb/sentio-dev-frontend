@@ -3,8 +3,8 @@
 export interface DashboardMetrics {
   mrr_cents: number;
   arr_cents: number;
-  nrr_percentage: number;
-  logo_retention_rate: number;
+  /** Sourcé depuis portfolio-metrics — null si l'org a moins de 3 mois d'historique. */
+  nrr_percentage: number | null;
   total_accounts: number;
   active_accounts: number;
   accounts_at_risk: number;
@@ -14,7 +14,10 @@ export interface DashboardMetrics {
   avg_health_score: number | null;
   /** Dénominateur pour l'affichage "Avg. health: 71 (across 42 of 47 accounts)". */
   avg_health_scored_accounts: number;
-  churn_rate: number;
+  /** % de MRR perdu sur 30j glissants (portfolio-metrics) — null si le MRR de début de fenêtre est <= 0. */
+  churn_rate: number | null;
+  /** Devise ISO 4217 de l'org (vote majoritaire) — null si aucun sync Stripe n'a encore tourné. */
+  currency: string | null;
 }
 
 export interface MrrMovementSummary {

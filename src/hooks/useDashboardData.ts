@@ -4,6 +4,7 @@ import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
 import { getAllAccountsForOrg } from '@/lib/queries/accounts';
+import { getPortfolioMetrics } from '@/lib/queries/portfolio-metrics';
 import type { DashboardMetrics, HealthDistribution } from '@/types/dashboard';
 import type { ChurnRiskBand, ExpansionScoreStatus, HealthScoreBand, HealthScoreStatus } from '@/lib/types/accounts';
 
@@ -24,14 +25,8 @@ export interface TopAccount {
 }
 
 interface DashboardAccountRow {
-  id: string;
   mrr_cents: number;
-  health_score: number | null;
   health_score_status: HealthScoreStatus;
-  churn_risk_score: number;
-  churn_risk_band: ChurnRiskBand;
-  expansion_score: number | null;
-  expansion_score_status: ExpansionScoreStatus;
 }
 
 interface BriefingResponse {
@@ -47,14 +42,20 @@ interface BriefingResponse {
   };
 }
 
+// mrr_cents/arr_cents/nrr_percentage/churn_rate/accounts_at_risk/mrr_at_risk_cents/
+// expansion_opportunities/currency viennent tous de portfolio-metrics (Phase 4
+// backend, docs/API_CONTRACTS.md) — endpoint autoritaire, plus jamais recalculés
+// ici (AUDIT_LOGIQUE_METIER_STRIPE.md point 22 : 3 implémentations locales
+// divergentes existaient avant ce chantier). total_accounts/active_accounts/
+// avg_health_score restent des comptages simples non concernés par ce point —
+// avg_health_score reste server-side (dashboard-api/briefing) comme avant.
 async function fetchDashboardMetrics(organizationId: string): Promise<DashboardMetrics> {
-  // Le dénominateur "avg health" doit être server-side (dashboard-api/briefing) —
-  // jamais recalculé côté client à partir de ?? 0 (docs/API_CONTRACTS.md S1).
-  const [briefing, accountsRes] = await Promise.all([
+  const [briefing, portfolioMetrics, accountsRes] = await Promise.all([
     fetchWithUserJwt<BriefingResponse>('dashboard-api/briefing'),
+    getPortfolioMetrics(),
     supabase
       .from('accounts')
-      .select('id, mrr_cents, health_score, health_score_status, churn_risk_score, churn_risk_band, expansion_score, expansion_score_status')
+      .select('mrr_cents, health_score_status')
       .eq('organization_id', organizationId),
   ]);
 
@@ -62,23 +63,21 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
 
   const all = (accountsRes.data || []) as DashboardAccountRow[];
   const active = all.filter(a => (a.mrr_cents || 0) > 0);
-  const atRisk = all.filter(a => a.churn_risk_band === 'high');
-  const totalMrr = all.reduce((s, a) => s + (a.mrr_cents || 0), 0);
   const scoredAccounts = all.filter(a => a.health_score_status !== 'insufficient').length;
 
   return {
-    mrr_cents: totalMrr,
-    arr_cents: totalMrr * 12,
-    nrr_percentage: 100,
-    logo_retention_rate: all.length > 0 ? (active.length / all.length) * 100 : 0,
+    mrr_cents: portfolioMetrics.mrr_cents,
+    arr_cents: portfolioMetrics.arr_cents,
+    nrr_percentage: portfolioMetrics.nrr_percentage,
     total_accounts: all.length,
     active_accounts: active.length,
-    accounts_at_risk: atRisk.length,
-    mrr_at_risk_cents: atRisk.reduce((s, a) => s + (a.mrr_cents || 0), 0),
-    expansion_opportunities: all.filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) > 75).length,
+    accounts_at_risk: portfolioMetrics.accounts_at_risk,
+    mrr_at_risk_cents: portfolioMetrics.mrr_at_risk_cents,
+    expansion_opportunities: portfolioMetrics.expansion_opportunities,
     avg_health_score: briefing.data.portfolio.current_avg_health,
     avg_health_scored_accounts: scoredAccounts,
-    churn_rate: all.length > 0 ? (atRisk.length / all.length) * 100 : 0,
+    churn_rate: portfolioMetrics.churn_rate,
+    currency: portfolioMetrics.currency,
   };
 }
 
@@ -109,18 +108,19 @@ export interface TopAccountsResult {
   expansionTotalMrrCents: number;
 }
 
-async function fetchTopAccounts(organizationId: string): Promise<TopAccountsResult> {
-  const { data: accounts, error } = await supabase
-    .from('accounts')
-    .select('id, stripe_customer_id, display_name, mrr_cents, churn_risk_score, churn_risk_band, expansion_score, expansion_score_status, health_score, health_score_band, seat_count, seat_limit, plan_tier')
-    .eq('organization_id', organizationId);
-
-  if (error) throw error;
-
-  const all = (accounts || []) as TopAccount[];
+// Lit `primary_segment` via getAllAccountsForOrg (accounts-api) plutôt que de
+// réimplémenter le critère "à risque" en JS (churn_risk_band==='high' &&
+// mrr_cents>0) — AUDIT_LOGIQUE_METIER_STRIPE.md point 22 : `en_danger_critique`
+// EST déjà exactement ce critère côté backend (segmentation V3, en_churn
+// prioritaire dessus exclut déjà tout compte à mrr_cents=0/canceled), même
+// bonne pratique que segment-queries.ts. Pas de segment dédié "expansion"
+// (en_expansion n'est plus jamais assigné, fusionné dans champions) — filtre
+// par champs conservé pour cette liste, mais sourcé depuis le même appel.
+async function fetchTopAccounts(): Promise<TopAccountsResult> {
+  const all = await getAllAccountsForOrg();
 
   const allAtRisk = all
-    .filter(a => a.churn_risk_band === 'high' && (a.mrr_cents || 0) > 0)
+    .filter(a => a.primary_segment === 'en_danger_critique')
     .sort((a, b) => b.churn_risk_score - a.churn_risk_score);
 
   const allExpansion = all
@@ -157,7 +157,7 @@ export function useDashboardData() {
 
   const topAccountsQuery = useQuery({
     queryKey: ['dashboard', 'topAccounts', orgId],
-    queryFn: () => fetchTopAccounts(orgId!),
+    queryFn: fetchTopAccounts,
     enabled: !!orgId,
     staleTime: 120_000,
   });

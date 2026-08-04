@@ -192,4 +192,6 @@ export interface AccountSummaryCards {
   expansion_ready: number;
   total_mrr_cents: number;
   mrr_at_risk_cents: number;
+  /** Devise ISO 4217 de l'org (portfolio-metrics) — null si aucun sync Stripe n'a encore tourné. */
+  currency: string | null;
 }

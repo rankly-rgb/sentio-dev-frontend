@@ -66,31 +66,3 @@ export async function fetchMrrTrend(startDate: string, endDate: string): Promise
   if (error) throw error;
   return (data as MrrTrendPoint[]) || [];
 }
-
-export async function calculateNrr(period: {
-  from: string;
-  to: string;
-}): Promise<number> {
-  const summary = await getMrrMovementSummary(period);
-
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('mrr_cents')
-    .eq('status', 'active')
-    .lte('created_at', period.from);
-
-  if (error) throw error;
-
-  const mrrStart = (data || []).reduce((s, sub) => s + (sub.mrr_cents || 0), 0);
-  if (mrrStart === 0) return 100;
-
-  return (
-    ((mrrStart +
-      summary.expansion_cents +
-      summary.reactivation_cents -
-      summary.contraction_cents -
-      summary.churn_cents) /
-      mrrStart) *
-    100
-  );
-}

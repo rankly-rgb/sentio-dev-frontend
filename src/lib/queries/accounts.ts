@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
+import { getPortfolioMetrics } from '@/lib/queries/portfolio-metrics';
 import type {
   AccountListItem,
   AccountDetail,
@@ -115,30 +116,33 @@ interface AccountsApiDetailItem {
   created_at: string;
 }
 
+// at_risk_accounts/expansion_ready/total_mrr_cents/mrr_at_risk_cents viennent
+// de portfolio-metrics (Phase 4 backend) — AUDIT_LOGIQUE_METIER_STRIPE.md
+// point 22 identifiait cette fonction comme une 3e réimplémentation locale de
+// ces agrégats, avec des seuils divergents des deux autres. total_accounts/
+// healthy_accounts n'ont pas d'équivalent dans portfolio-metrics (pas des
+// agrégats dupliqués ailleurs dans l'app) — comptages simples conservés ici.
 export async function getAccountSummaryCards(): Promise<AccountSummaryCards> {
-  const { data, error } = await supabase
-    .from('accounts')
-    .select('id, health_score, health_score_status, churn_risk_band, expansion_score_status, expansion_score, mrr_cents');
+  const [portfolioMetrics, accountsRes] = await Promise.all([
+    getPortfolioMetrics(),
+    supabase.from('accounts').select('health_score, health_score_status'),
+  ]);
 
-  if (error) throw error;
+  if (accountsRes.error) throw accountsRes.error;
 
-  const accounts = (data || []) as Array<{
+  const accounts = (accountsRes.data || []) as Array<{
     health_score: number | null;
     health_score_status: 'complete' | 'partial' | 'insufficient';
-    churn_risk_band: 'low' | 'watch' | 'high';
-    expansion_score_status: 'available' | 'unavailable';
-    expansion_score: number | null;
-    mrr_cents: number;
   }>;
 
-  const atRisk = accounts.filter(a => a.churn_risk_band === 'high');
   return {
     total_accounts: accounts.length,
-    at_risk_accounts: atRisk.length,
+    at_risk_accounts: portfolioMetrics.accounts_at_risk,
     healthy_accounts: accounts.filter(a => a.health_score_status !== 'insufficient' && (a.health_score ?? 0) > 60).length,
-    expansion_ready: accounts.filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) > 75).length,
-    total_mrr_cents: accounts.reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
-    mrr_at_risk_cents: atRisk.reduce((sum, a) => sum + (a.mrr_cents || 0), 0),
+    expansion_ready: portfolioMetrics.expansion_opportunities,
+    total_mrr_cents: portfolioMetrics.mrr_cents,
+    mrr_at_risk_cents: portfolioMetrics.mrr_at_risk_cents,
+    currency: portfolioMetrics.currency,
   };
 }
 

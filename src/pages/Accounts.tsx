@@ -24,7 +24,6 @@ import type { AccountPriorityLabel } from '@/lib/types/accounts';
 export default function Accounts() {
   const fr = useT();
   const { user } = useAuth();
-  const currency = user?.currency ?? 'usd';
   const [search, setSearch] = useState('');
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [exporting, setExporting] = useState(false);
@@ -55,6 +54,7 @@ export default function Accounts() {
     search: debouncedSearch,
     limit: 25,
   });
+  const currency = summary?.currency ?? user?.currency ?? 'usd';
 
   const filteredAccounts = accounts
     .filter(a => !flagsOnly || a.flags.length > 0)

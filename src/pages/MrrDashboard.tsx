@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getMrrMovementSummary, calculateNrr } from '@/lib/queries/mrr';
+import { getMrrMovementSummary } from '@/lib/queries/mrr';
+import { usePortfolioMetrics } from '@/hooks/usePortfolioMetrics';
 import { useT } from '@/lib/i18n/useT';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,6 @@ function formatMonth(offset: number): string {
 export default function MrrDashboard() {
   const fr = useT();
   const { user } = useAuth();
-  const currency = user?.currency ?? 'usd';
   const [period] = useState({ from: formatMonth(-1), to: formatMonth(0) });
 
   const summaryQuery = useQuery({
@@ -24,15 +24,16 @@ export default function MrrDashboard() {
     staleTime: 120_000,
   });
 
-  const nrrQuery = useQuery({
-    queryKey: ['mrr', 'nrr', period],
-    queryFn: () => calculateNrr(period),
-    staleTime: 120_000,
-  });
+  // NRR autoritaire (portfolio-metrics, Phase 4 backend) — plus de
+  // deuxième implémentation locale (AUDIT_LOGIQUE_METIER_STRIPE.md point 22 :
+  // calculateNrr() divergeait numériquement du Dashboard principal pour la
+  // même org le même jour).
+  const portfolioMetricsQuery = usePortfolioMetrics();
 
   const summary = summaryQuery.data;
-  const nrr = nrrQuery.data;
-  const isLoading = summaryQuery.isLoading || nrrQuery.isLoading;
+  const nrr = portfolioMetricsQuery.data?.nrr_percentage ?? null;
+  const currency = portfolioMetricsQuery.data?.currency ?? user?.currency ?? 'usd';
+  const isLoading = summaryQuery.isLoading || portfolioMetricsQuery.isLoading;
 
   if (isLoading) {
     return (

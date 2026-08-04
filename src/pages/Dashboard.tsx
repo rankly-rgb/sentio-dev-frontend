@@ -161,7 +161,6 @@ function RevisitTooltip() {
 export default function Dashboard() {
   const fr = useT();
   const { user } = useAuth();
-  const currency = user?.currency ?? 'usd';
   const segmentLabels = useSegmentLabels();
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingFlowStatus();
@@ -174,6 +173,9 @@ export default function Dashboard() {
   }, [onboardingStatus, navigate]);
 
   const { metrics, distribution, topAccounts, isLoading, error, refetch } = useDashboardData();
+  // metrics.currency (portfolio-metrics, autoritaire) une fois chargé ; le
+  // fallback user?.currency ne joue que pendant la fenêtre de chargement.
+  const currency = metrics?.currency ?? user?.currency ?? 'usd';
   // V2 - HubSpot : triggerHubspotSync aliasé pour satisfaire noUnusedLocals
   const { triggerStripeSync, triggerHubspotSync: _triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();
@@ -425,10 +427,12 @@ export default function Dashboard() {
           viewAllHref="/segments/en_danger_critique"
           borderClass="border-destructive/30"
           onAccountClick={openPanel}
+          currency={currency}
         />
         <ExpansionCard
           topAccounts={topAccounts}
           onAccountClick={openPanel}
+          currency={currency}
         />
       </div>
 
@@ -494,6 +498,7 @@ function TopAccountsCard({
   viewAllHref,
   borderClass,
   onAccountClick,
+  currency,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -503,10 +508,9 @@ function TopAccountsCard({
   viewAllHref: string;
   borderClass: string;
   onAccountClick?: (id: string) => void;
+  currency: string;
 }) {
   const fr = useT();
-  const { user } = useAuth();
-  const currency = user?.currency ?? 'usd';
   return (
     <Card className={borderClass}>
       <CardHeader className="pb-2">
@@ -570,13 +574,13 @@ function SeatProgressBar({ count, limit }: { count: number; limit: number }) {
 function ExpansionCard({
   topAccounts,
   onAccountClick,
+  currency,
 }: {
   topAccounts: TopAccountsResult | null;
   onAccountClick?: (id: string) => void;
+  currency: string;
 }) {
   const fr = useT();
-  const { user } = useAuth();
-  const currency = user?.currency ?? 'usd';
   const accounts = topAccounts?.expansion || [];
   const totalCount = topAccounts?.expansionTotalCount ?? 0;
   const totalMrrCents = topAccounts?.expansionTotalMrrCents ?? 0;
