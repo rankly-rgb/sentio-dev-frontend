@@ -57,20 +57,33 @@ export default function MrrDashboard() {
         </p>
       </div>
 
-      {/* NRR en grand */}
-      <Card className={nrr === null ? '' : nrr >= 100 ? 'border-success' : 'border-warning'}>
-        <CardContent className="p-6 text-center">
-          <p className="text-sm text-muted-foreground">{fr.dashboard.nrr}</p>
-          <p className={nrr === null ? 'text-lg font-medium text-muted-foreground' : 'text-4xl font-bold'}>
-            {nrr !== null ? fr.format.percentage(nrr) : fr.dashboard.nrrUnavailable}
-          </p>
-          {nrr !== null && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {nrr >= 100 ? fr.dashboard.nrrAboveTarget : fr.dashboard.nrrBelowTarget}
+      {/* MRR actuel + NRR en grand — même source (portfolio-metrics) que le
+          Dashboard principal (Phase 5.2), pour que les deux écrans ne
+          puissent plus jamais diverger (AUDIT_LOGIQUE_METIER_STRIPE.md
+          point 22, gardé par e2e/cross-screen-consistency.spec.ts). */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card data-testid="mrr-page-mrr">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">{fr.mrr.currentMrr}</p>
+            <p className="text-4xl font-bold">
+              {fr.format.currency(portfolioMetricsQuery.data?.mrr_cents ?? 0, currency)}
             </p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        <Card data-testid="mrr-page-nrr" className={nrr === null ? '' : nrr >= 100 ? 'border-success' : 'border-warning'}>
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">{fr.dashboard.nrr}</p>
+            <p className={nrr === null ? 'text-lg font-medium text-muted-foreground' : 'text-4xl font-bold'}>
+              {nrr !== null ? fr.format.percentage(nrr) : fr.dashboard.nrrUnavailable}
+            </p>
+            {nrr !== null && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {nrr >= 100 ? fr.dashboard.nrrAboveTarget : fr.dashboard.nrrBelowTarget}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Mouvements MRR */}
       {summary && (
