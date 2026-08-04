@@ -23,7 +23,7 @@ export function ChurnRiskAlert({ count, mrrAtRisk }: Props) {
             {count} {fr.dashboard.accountsAtRisk.toLowerCase()}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            {fr.format.currency(mrrAtRisk, currency)} de MRR en danger
+            {fr.format.currency(mrrAtRisk, currency)} in MRR at risk
           </p>
         </div>
       </CardContent>

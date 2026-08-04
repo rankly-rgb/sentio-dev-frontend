@@ -19,7 +19,7 @@ export function ExpansionOpportunities({ count }: Props) {
             {count} {fr.dashboard.expansionOpportunities.toLowerCase()}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            Comptes avec un score d'expansion &gt; 75
+            Accounts with an expansion score above 75
           </p>
         </div>
       </CardContent>
