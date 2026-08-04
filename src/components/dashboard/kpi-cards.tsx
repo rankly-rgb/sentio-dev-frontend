@@ -16,6 +16,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'mrr',
       label: fr.dashboard.mrr,
       value: fr.format.currency(metrics.mrr_cents, currency),
+      isUnavailable: false,
       icon: DollarSign,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.mrr,
@@ -24,6 +25,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'arr',
       label: fr.dashboard.arr,
       value: fr.format.currency(metrics.arr_cents, currency),
+      isUnavailable: false,
       icon: TrendingUp,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.arr,
@@ -31,7 +33,8 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'nrr',
       label: fr.dashboard.nrr,
-      value: metrics.nrr_percentage !== null ? fr.format.percentage(metrics.nrr_percentage) : '—',
+      value: metrics.nrr_percentage !== null ? fr.format.percentage(metrics.nrr_percentage) : fr.dashboard.nrrUnavailable,
+      isUnavailable: metrics.nrr_percentage === null,
       icon: (metrics.nrr_percentage ?? 0) >= 100 ? TrendingUp : TrendingDown,
       color: metrics.nrr_percentage === null ? 'text-muted-foreground' : metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
       tooltip: fr.dashboard.tooltips.nrr,
@@ -40,6 +43,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'active-accounts',
       label: fr.dashboard.activeAccounts,
       value: fr.format.number(metrics.active_accounts),
+      isUnavailable: false,
       icon: Users,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.activeAccounts,
@@ -48,6 +52,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'accounts-at-risk',
       label: fr.dashboard.accountsAtRisk,
       value: fr.format.number(metrics.accounts_at_risk),
+      isUnavailable: false,
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.accountsAtRisk,
@@ -56,6 +61,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'mrr-at-risk',
       label: fr.dashboard.mrrAtRisk,
       value: fr.format.currency(metrics.mrr_at_risk_cents, currency),
+      isUnavailable: false,
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.mrrAtRisk,
@@ -64,6 +70,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'expansion-opportunities',
       label: fr.dashboard.expansionOpportunities,
       value: fr.format.number(metrics.expansion_opportunities),
+      isUnavailable: false,
       icon: Target,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.expansionOpportunities,
@@ -72,6 +79,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'churn-rate',
       label: fr.dashboard.churnRate,
       value: metrics.churn_rate !== null ? fr.format.percentage(metrics.churn_rate) : '—',
+      isUnavailable: metrics.churn_rate === null,
       icon: TrendingDown,
       color: (metrics.churn_rate ?? 0) > 5 ? 'text-destructive' : 'text-muted-foreground',
       tooltip: fr.dashboard.tooltips.churnRate,
@@ -98,7 +106,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
                 </div>
                 <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
               </div>
-              <p className="text-xl font-bold">{kpi.value}</p>
+              <p className={kpi.isUnavailable ? 'text-sm font-medium text-muted-foreground' : 'text-xl font-bold'}>
+                {kpi.value}
+              </p>
             </CardContent>
           </Card>
         ))}

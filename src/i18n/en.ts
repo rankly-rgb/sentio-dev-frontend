@@ -63,6 +63,9 @@ export const en = {
     criticalAlertMrr: (mrr: string) => `— ${mrr} MRR at risk`,
     criticalAlertCta: 'View accounts →',
     avgHealthDenominator: (scored: number, total: number) => `across ${scored} of ${total} accounts`,
+    nrrUnavailable: 'Available after 3 months of data',
+    nrrAboveTarget: 'Above 100% = excellent',
+    nrrBelowTarget: 'Below 100% = needs attention',
   },
 
   benchmark: {

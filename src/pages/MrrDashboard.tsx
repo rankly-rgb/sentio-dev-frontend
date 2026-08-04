@@ -51,13 +51,17 @@ export default function MrrDashboard() {
       <h1 className="text-2xl font-bold">{fr.mrr.title}</h1>
 
       {/* NRR en grand */}
-      <Card className={nrr && nrr >= 100 ? 'border-success' : 'border-warning'}>
+      <Card className={nrr === null ? '' : nrr >= 100 ? 'border-success' : 'border-warning'}>
         <CardContent className="p-6 text-center">
           <p className="text-sm text-muted-foreground">{fr.dashboard.nrr}</p>
-          <p className="text-4xl font-bold">{nrr ? fr.format.percentage(nrr) : '-'}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {nrr && nrr >= 100 ? '> 100% = excellent' : '< 100% = attention requise'}
+          <p className={nrr === null ? 'text-lg font-medium text-muted-foreground' : 'text-4xl font-bold'}>
+            {nrr !== null ? fr.format.percentage(nrr) : fr.dashboard.nrrUnavailable}
           </p>
+          {nrr !== null && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {nrr >= 100 ? fr.dashboard.nrrAboveTarget : fr.dashboard.nrrBelowTarget}
+            </p>
+          )}
         </CardContent>
       </Card>
 
