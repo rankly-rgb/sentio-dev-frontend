@@ -78,6 +78,9 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
     avg_health_scored_accounts: scoredAccounts,
     churn_rate: portfolioMetrics.churn_rate,
     currency: portfolioMetrics.currency,
+    stripe_stale: portfolioMetrics.stripe_stale,
+    billing_profile: portfolioMetrics.billing_profile,
+    mrr_unavailable_accounts: portfolioMetrics.mrr_unavailable_accounts,
   };
 }
 

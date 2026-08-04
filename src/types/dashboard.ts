@@ -18,6 +18,11 @@ export interface DashboardMetrics {
   churn_rate: number | null;
   /** Devise ISO 4217 de l'org (vote majoritaire) — null si aucun sync Stripe n'a encore tourné. */
   currency: string | null;
+  /** true si le dernier sync Stripe completed a plus de 48h, ou si aucun sync complet n'existe encore. */
+  stripe_stale: boolean;
+  billing_profile: 'standard' | 'needs_review' | null;
+  /** Comptes mrr_status='unavailable' (non-chiffrables) — exclus de mrr_cents, jamais rendus comme $0. */
+  mrr_unavailable_accounts: number;
 }
 
 export interface MrrMovementSummary {

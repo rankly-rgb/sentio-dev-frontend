@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
+import { StripeStaleBanner, BillingProfileNeedsReviewBanner } from '@/components/dashboard/degraded-state-banners';
 import { BenchmarkSection } from '@/components/dashboard/BenchmarkSection';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import { SEGMENT_COLORS } from '@/lib/types/segments';
@@ -246,6 +247,10 @@ export default function Dashboard() {
       {/* Tracker banner */}
       {!trackerConnected && <TrackerBanner />}
 
+      {/* Degraded states — stale Stripe sync / non-standard billing config */}
+      {metrics?.stripe_stale && <StripeStaleBanner onSync={handleSync} isSyncing={isSyncing} />}
+      {metrics?.billing_profile === 'needs_review' && <BillingProfileNeedsReviewBanner />}
+
       {/* Critical accounts alert banner */}
       {(topAccounts?.atRiskTotalCount ?? 0) > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
@@ -365,6 +370,11 @@ export default function Dashboard() {
 
       {/* KPI cards */}
       {metrics && <KpiCards metrics={metrics} />}
+      {metrics && metrics.mrr_unavailable_accounts > 0 && (
+        <p className="text-xs text-muted-foreground -mt-4">
+          {fr.dashboard.mrrUnavailableNote(metrics.mrr_unavailable_accounts)}
+        </p>
+      )}
 
       {/* Benchmarks sectoriels */}
       <BenchmarkSection data={benchmarkData ?? null} isLoading={benchmarkLoading} error={benchmarkError} />

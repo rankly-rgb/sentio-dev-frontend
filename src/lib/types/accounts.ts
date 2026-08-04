@@ -91,6 +91,9 @@ export interface SegmentMembership {
   };
 }
 
+/** 'unavailable' = compte non-chiffrable (metered, devise minoritaire...) ou jamais eu de subscription connue — mrr_cents peut être un total partiel, pas un vrai $0 (docs/openspec.md §1/§8, API_CONTRACTS.md accounts-api). */
+export type MrrStatus = 'ok' | 'unavailable';
+
 export interface AccountListItem extends ScoringV2Fields {
   id: string;
   stripe_customer_id: string;
@@ -98,6 +101,7 @@ export interface AccountListItem extends ScoringV2Fields {
   plan_tier: string | null;
   billing_interval: string | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -117,6 +121,7 @@ export interface AccountDetail extends ScoringV2Fields {
   plan_tier: string | null;
   billing_interval: string | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;

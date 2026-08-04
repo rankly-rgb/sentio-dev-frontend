@@ -92,11 +92,15 @@ export default function AccountFinancials({ account }: Props) {
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <p className="text-xs text-muted-foreground">MRR</p>
-          <p className="text-sm font-bold">{fr.format.currency(account.mrr_cents, currency)}</p>
+          <p className="text-sm font-bold">
+            {fr.format.mrrOrUnavailable(account.mrr_cents, currency, account.mrr_status === 'unavailable')}
+          </p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">ARR</p>
-          <p className="text-sm font-bold">{fr.format.currency(account.arr_cents, currency)}</p>
+          <p className="text-sm font-bold">
+            {fr.format.mrrOrUnavailable(account.arr_cents, currency, account.mrr_status === 'unavailable')}
+          </p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{fr.accounts.seats}</p>

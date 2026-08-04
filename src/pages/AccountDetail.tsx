@@ -168,7 +168,9 @@ export default function AccountDetail() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">{fr.accounts.mrr}</p>
-            <p className="text-xl font-bold">{fr.format.currency(account.mrr_cents, currency)}</p>
+            <p className="text-xl font-bold">
+              {fr.format.mrrOrUnavailable(account.mrr_cents, currency, account.mrr_status === 'unavailable')}
+            </p>
           </CardContent>
         </Card>
       </div>

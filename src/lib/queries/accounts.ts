@@ -15,6 +15,7 @@ import type {
   ExpansionScoreStatus,
   ExpansionUnavailableReason,
   TrendDirection,
+  MrrStatus,
 } from '@/lib/types/accounts';
 import type { AccountFlag } from '@/types/database';
 
@@ -25,6 +26,7 @@ interface AccountsApiItem extends ScoringV2Fields {
   plan_tier: string | null;
   billing_interval: string | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -100,6 +102,7 @@ interface AccountsApiDetailItem {
   plan_tier: string | null;
   billing_interval: string | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
@@ -264,6 +267,7 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     plan_tier: account.plan_tier,
     billing_interval: account.billing_interval,
     mrr_cents: account.mrr_cents,
+    mrr_status: account.mrr_status,
     arr_cents: account.arr_cents,
     seat_count: account.seat_count,
     seat_limit: account.seat_limit,

@@ -53,7 +53,7 @@ export const en = {
     topExpansion: 'Expansion opportunities',
     expansionContext: (count: number, totalMrr: string) =>
       `${count} opportunit${count > 1 ? 'ies' : 'y'} · ${totalMrr} potential MRR`,
-    expansionEmptyDetail: 'No opportunities detected — expansion scores are calculated from seat and feature usage',
+    expansionEmptyDetail: 'No opportunities detected — expansion scores are calculated from seat usage',
     seats: 'Seats',
     segmentsQuickLinks: 'Segments',
     recentSyncs: 'Recent syncs',
@@ -66,6 +66,10 @@ export const en = {
     nrrUnavailable: 'Available after 3 months of data',
     nrrAboveTarget: 'Above 100% = excellent',
     nrrBelowTarget: 'Below 100% = needs attention',
+    stripeStaleBanner: 'Your Stripe data hasn\'t synced in over 48 hours — the numbers below may be out of date.',
+    stripeStaleBannerCta: 'Sync now',
+    billingProfileNeedsReviewBanner: 'Some of your accounts use billing setups we can\'t fully price automatically (metered usage, invoice-only billing, multiple currencies, or subscription schedules) — MRR may be incomplete for those accounts.',
+    mrrUnavailableNote: (count: number) => `${count} account${count > 1 ? 's' : ''} excluded from MRR — not billable`,
   },
 
   benchmark: {
@@ -1845,6 +1849,12 @@ export const en = {
     // (useAuth().user?.currency, or portfolio-metrics.currency where available).
     currency: (cents: number, currency: string) =>
       (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
+    // mrr_status='unavailable' (docs/openspec.md §1/§8) means the amount
+    // isn't a real $0 -- it's a non-billable subscription (metered, missing
+    // unit_amount, minority currency) or an account never yet synced. Never
+    // render it as a plain currency figure (S1: no data ≠ neutral data).
+    mrrOrUnavailable: (cents: number, currency: string, isUnavailable: boolean) =>
+      isUnavailable ? 'Not billable' : (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
     percentage: (value: number) => `${value.toFixed(1)}%`,
     date: (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US'),
     dateTime: (dateStr: string) => new Date(dateStr).toLocaleString('en-US'),
