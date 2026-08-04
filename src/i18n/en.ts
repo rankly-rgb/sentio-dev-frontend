@@ -1830,9 +1830,9 @@ export const en = {
 
   format: {
     number: (value: number) => value.toLocaleString('en-US'),
-    // currency defaults to USD (US-market pivot) -- pass the org's actual
-    // currency (useAuth().user?.currency) wherever it's available.
-    currency: (cents: number, currency: string = 'usd') =>
+    // currency is mandatory -- always pass the org's actual currency
+    // (useAuth().user?.currency, or portfolio-metrics.currency where available).
+    currency: (cents: number, currency: string) =>
       (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
     percentage: (value: number) => `${value.toFixed(1)}%`,
     date: (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US'),

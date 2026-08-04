@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { useInsights, useUpdateInsightStatus, useScoreFeedback } from '@/hooks/useInsights';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BrainCircuit, ThumbsUp, ThumbsDown } from 'lucide-react';
@@ -11,6 +12,8 @@ interface Props {
 
 export default function AccountInsights({ accountId }: Props) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const PRIORITY_CONFIG: Record<InsightPriority, { label: string; className: string }> = {
     critical: { label: fr.insights.priority.critical, className: 'bg-red-100 text-red-800' },
     high: { label: fr.insights.priority.high, className: 'bg-orange-100 text-orange-800' },
@@ -109,7 +112,7 @@ export default function AccountInsights({ accountId }: Props) {
                 <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
                   {insight.mrr_impact_cents != null && (
                     <span className="font-medium text-foreground">
-                      MRR : {fr.format.currency(insight.mrr_impact_cents)}
+                      MRR : {fr.format.currency(insight.mrr_impact_cents, currency)}
                     </span>
                   )}
                   {insight.confidence_score != null && (

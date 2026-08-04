@@ -10,6 +10,7 @@ import { useSegments } from '@/hooks/useSegments';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -159,6 +160,8 @@ function RevisitTooltip() {
 
 export default function Dashboard() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const segmentLabels = useSegmentLabels();
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingFlowStatus();
@@ -250,7 +253,7 @@ export default function Dashboard() {
             </span>
             <span className="text-red-600 ml-2">
               {fr.dashboard.criticalAlertMrr(
-                fr.format.currency(topAccounts!.atRiskTotalMrrCents)
+                fr.format.currency(topAccounts!.atRiskTotalMrrCents, currency)
               )}
             </span>
           </div>
@@ -502,6 +505,8 @@ function TopAccountsCard({
   onAccountClick?: (id: string) => void;
 }) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   return (
     <Card className={borderClass}>
       <CardHeader className="pb-2">
@@ -526,7 +531,7 @@ function TopAccountsCard({
                   {getAccountLabel(a)}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
                   <ScoreBadge
                     score={a[scoreField]}
                     band={scoreField === 'churn_risk_score' ? a.churn_risk_band : undefined}
@@ -570,6 +575,8 @@ function ExpansionCard({
   onAccountClick?: (id: string) => void;
 }) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const accounts = topAccounts?.expansion || [];
   const totalCount = topAccounts?.expansionTotalCount ?? 0;
   const totalMrrCents = topAccounts?.expansionTotalMrrCents ?? 0;
@@ -583,7 +590,7 @@ function ExpansionCard({
         </div>
         {totalCount > 0 && (
           <p className="text-xs text-muted-foreground mt-1">
-            {fr.dashboard.expansionContext(totalCount, fr.format.currency(totalMrrCents))}
+            {fr.dashboard.expansionContext(totalCount, fr.format.currency(totalMrrCents, currency))}
           </p>
         )}
       </CardHeader>
@@ -618,7 +625,7 @@ function ExpansionCard({
                     </Badge>
                   )}
                   {/* MRR */}
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
                   {/* Score */}
                   <ScoreBadge score={a.expansion_score} type="expansion" />
                 </div>

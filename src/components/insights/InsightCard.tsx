@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +35,8 @@ interface InsightCardProps {
 
 export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdating }: InsightCardProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const PRIORITY_CONFIG: Record<InsightPriority, { label: string; className: string }> = {
     critical: { label: fr.insights.priority.critical, className: 'bg-red-100 text-red-800' },
     high: { label: fr.insights.priority.high, className: 'bg-orange-100 text-orange-800' },
@@ -118,7 +121,7 @@ export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdat
             <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
               {insight.mrr_impact_cents != null && (
                 <span className="font-medium text-foreground">
-                  MRR : {fr.format.currency(insight.mrr_impact_cents)}
+                  MRR : {fr.format.currency(insight.mrr_impact_cents, currency)}
                 </span>
               )}
               {insight.confidence_score != null && (

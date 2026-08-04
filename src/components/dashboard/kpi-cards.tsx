@@ -1,4 +1,5 @@
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DashboardMetrics } from '@/types/dashboard';
@@ -10,11 +11,13 @@ interface KpiCardsProps {
 
 export function KpiCards({ metrics }: KpiCardsProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const kpis = [
     {
       key: 'mrr',
       label: fr.dashboard.mrr,
-      value: fr.format.currency(metrics.mrr_cents),
+      value: fr.format.currency(metrics.mrr_cents, currency),
       icon: DollarSign,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.mrr,
@@ -22,7 +25,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'arr',
       label: fr.dashboard.arr,
-      value: fr.format.currency(metrics.arr_cents),
+      value: fr.format.currency(metrics.arr_cents, currency),
       icon: TrendingUp,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.arr,
@@ -54,7 +57,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'mrr-at-risk',
       label: fr.dashboard.mrrAtRisk,
-      value: fr.format.currency(metrics.mrr_at_risk_cents),
+      value: fr.format.currency(metrics.mrr_at_risk_cents, currency),
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.mrrAtRisk,

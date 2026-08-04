@@ -7,6 +7,7 @@ import { useRemoveAccountFlag } from '@/hooks/useAccountFlags';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import AccountNotesSection from '@/components/accounts/AccountNotesSection';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -62,6 +63,8 @@ function formatScoreHistory(history: ScoreHistoryItem[], days: number) {
 
 export default function AccountDetail() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const segmentLabels = useSegmentLabels();
   const { accountId } = useParams();
   const navigate = useNavigate();
@@ -165,7 +168,7 @@ export default function AccountDetail() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">{fr.accounts.mrr}</p>
-            <p className="text-xl font-bold">{fr.format.currency(account.mrr_cents)}</p>
+            <p className="text-xl font-bold">{fr.format.currency(account.mrr_cents, currency)}</p>
           </CardContent>
         </Card>
       </div>
@@ -332,7 +335,7 @@ export default function AccountDetail() {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{fr.format.currency(sub.mrr_cents)}/mo</p>
+                        <p className="font-medium">{fr.format.currency(sub.mrr_cents, currency)}/mo</p>
                         <p className="text-xs text-muted-foreground">{sub.quantity} seat{sub.quantity > 1 ? 's' : ''}</p>
                       </div>
                     </div>
@@ -368,7 +371,7 @@ export default function AccountDetail() {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{fr.format.currency(inv.amount_cents)}</p>
+                        <p className="font-medium">{fr.format.currency(inv.amount_cents, inv.currency)}</p>
                         <Badge variant={invoiceStatusVariant(inv.status)}>{inv.status}</Badge>
                       </div>
                     </div>

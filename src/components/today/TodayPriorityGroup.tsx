@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { PRIORITY_CONFIG } from '@/lib/types/today-actions';
 import type { TodayAction } from '@/lib/types/today-actions';
@@ -24,6 +25,8 @@ export default function TodayPriorityGroup({
   onAccountClick,
 }: TodayPriorityGroupProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const COLUMN_HEADERS = [
     { key: 'stripe', label: fr.todayActions.colStripeId },
     { key: 'plan', label: fr.todayActions.colPlan },
@@ -67,7 +70,7 @@ export default function TodayPriorityGroup({
         </span>
 
         <span className="ml-auto text-xs text-muted-foreground">
-          {fr.format.currency(mrrTotal)} MRR
+          {fr.format.currency(mrrTotal, currency)} MRR
         </span>
       </button>
 

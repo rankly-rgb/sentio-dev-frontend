@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getMrrMovementSummary, calculateNrr } from '@/lib/queries/mrr';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -13,6 +14,8 @@ function formatMonth(offset: number): string {
 
 export default function MrrDashboard() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const [period] = useState({ from: formatMonth(-1), to: formatMonth(0) });
 
   const summaryQuery = useQuery({
@@ -72,7 +75,7 @@ export default function MrrDashboard() {
               <CardContent className="p-4 text-center">
                 <p className="text-xs text-muted-foreground">{item.label}</p>
                 <p className={`text-lg font-bold ${item.color}`}>
-                  {fr.format.currency(Math.abs(item.value))}
+                  {fr.format.currency(Math.abs(item.value), currency)}
                 </p>
               </CardContent>
             </Card>

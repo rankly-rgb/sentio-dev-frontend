@@ -5,6 +5,7 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { exportCsvWithEmail } from '@/lib/exportCsv';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +23,8 @@ import type { AccountPriorityLabel } from '@/lib/types/accounts';
 
 export default function Accounts() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const [search, setSearch] = useState('');
   const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
   const [exporting, setExporting] = useState(false);
@@ -88,7 +91,7 @@ export default function Accounts() {
           <Card data-testid="kpi-mrr">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{fr.dashboard.mrr}</p>
-              <p className="text-2xl font-bold">{fr.format.currency(summary.total_mrr_cents)}</p>
+              <p className="text-2xl font-bold">{fr.format.currency(summary.total_mrr_cents, currency)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -213,7 +216,7 @@ export default function Accounts() {
                     <TableCell>
                       {account.plan_tier && <Badge variant="outline">{account.plan_tier}</Badge>}
                     </TableCell>
-                    <TableCell className="font-medium">{fr.format.currency(account.mrr_cents)}</TableCell>
+                    <TableCell className="font-medium">{fr.format.currency(account.mrr_cents, currency)}</TableCell>
                     <TableCell>{account.seat_count ?? '-'} / {account.seat_limit ?? '-'}</TableCell>
                     <TableCell><ScoreBadge score={account.health_score} band={account.health_score_band} type="health" /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>

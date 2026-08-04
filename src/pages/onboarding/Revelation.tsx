@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAccountLabel } from '@/lib/account-display';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import OnboardingHeader from '@/components/onboarding/OnboardingHeader';
@@ -10,6 +11,8 @@ import { useOnboardingFirstWin, useMarkOnboardingField } from '@/hooks/useOnboar
 
 export default function Revelation() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const navigate = useNavigate();
   const { isGuarding } = useOnboardingGuard('revelation');
   const { data: firstWin, isLoading: dataLoading } = useOnboardingFirstWin();
@@ -60,7 +63,7 @@ export default function Revelation() {
           </div>
           <div className="bg-white rounded-xl p-4 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
             <p className="text-2xl font-bold text-red-600">
-              {fr.format.currency(mrrAtRisk)}
+              {fr.format.currency(mrrAtRisk, currency)}
             </p>
             <p className="text-xs text-[#6b7280] mt-1">{fr.onboardingV2.revelation.mrrAtRisk}</p>
           </div>
@@ -104,7 +107,7 @@ export default function Revelation() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-sm text-[#6b7280]">{fr.format.currency(acc.mrr * 100)}</span>
+                  <span className="text-sm text-[#6b7280]">{fr.format.currency(acc.mrr * 100, currency)}</span>
                   <Badge
                     variant="secondary"
                     className={`text-xs ${

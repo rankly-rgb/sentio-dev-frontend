@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   usePlaybook,
   usePlaybookExecutions,
@@ -43,6 +44,8 @@ import type { UpdatePlaybookPayload } from '@/lib/types/playbook';
 
 export default function WorkflowDetail() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -252,13 +255,13 @@ export default function WorkflowDetail() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.mrrRecovered}</p>
-            <p className="text-xl font-bold">{fr.format.currency(playbook.mrr_recovered_cents ?? 0)}</p>
+            <p className="text-xl font-bold">{fr.format.currency(playbook.mrr_recovered_cents ?? 0, currency)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-xs text-muted-foreground">{fr.playbooks.kpi.mrrExpanded}</p>
-            <p className="text-xl font-bold">{fr.format.currency(playbook.mrr_expanded_cents ?? 0)}</p>
+            <p className="text-xl font-bold">{fr.format.currency(playbook.mrr_expanded_cents ?? 0, currency)}</p>
           </CardContent>
         </Card>
       </div>
