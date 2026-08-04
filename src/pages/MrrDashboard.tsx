@@ -6,6 +6,8 @@ import { useT } from '@/lib/i18n/useT';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 
 function formatMonth(offset: number): string {
   const d = new Date();
@@ -48,7 +50,12 @@ export default function MrrDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">{fr.mrr.title}</h1>
+      <div>
+        <h1 className="text-2xl font-bold">{fr.mrr.title}</h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          Amounts shown in {currency.toUpperCase()}
+        </p>
+      </div>
 
       {/* NRR en grand */}
       <Card className={nrr === null ? '' : nrr >= 100 ? 'border-success' : 'border-warning'}>
@@ -67,25 +74,37 @@ export default function MrrDashboard() {
 
       {/* Mouvements MRR */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { label: fr.mrr.new, value: summary.new_cents, color: 'text-success' },
-            { label: fr.mrr.expansion, value: summary.expansion_cents, color: 'text-success' },
-            { label: fr.mrr.reactivation, value: summary.reactivation_cents, color: 'text-success' },
-            { label: fr.mrr.contraction, value: -summary.contraction_cents, color: 'text-destructive' },
-            { label: fr.mrr.churn, value: -summary.churn_cents, color: 'text-destructive' },
-            { label: fr.mrr.net, value: summary.net_cents, color: summary.net_cents >= 0 ? 'text-success' : 'text-destructive' },
-          ].map(item => (
-            <Card key={item.label}>
-              <CardContent className="p-4 text-center">
-                <p className="text-xs text-muted-foreground">{item.label}</p>
-                <p className={`text-lg font-bold ${item.color}`}>
-                  {fr.format.currency(Math.abs(item.value), currency)}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <TooltipProvider>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { label: fr.mrr.new, tooltip: fr.mrr.tooltips.new, value: summary.new_cents, color: 'text-success' },
+              { label: fr.mrr.expansion, tooltip: fr.mrr.tooltips.expansion, value: summary.expansion_cents, color: 'text-success' },
+              { label: fr.mrr.reactivation, tooltip: fr.mrr.tooltips.reactivation, value: summary.reactivation_cents, color: 'text-success' },
+              { label: fr.mrr.contraction, tooltip: fr.mrr.tooltips.contraction, value: -summary.contraction_cents, color: 'text-destructive' },
+              { label: fr.mrr.churn, tooltip: fr.mrr.tooltips.churn, value: -summary.churn_cents, color: 'text-destructive' },
+              { label: fr.mrr.net, tooltip: fr.mrr.tooltips.net, value: summary.net_cents, color: summary.net_cents >= 0 ? 'text-success' : 'text-destructive' },
+            ].map(item => (
+              <Card key={item.label}>
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <p className="text-xs text-muted-foreground">{item.label}</p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-64">
+                        <p>{item.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className={`text-lg font-bold ${item.color}`}>
+                    {fr.format.currency(Math.abs(item.value), currency)}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TooltipProvider>
       )}
 
       {/* TODO: Graphique tendance MRR avec recharts */}
