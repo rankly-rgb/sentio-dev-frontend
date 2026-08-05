@@ -4,6 +4,7 @@ import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
 import { getAllAccountsForOrg } from '@/lib/queries/accounts';
+import type { AccountListItem } from '@/lib/types/accounts';
 import { getPortfolioMetrics } from '@/lib/queries/portfolio-metrics';
 import type { DashboardMetrics, HealthDistribution } from '@/types/dashboard';
 import type { ChurnRiskBand, ExpansionScoreStatus, HealthScoreBand, HealthScoreStatus } from '@/lib/types/accounts';
@@ -122,12 +123,21 @@ export interface TopAccountsResult {
 async function fetchTopAccounts(): Promise<TopAccountsResult> {
   const all = await getAllAccountsForOrg();
 
+  // primary_segment==='en_danger_critique' implies churn_risk_band==='high'
+  // server-side (segmentation V3), which is never assigned without a real
+  // churn_risk_score — but that's a backend invariant, not something the
+  // type system can see through a string filter. Narrow explicitly instead
+  // of assuming (docs/RUNBOOK.md, 2026-08-05 incident: an assumed-non-null
+  // churn field is exactly what crashed AccountDetail on 41% of accounts).
   const allAtRisk = all
-    .filter(a => a.primary_segment === 'en_danger_critique')
+    .filter((a): a is AccountListItem & { churn_risk_score: number; churn_risk_band: ChurnRiskBand } =>
+      a.primary_segment === 'en_danger_critique' && a.churn_risk_score !== null && a.churn_risk_band !== null)
     .sort((a, b) => b.churn_risk_score - a.churn_risk_score);
 
   const allExpansion = all
-    .filter(a => a.expansion_score_status === 'available' && (a.expansion_score ?? 0) >= 70 && (a.health_score ?? 0) >= 60)
+    .filter((a): a is AccountListItem & { churn_risk_score: number; churn_risk_band: ChurnRiskBand } =>
+      a.expansion_score_status === 'available' && (a.expansion_score ?? 0) >= 70 && (a.health_score ?? 0) >= 60
+      && a.churn_risk_score !== null && a.churn_risk_band !== null)
     .sort((a, b) => (b.expansion_score ?? 0) - (a.expansion_score ?? 0));
 
   return {

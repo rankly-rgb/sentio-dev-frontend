@@ -4,7 +4,7 @@
  * bandes ailleurs à partir des scores bruts (le backend est la seule
  * autorité sur health_score_band / churn_risk_band).
  */
-import type { ChurnRiskBand, HealthScoreBand, RiskSignalSeverity } from '@/lib/types/accounts';
+import type { HealthScoreBand, RiskSignalSeverity } from '@/lib/types/accounts';
 
 export const HEALTH_BAND_STYLE: Record<HealthScoreBand, { color: string; label: string }> = {
   healthy: { color: 'bg-success/15 text-success', label: 'Healthy' },
@@ -19,11 +19,45 @@ export const HEALTH_BAND_RING_STYLE: Record<HealthScoreBand, string> = {
   at_risk: 'text-destructive border-destructive/30',
 };
 
-export const CHURN_BAND_STYLE: Record<ChurnRiskBand, { color: string; label: string }> = {
+// Record<string, ... | undefined>, not Record<ChurnRiskBand, ...>: churn_risk_band
+// is null for a third of the portfolio (churned accounts, D1/C2.1, and
+// never-scored accounts), and a caller with only a wider prop type
+// (ScoreBadge's `band?: HealthScoreBand | ChurnRiskBand | null`) has no
+// type-safe way to narrow to ChurnRiskBand before indexing. A Record<ChurnRiskBand,...>
+// would force that narrowing via `as ChurnRiskBand` — the exact assertion
+// that silenced the compiler on the 2026-08-05 incident (AccountScoreCard.tsx/
+// ScoreBadge.tsx crashed on 41% of real accounts). Indexing by plain
+// `string` needs no cast anywhere and always yields `| undefined`. Use
+// churnBandStyle() below rather than indexing this directly.
+export const CHURN_BAND_STYLE: Record<string, { color: string; label: string } | undefined> = {
   low: { color: 'bg-success/15 text-success', label: 'Low' },
   watch: { color: 'bg-warning/15 text-warning', label: 'Watch' },
   high: { color: 'bg-destructive/15 text-destructive', label: 'High' },
+  churned: { color: 'bg-muted text-muted-foreground', label: 'Churned' },
 };
+
+const CHURN_BAND_NOT_SCORED_STYLE = { color: 'bg-muted text-muted-foreground', label: 'Not scored' };
+const CHURN_BAND_UNKNOWN_STYLE = { color: 'bg-muted text-muted-foreground', label: 'Unknown' };
+
+/**
+ * Single point of truth for churn_risk_band → color/label, including the
+ * two non-crashing paths CHURN_BAND_STYLE alone can't express: `null`
+ * (churned or never-scored — a real, common state, not an error) and a
+ * value the frontend doesn't recognize yet (defensive — see InsightType
+ * incident, same class of bug).
+ *
+ * Parameter is deliberately `string | null | undefined`, not
+ * `ChurnRiskBand | null` — callers that only have a wider prop type (e.g.
+ * ScoreBadge's `band?: HealthScoreBand | ChurnRiskBand | null`) used to
+ * reach for `band as ChurnRiskBand` to satisfy a narrower signature, which
+ * is exactly the kind of assertion that silences the compiler on the bug
+ * this function exists to prevent. Accepting `string` means no caller ever
+ * needs to assert a type they can't actually vouch for.
+ */
+export function churnBandStyle(band: string | null | undefined): { color: string; label: string } {
+  if (!band) return CHURN_BAND_NOT_SCORED_STYLE;
+  return CHURN_BAND_STYLE[band] ?? CHURN_BAND_UNKNOWN_STYLE;
+}
 
 export const RISK_SEVERITY_STYLE: Record<RiskSignalSeverity, { color: string; label: string }> = {
   CRITIQUE: { color: 'bg-destructive/15 text-destructive', label: 'Critical' },

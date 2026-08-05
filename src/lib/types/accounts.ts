@@ -19,7 +19,7 @@ export type SegmentType =
 
 export type HealthScoreStatus = 'complete' | 'partial' | 'insufficient';
 export type HealthScoreBand = 'healthy' | 'watch' | 'at_risk';
-export type ChurnRiskBand = 'low' | 'watch' | 'high';
+export type ChurnRiskBand = 'low' | 'watch' | 'high' | 'churned';
 export type ExpansionScoreStatus = 'available' | 'unavailable';
 export type ExpansionUnavailableReason = 'seat_data_not_configured' | 'unlimited_plan_no_ceiling';
 export type TrendDirection = 'up' | 'flat' | 'down';
@@ -61,9 +61,18 @@ export interface ScoringV2Fields {
   health_score_status: HealthScoreStatus;
   health_score_max_points: number;
   health_score_band: HealthScoreBand | null;
-  /** Additif, indépendant de health_score — jamais null (S5). */
-  churn_risk_score: number;
-  churn_risk_band: ChurnRiskBand;
+  /**
+   * Additif, indépendant de health_score (S5) — mais PAS "jamais null" comme
+   * cette note le disait jusqu'au 2026-08-05 : D1/C2.1 (2026-08-02) gèle ce
+   * champ à `null` pour un compte `churned` (`churn_risk_band='churned'`,
+   * jamais un clamp à 0 — 0 se lirait comme "aucun risque"), et un compte
+   * jamais scoré porte aussi `null`. Vérifié sur données réelles : 41 % du
+   * portefeuille (`churned` + jamais scoré) porte `churn_risk_band=null`
+   * ou `'churned'` au moment de ce correctif — un champ courant, pas un cas
+   * limite.
+   */
+  churn_risk_score: number | null;
+  churn_risk_band: ChurnRiskBand | null;
   risk_signals_triggered: RiskSignal[];
   risk_signals_evaluated: number;
   expansion_score: number | null;

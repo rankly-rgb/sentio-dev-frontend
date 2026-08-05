@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { CHURN_BAND_STYLE, HEALTH_BAND_STYLE, roundScore } from '@/lib/scoring-display';
+import { churnBandStyle, HEALTH_BAND_STYLE, roundScore } from '@/lib/scoring-display';
 import type { ChurnRiskBand, HealthScoreBand } from '@/lib/types/accounts';
 
 type ScoreType = 'health' | 'churn' | 'expansion';
@@ -36,9 +36,10 @@ function healthPulseClass(band: HealthScoreBand): string {
   return 'animate-pulse-ring ring-success/30';
 }
 
-function churnPulseClass(band: ChurnRiskBand): string {
+function churnPulseClass(band: string | null | undefined): string {
   if (band === 'high') return 'animate-pulse-ring ring-destructive/30';
   if (band === 'watch') return 'animate-pulse-ring ring-warning/30';
+  if (band === 'churned' || !band) return 'animate-pulse-ring ring-muted/30';
   return 'animate-pulse-ring ring-success/30';
 }
 
@@ -71,10 +72,10 @@ export default function ScoreBadge({
   let pulseClass: string;
 
   if (scoreType === 'churn' && band) {
-    const style = CHURN_BAND_STYLE[band as ChurnRiskBand];
+    const style = churnBandStyle(band);
     color = style.color;
     label = style.label;
-    pulseClass = churnPulseClass(band as ChurnRiskBand);
+    pulseClass = churnPulseClass(band);
   } else if ((scoreType === 'health' || !inverted) && band) {
     const style = HEALTH_BAND_STYLE[band as HealthScoreBand];
     color = style.color;
