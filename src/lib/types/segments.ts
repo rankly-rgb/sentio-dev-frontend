@@ -56,8 +56,8 @@ export interface SegmentAccount {
   health_score_band: HealthScoreBand | null;
   health_score_max_points: number;
   trend_30d: TrendDirection;
-  churn_risk_score: number;
-  churn_risk_band: ChurnRiskBand;
+  churn_risk_score: number | null;
+  churn_risk_band: ChurnRiskBand | null;
   risk_signals_evaluated: number;
   expansion_score: number | null;
   expansion_score_status: ExpansionScoreStatus;

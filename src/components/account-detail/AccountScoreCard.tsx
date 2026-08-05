@@ -15,7 +15,7 @@ import type { AccountDetail, ScoreDimensionKey, ScoreBreakdownDimension } from '
 import {
   HEALTH_BAND_STYLE,
   HEALTH_BAND_RING_STYLE,
-  CHURN_BAND_STYLE,
+  churnBandStyle,
   RISK_SEVERITY_STYLE,
   TREND_ARROW,
   healthScoreTrendColor,
@@ -174,7 +174,7 @@ function HealthScoreHeader({ account }: { account: AccountDetail }) {
 
 function ChurnRiskSection({ account }: { account: AccountDetail }) {
   const fr = useT();
-  const bandStyle = CHURN_BAND_STYLE[account.churn_risk_band];
+  const bandStyle = churnBandStyle(account.churn_risk_band);
   const signals = account.risk_signals_triggered;
 
   return (
@@ -182,7 +182,7 @@ function ChurnRiskSection({ account }: { account: AccountDetail }) {
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{fr.scores.churnRisk}</span>
         <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold ${bandStyle.color}`}>
-          {bandStyle.label} · {roundScore(account.churn_risk_score)}
+          {bandStyle.label}{account.churn_risk_score != null && ` · ${roundScore(account.churn_risk_score)}`}
         </span>
       </div>
       <p className="text-[11px] text-muted-foreground/70">{fr.scores.basedOnSignals(account.risk_signals_evaluated)}</p>
