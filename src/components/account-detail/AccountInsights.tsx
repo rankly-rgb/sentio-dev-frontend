@@ -26,6 +26,7 @@ export default function AccountInsights({ accountId }: Props) {
     renewal_alert: fr.insights.renewalAlert,
     payment_risk: fr.insights.paymentRisk,
     usage_drop: fr.insights.usageDecline,
+    account_health_summary: fr.insights.accountHealthSummary,
   };
   const { data, isLoading } = useInsights({
     account_id: accountId,

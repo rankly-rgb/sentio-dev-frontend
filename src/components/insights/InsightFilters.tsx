@@ -28,6 +28,7 @@ export default function InsightFilters({
     { value: 'renewal_alert', label: fr.insights.renewalAlert },
     { value: 'payment_risk', label: fr.insights.paymentRisk },
     { value: 'usage_drop', label: fr.insights.usageDecline },
+    { value: 'account_health_summary', label: fr.insights.accountHealthSummary },
   ];
   const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
     { value: 'active', label: fr.insights.status.active },

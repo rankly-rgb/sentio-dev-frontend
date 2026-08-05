@@ -1130,6 +1130,8 @@ export const en = {
     renewalAlert: 'Renewal',
     paymentRisk: 'Payment',
     usageDecline: 'Usage decline',
+    accountHealthSummary: 'Account health',
+    unknownType: 'Insight',
     markAsRead: 'Mark as read',
     acknowledge: 'Acknowledge',
     dismiss: 'Dismiss',

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   AlertTriangle, TrendingUp, Calendar, CreditCard, TrendingDown,
-  CheckCircle2, X, ExternalLink, ChevronDown, ChevronUp,
+  CheckCircle2, X, ExternalLink, ChevronDown, ChevronUp, HeartPulse,
 } from 'lucide-react';
 import type { Insight, InsightType, InsightPriority, InsightStatus } from '@/types/insights';
 
@@ -43,13 +43,22 @@ export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdat
     medium: { label: fr.insights.priority.medium, className: 'bg-yellow-100 text-yellow-800' },
     low: { label: fr.insights.priority.low, className: 'bg-gray-100 text-gray-600' },
   };
-  const TYPE_CONFIG: Record<InsightType, { label: string; icon: typeof AlertTriangle; className: string }> = {
+  // Partial, not Record<InsightType, ...>: insight_type comes from the
+  // network, and InsightType is a lie the moment the backend ships a value
+  // this union doesn't know about yet (see account_health_summary, added
+  // 2026-06-14 backend-side and only wired up here 2026-08-05 — the gap
+  // crashed this card on every render in the meantime). Partial forces the
+  // lookup below to go through the unknown-type fallback instead of a
+  // false compile-time guarantee.
+  const TYPE_CONFIG: Partial<Record<InsightType, { label: string; icon: typeof AlertTriangle; className: string }>> = {
     churn_prediction: { label: fr.insights.churnPrediction, icon: AlertTriangle, className: 'text-red-600' },
     expansion_opportunity: { label: fr.insights.expansionOpportunity, icon: TrendingUp, className: 'text-green-600' },
     renewal_alert: { label: fr.insights.renewalAlert, icon: Calendar, className: 'text-orange-600' },
     payment_risk: { label: fr.insights.paymentRisk, icon: CreditCard, className: 'text-red-600' },
     usage_drop: { label: fr.insights.usageDecline, icon: TrendingDown, className: 'text-yellow-600' },
+    account_health_summary: { label: fr.insights.accountHealthSummary, icon: HeartPulse, className: 'text-blue-600' },
   };
+  const UNKNOWN_TYPE_CONFIG = { label: fr.insights.unknownType, icon: AlertTriangle, className: 'text-muted-foreground' };
   const STATUS_CONFIG: Record<InsightStatus, { label: string; className: string }> = {
     active: { label: fr.insights.status.active, className: 'bg-blue-100 text-blue-800' },
     acknowledged: { label: fr.insights.status.acknowledged, className: 'bg-purple-100 text-purple-800' },
@@ -69,7 +78,7 @@ export default function InsightCard({ insight, onAcknowledge, onDismiss, isUpdat
   }, [insight.is_new]);
 
   const priority = PRIORITY_CONFIG[insight.priority];
-  const type = TYPE_CONFIG[insight.insight_type];
+  const type = TYPE_CONFIG[insight.insight_type] ?? UNKNOWN_TYPE_CONFIG;
   const statusCfg = STATUS_CONFIG[insight.status];
   const TypeIcon = type.icon;
 
