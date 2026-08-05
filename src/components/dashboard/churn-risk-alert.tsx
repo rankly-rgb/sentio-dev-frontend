@@ -1,4 +1,5 @@
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 
@@ -9,6 +10,8 @@ interface Props {
 
 export function ChurnRiskAlert({ count, mrrAtRisk }: Props) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   if (count === 0) return null;
 
   return (
@@ -20,7 +23,7 @@ export function ChurnRiskAlert({ count, mrrAtRisk }: Props) {
             {count} {fr.dashboard.accountsAtRisk.toLowerCase()}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            {fr.format.currency(mrrAtRisk)} de MRR en danger
+            {fr.format.currency(mrrAtRisk, currency)} in MRR at risk
           </p>
         </div>
       </CardContent>

@@ -10,6 +10,7 @@ import { useSegments } from '@/hooks/useSegments';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { useAccountDetailPanel } from '@/hooks/useAccountDetailPanel';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { TrackerBanner } from '@/components/dashboard/tracker-banner';
+import { StripeStaleBanner, BillingProfileNeedsReviewBanner } from '@/components/dashboard/degraded-state-banners';
 import { BenchmarkSection } from '@/components/dashboard/BenchmarkSection';
 import { useBenchmarkData } from '@/hooks/useBenchmarkData';
 import { SEGMENT_COLORS } from '@/lib/types/segments';
@@ -159,6 +161,7 @@ function RevisitTooltip() {
 
 export default function Dashboard() {
   const fr = useT();
+  const { user } = useAuth();
   const segmentLabels = useSegmentLabels();
   const navigate = useNavigate();
   const { data: onboardingStatus } = useOnboardingFlowStatus();
@@ -171,6 +174,9 @@ export default function Dashboard() {
   }, [onboardingStatus, navigate]);
 
   const { metrics, distribution, topAccounts, isLoading, error, refetch } = useDashboardData();
+  // metrics.currency (portfolio-metrics, autoritaire) une fois chargé ; le
+  // fallback user?.currency ne joue que pendant la fenêtre de chargement.
+  const currency = metrics?.currency ?? user?.currency ?? 'usd';
   // V2 - HubSpot : triggerHubspotSync aliasé pour satisfaire noUnusedLocals
   const { triggerStripeSync, triggerHubspotSync: _triggerHubspotSync, calculateScores, isSyncing, isSyncingHubspot, isCalculating } = useManualSync();
   const { data: integrationStatus } = useIntegrationStatus();
@@ -241,6 +247,10 @@ export default function Dashboard() {
       {/* Tracker banner */}
       {!trackerConnected && <TrackerBanner />}
 
+      {/* Degraded states — stale Stripe sync / non-standard billing config */}
+      {metrics?.stripe_stale && <StripeStaleBanner onSync={handleSync} isSyncing={isSyncing} />}
+      {metrics?.billing_profile === 'needs_review' && <BillingProfileNeedsReviewBanner />}
+
       {/* Critical accounts alert banner */}
       {(topAccounts?.atRiskTotalCount ?? 0) > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
@@ -250,7 +260,7 @@ export default function Dashboard() {
             </span>
             <span className="text-red-600 ml-2">
               {fr.dashboard.criticalAlertMrr(
-                fr.format.currency(topAccounts!.atRiskTotalMrrCents)
+                fr.format.currency(topAccounts!.atRiskTotalMrrCents, currency)
               )}
             </span>
           </div>
@@ -360,6 +370,11 @@ export default function Dashboard() {
 
       {/* KPI cards */}
       {metrics && <KpiCards metrics={metrics} />}
+      {metrics && metrics.mrr_unavailable_accounts > 0 && (
+        <p className="text-xs text-muted-foreground -mt-4">
+          {fr.dashboard.mrrUnavailableNote(metrics.mrr_unavailable_accounts)}
+        </p>
+      )}
 
       {/* Benchmarks sectoriels */}
       <BenchmarkSection data={benchmarkData ?? null} isLoading={benchmarkLoading} error={benchmarkError} />
@@ -422,10 +437,12 @@ export default function Dashboard() {
           viewAllHref="/segments/en_danger_critique"
           borderClass="border-destructive/30"
           onAccountClick={openPanel}
+          currency={currency}
         />
         <ExpansionCard
           topAccounts={topAccounts}
           onAccountClick={openPanel}
+          currency={currency}
         />
       </div>
 
@@ -491,6 +508,7 @@ function TopAccountsCard({
   viewAllHref,
   borderClass,
   onAccountClick,
+  currency,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -500,6 +518,7 @@ function TopAccountsCard({
   viewAllHref: string;
   borderClass: string;
   onAccountClick?: (id: string) => void;
+  currency: string;
 }) {
   const fr = useT();
   return (
@@ -526,7 +545,7 @@ function TopAccountsCard({
                   {getAccountLabel(a)}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
                   <ScoreBadge
                     score={a[scoreField]}
                     band={scoreField === 'churn_risk_score' ? a.churn_risk_band : undefined}
@@ -565,9 +584,11 @@ function SeatProgressBar({ count, limit }: { count: number; limit: number }) {
 function ExpansionCard({
   topAccounts,
   onAccountClick,
+  currency,
 }: {
   topAccounts: TopAccountsResult | null;
   onAccountClick?: (id: string) => void;
+  currency: string;
 }) {
   const fr = useT();
   const accounts = topAccounts?.expansion || [];
@@ -583,7 +604,7 @@ function ExpansionCard({
         </div>
         {totalCount > 0 && (
           <p className="text-xs text-muted-foreground mt-1">
-            {fr.dashboard.expansionContext(totalCount, fr.format.currency(totalMrrCents))}
+            {fr.dashboard.expansionContext(totalCount, fr.format.currency(totalMrrCents, currency))}
           </p>
         )}
       </CardHeader>
@@ -618,7 +639,7 @@ function ExpansionCard({
                     </Badge>
                   )}
                   {/* MRR */}
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
                   {/* Score */}
                   <ScoreBadge score={a.expansion_score} type="expansion" />
                 </div>

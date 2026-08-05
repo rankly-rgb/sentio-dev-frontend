@@ -1,6 +1,7 @@
 import { AlertTriangle, AlertCircle, Info, CreditCard } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import type { TodayActionsSummary } from '@/lib/types/today-actions';
 
@@ -11,6 +12,8 @@ interface TodaySummaryBarProps {
 
 export default function TodaySummaryBar({ summary, onScrollTo }: TodaySummaryBarProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const CARDS = [
     { key: 'P0' as const, label: fr.todayActions.critiques, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 hover:bg-red-100' },
     { key: 'P1' as const, label: fr.todayActions.hautes, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50 hover:bg-amber-100' },
@@ -40,7 +43,7 @@ export default function TodaySummaryBar({ summary, onScrollTo }: TodaySummaryBar
           <span className="text-xs font-medium text-slate-600">{fr.todayActions.mrrAtRisk}</span>
         </div>
         <p className="text-2xl font-bold text-slate-800">
-          {fr.format.currency(summary.mrr_at_risk_cents)}
+          {fr.format.currency(summary.mrr_at_risk_cents, currency)}
         </p>
       </Card>
     </div>

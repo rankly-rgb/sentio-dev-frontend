@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useSegments } from '@/hooks/useSegments';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,6 +10,8 @@ import ScoreBadge from '@/components/ScoreBadge';
 
 export default function Segments() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const segmentLabels = useSegmentLabels();
   const { data: segments, isLoading, error } = useSegments();
 
@@ -37,7 +40,7 @@ export default function Segments() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">MRR</span>
-                    <span className="font-medium">{fr.format.currency(segment.mrr_cents)}</span>
+                    <span className="font-medium">{fr.format.currency(segment.mrr_cents, currency)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{fr.scores.healthScore}</span>

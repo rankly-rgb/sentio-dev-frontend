@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import ScoreBadge from '@/components/ScoreBadge';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { exportCsvWithEmail, exportSequenceTemplate } from '@/lib/exportCsv';
 import type { SegmentType, SegmentAccount } from '@/lib/types/segments';
@@ -41,6 +42,8 @@ function comparePlanTier(a: string | null, b: string | null): number {
 
 export default function SegmentDetailView({ segment, accounts, totalFetched, onAccountClick }: SegmentDetailViewProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const segmentLabels = useSegmentLabels();
   const [sortField, setSortField] = useState<SortField>('mrr_cents');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -161,7 +164,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
             <Badge className={`${colors.bg} ${colors.text} border-0`}>{segmentLabels[segment]}</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            {accounts.length} {fr.segmentDetail.accountCount} · MRR {fr.format.currency(totalMrr)} · {fr.segmentDetail.avgHealth} {avgHealth !== null ? avgHealth : '—'}
+            {accounts.length} {fr.segmentDetail.accountCount} · MRR {fr.format.currency(totalMrr, currency)} · {fr.segmentDetail.avgHealth} {avgHealth !== null ? avgHealth : '—'}
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
@@ -216,7 +219,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-muted-foreground">MRR</p>
-            <p className="text-2xl font-bold">{fr.format.currency(totalMrr)}</p>
+            <p className="text-2xl font-bold">{fr.format.currency(totalMrr, currency)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -278,7 +281,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
                     '—'
                   )}
                 </td>
-                <td className="px-3 py-2 font-medium">{fr.format.currency(a.mrr_cents)}</td>
+                <td className="px-3 py-2 font-medium">{fr.format.currency(a.mrr_cents, currency)}</td>
                 <td className="px-3 py-2 text-muted-foreground">
                   {a.seat_count !== null && a.seat_limit !== null
                     ? `${a.seat_count} / ${a.seat_limit}`

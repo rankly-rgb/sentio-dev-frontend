@@ -8,6 +8,7 @@ import {
 import ScoreBadge from '@/components/ScoreBadge';
 import AccountName from '@/components/AccountName';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import type { TodayAction } from '@/lib/types/today-actions';
 
 interface TodayActionRowProps {
@@ -19,6 +20,8 @@ const MAX_VISIBLE_REASONS = 2;
 
 export default function TodayActionRow({ action, onAccountClick }: TodayActionRowProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const visibleReasons = action.trigger_reasons.slice(0, MAX_VISIBLE_REASONS);
   const hiddenReasonsCount = action.trigger_reasons.length - MAX_VISIBLE_REASONS;
 
@@ -51,7 +54,7 @@ export default function TodayActionRow({ action, onAccountClick }: TodayActionRo
 
       {/* MRR */}
       <td className="px-3 py-2.5 text-xs font-medium">
-        {fr.format.currency(action.mrr_cents)}
+        {fr.format.currency(action.mrr_cents, currency)}
       </td>
 
       {/* Health */}

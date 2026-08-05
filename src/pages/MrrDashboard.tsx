@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getMrrMovementSummary, calculateNrr } from '@/lib/queries/mrr';
+import { getMrrMovementSummary } from '@/lib/queries/mrr';
+import { usePortfolioMetrics } from '@/hooks/usePortfolioMetrics';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 
 function formatMonth(offset: number): string {
   const d = new Date();
@@ -13,6 +17,7 @@ function formatMonth(offset: number): string {
 
 export default function MrrDashboard() {
   const fr = useT();
+  const { user } = useAuth();
   const [period] = useState({ from: formatMonth(-1), to: formatMonth(0) });
 
   const summaryQuery = useQuery({
@@ -21,15 +26,16 @@ export default function MrrDashboard() {
     staleTime: 120_000,
   });
 
-  const nrrQuery = useQuery({
-    queryKey: ['mrr', 'nrr', period],
-    queryFn: () => calculateNrr(period),
-    staleTime: 120_000,
-  });
+  // NRR autoritaire (portfolio-metrics, Phase 4 backend) — plus de
+  // deuxième implémentation locale (AUDIT_LOGIQUE_METIER_STRIPE.md point 22 :
+  // calculateNrr() divergeait numériquement du Dashboard principal pour la
+  // même org le même jour).
+  const portfolioMetricsQuery = usePortfolioMetrics();
 
   const summary = summaryQuery.data;
-  const nrr = nrrQuery.data;
-  const isLoading = summaryQuery.isLoading || nrrQuery.isLoading;
+  const nrr = portfolioMetricsQuery.data?.nrr_percentage ?? null;
+  const currency = portfolioMetricsQuery.data?.currency ?? user?.currency ?? 'usd';
+  const isLoading = summaryQuery.isLoading || portfolioMetricsQuery.isLoading;
 
   if (isLoading) {
     return (
@@ -44,40 +50,74 @@ export default function MrrDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">{fr.mrr.title}</h1>
+      <div>
+        <h1 className="text-2xl font-bold">{fr.mrr.title}</h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          Amounts shown in {currency.toUpperCase()}
+        </p>
+      </div>
 
-      {/* NRR en grand */}
-      <Card className={nrr && nrr >= 100 ? 'border-success' : 'border-warning'}>
-        <CardContent className="p-6 text-center">
-          <p className="text-sm text-muted-foreground">{fr.dashboard.nrr}</p>
-          <p className="text-4xl font-bold">{nrr ? fr.format.percentage(nrr) : '-'}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {nrr && nrr >= 100 ? '> 100% = excellent' : '< 100% = attention requise'}
-          </p>
-        </CardContent>
-      </Card>
+      {/* MRR actuel + NRR en grand — même source (portfolio-metrics) que le
+          Dashboard principal (Phase 5.2), pour que les deux écrans ne
+          puissent plus jamais diverger (AUDIT_LOGIQUE_METIER_STRIPE.md
+          point 22, gardé par e2e/cross-screen-consistency.spec.ts). */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card data-testid="mrr-page-mrr">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">{fr.mrr.currentMrr}</p>
+            <p className="text-4xl font-bold">
+              {fr.format.currency(portfolioMetricsQuery.data?.mrr_cents ?? 0, currency)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card data-testid="mrr-page-nrr" className={nrr === null ? '' : nrr >= 100 ? 'border-success' : 'border-warning'}>
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">{fr.dashboard.nrr}</p>
+            <p className={nrr === null ? 'text-lg font-medium text-muted-foreground' : 'text-4xl font-bold'}>
+              {nrr !== null ? fr.format.percentage(nrr) : fr.dashboard.nrrUnavailable}
+            </p>
+            {nrr !== null && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {nrr >= 100 ? fr.dashboard.nrrAboveTarget : fr.dashboard.nrrBelowTarget}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Mouvements MRR */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { label: fr.mrr.new, value: summary.new_cents, color: 'text-success' },
-            { label: fr.mrr.expansion, value: summary.expansion_cents, color: 'text-success' },
-            { label: fr.mrr.reactivation, value: summary.reactivation_cents, color: 'text-success' },
-            { label: fr.mrr.contraction, value: -summary.contraction_cents, color: 'text-destructive' },
-            { label: fr.mrr.churn, value: -summary.churn_cents, color: 'text-destructive' },
-            { label: fr.mrr.net, value: summary.net_cents, color: summary.net_cents >= 0 ? 'text-success' : 'text-destructive' },
-          ].map(item => (
-            <Card key={item.label}>
-              <CardContent className="p-4 text-center">
-                <p className="text-xs text-muted-foreground">{item.label}</p>
-                <p className={`text-lg font-bold ${item.color}`}>
-                  {fr.format.currency(Math.abs(item.value))}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <TooltipProvider>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { label: fr.mrr.new, tooltip: fr.mrr.tooltips.new, value: summary.new_cents, color: 'text-success' },
+              { label: fr.mrr.expansion, tooltip: fr.mrr.tooltips.expansion, value: summary.expansion_cents, color: 'text-success' },
+              { label: fr.mrr.reactivation, tooltip: fr.mrr.tooltips.reactivation, value: summary.reactivation_cents, color: 'text-success' },
+              { label: fr.mrr.contraction, tooltip: fr.mrr.tooltips.contraction, value: -summary.contraction_cents, color: 'text-destructive' },
+              { label: fr.mrr.churn, tooltip: fr.mrr.tooltips.churn, value: -summary.churn_cents, color: 'text-destructive' },
+              { label: fr.mrr.net, tooltip: fr.mrr.tooltips.net, value: summary.net_cents, color: summary.net_cents >= 0 ? 'text-success' : 'text-destructive' },
+            ].map(item => (
+              <Card key={item.label}>
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <p className="text-xs text-muted-foreground">{item.label}</p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-64">
+                        <p>{item.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className={`text-lg font-bold ${item.color}`}>
+                    {fr.format.currency(Math.abs(item.value), currency)}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TooltipProvider>
       )}
 
       {/* TODO: Graphique tendance MRR avec recharts */}

@@ -10,11 +10,14 @@ interface KpiCardsProps {
 
 export function KpiCards({ metrics }: KpiCardsProps) {
   const fr = useT();
+  const currency = metrics.currency ?? 'usd';
   const kpis = [
     {
       key: 'mrr',
       label: fr.dashboard.mrr,
-      value: fr.format.currency(metrics.mrr_cents),
+      value: fr.format.currency(metrics.mrr_cents, currency),
+      isUnavailable: false,
+      isCurrency: true,
       icon: DollarSign,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.mrr,
@@ -22,7 +25,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'arr',
       label: fr.dashboard.arr,
-      value: fr.format.currency(metrics.arr_cents),
+      value: fr.format.currency(metrics.arr_cents, currency),
+      isUnavailable: false,
+      isCurrency: true,
       icon: TrendingUp,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.arr,
@@ -30,15 +35,19 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'nrr',
       label: fr.dashboard.nrr,
-      value: fr.format.percentage(metrics.nrr_percentage),
-      icon: metrics.nrr_percentage >= 100 ? TrendingUp : TrendingDown,
-      color: metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
+      value: metrics.nrr_percentage !== null ? fr.format.percentage(metrics.nrr_percentage) : fr.dashboard.nrrUnavailable,
+      isUnavailable: metrics.nrr_percentage === null,
+      isCurrency: false,
+      icon: (metrics.nrr_percentage ?? 0) >= 100 ? TrendingUp : TrendingDown,
+      color: metrics.nrr_percentage === null ? 'text-muted-foreground' : metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
       tooltip: fr.dashboard.tooltips.nrr,
     },
     {
       key: 'active-accounts',
       label: fr.dashboard.activeAccounts,
       value: fr.format.number(metrics.active_accounts),
+      isUnavailable: false,
+      isCurrency: false,
       icon: Users,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.activeAccounts,
@@ -47,6 +56,8 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'accounts-at-risk',
       label: fr.dashboard.accountsAtRisk,
       value: fr.format.number(metrics.accounts_at_risk),
+      isUnavailable: false,
+      isCurrency: false,
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.accountsAtRisk,
@@ -54,7 +65,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'mrr-at-risk',
       label: fr.dashboard.mrrAtRisk,
-      value: fr.format.currency(metrics.mrr_at_risk_cents),
+      value: fr.format.currency(metrics.mrr_at_risk_cents, currency),
+      isUnavailable: false,
+      isCurrency: true,
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.mrrAtRisk,
@@ -63,6 +76,8 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       key: 'expansion-opportunities',
       label: fr.dashboard.expansionOpportunities,
       value: fr.format.number(metrics.expansion_opportunities),
+      isUnavailable: false,
+      isCurrency: false,
       icon: Target,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.expansionOpportunities,
@@ -70,9 +85,11 @@ export function KpiCards({ metrics }: KpiCardsProps) {
     {
       key: 'churn-rate',
       label: fr.dashboard.churnRate,
-      value: fr.format.percentage(metrics.churn_rate),
+      value: metrics.churn_rate !== null ? fr.format.percentage(metrics.churn_rate) : '—',
+      isUnavailable: metrics.churn_rate === null,
+      isCurrency: false,
       icon: TrendingDown,
-      color: metrics.churn_rate > 5 ? 'text-destructive' : 'text-muted-foreground',
+      color: (metrics.churn_rate ?? 0) > 5 ? 'text-destructive' : 'text-muted-foreground',
       tooltip: fr.dashboard.tooltips.churnRate,
     },
   ];
@@ -97,7 +114,12 @@ export function KpiCards({ metrics }: KpiCardsProps) {
                 </div>
                 <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
               </div>
-              <p className="text-xl font-bold">{kpi.value}</p>
+              <p className={kpi.isUnavailable ? 'text-sm font-medium text-muted-foreground' : 'text-xl font-bold'}>
+                {kpi.value}
+                {kpi.isCurrency && !kpi.isUnavailable && (
+                  <span className="text-xs font-normal text-muted-foreground ml-1">{currency.toUpperCase()}</span>
+                )}
+              </p>
             </CardContent>
           </Card>
         ))}

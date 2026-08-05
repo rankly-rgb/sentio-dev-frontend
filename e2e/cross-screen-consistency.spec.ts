@@ -37,4 +37,32 @@ test.describe('Cross-screen KPI consistency', () => {
     expect(accountsActiveAccounts).toBe(dashboardActiveAccounts);
     expect(accountsMrr).toBe(dashboardMrr);
   });
+
+  // Dashboard and /mrr both derive MRR/NRR from GET /dashboard-api/portfolio-metrics
+  // (AUDIT_LOGIQUE_METIER_STRIPE.md point 22 — three independent local
+  // reimplementations existed before that endpoint, silently disagreeing for
+  // the same org on the same day; NRR was even hardcoded to 100 on the
+  // dashboard). This guards against that regressing.
+  test('MRR and NRR match between Dashboard and MRR dashboard', async ({ page }) => {
+    const dashboardMrr = await page
+      .getByTestId('kpi-mrr')
+      .locator('p.text-xl.font-bold, p.text-2xl.font-bold')
+      .innerText();
+    const dashboardNrr = await page
+      .getByTestId('kpi-nrr')
+      .locator('p.text-xl.font-bold, p.text-2xl.font-bold, p.text-sm.font-medium')
+      .innerText();
+
+    await page.goto('/mrr');
+    await page.waitForLoadState('networkidle');
+
+    const mrrPageMrr = await page.getByTestId('mrr-page-mrr').locator('p.text-4xl.font-bold').innerText();
+    const mrrPageNrr = await page
+      .getByTestId('mrr-page-nrr')
+      .locator('p.text-4xl.font-bold, p.text-lg.font-medium')
+      .innerText();
+
+    expect(mrrPageMrr).toBe(dashboardMrr);
+    expect(mrrPageNrr).toBe(dashboardNrr);
+  });
 });

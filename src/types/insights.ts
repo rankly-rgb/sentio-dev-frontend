@@ -5,7 +5,8 @@ export type InsightType =
   | 'expansion_opportunity'
   | 'renewal_alert'
   | 'payment_risk'
-  | 'usage_drop';
+  | 'usage_drop'
+  | 'account_health_summary';
 
 export type InsightPriority = 'low' | 'medium' | 'high' | 'critical';
 

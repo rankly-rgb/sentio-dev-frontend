@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   usePlaybookExportPreview,
   usePlaybookRuns,
@@ -18,6 +19,8 @@ interface PlaybookExportPanelProps {
 
 export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelProps) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const { data: preview, isLoading: previewLoading } = usePlaybookExportPreview(playbookId);
   const { data: runs, isLoading: runsLoading } = usePlaybookRuns(playbookId);
   const exportMutation = useExportPlaybookCsv(playbookId);
@@ -48,7 +51,7 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
             </div>
             <div>
               <span className="text-muted-foreground">{fr.playbookExport.mrrAtRisk} : </span>
-              <span className="font-semibold">{fr.format.currency(preview.mrr_at_risk_cents)}</span>
+              <span className="font-semibold">{fr.format.currency(preview.mrr_at_risk_cents, currency)}</span>
             </div>
           </div>
         ) : null}
@@ -85,7 +88,7 @@ export default function PlaybookExportPanel({ playbookId }: PlaybookExportPanelP
                 >
                   <div>
                     <div className="font-medium">
-                      {run.accounts_count} accounts &middot; {fr.format.currency(run.mrr_at_risk_cents)}
+                      {run.accounts_count} accounts &middot; {fr.format.currency(run.mrr_at_risk_cents, currency)}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {run.status === 'executed' && run.executed_at

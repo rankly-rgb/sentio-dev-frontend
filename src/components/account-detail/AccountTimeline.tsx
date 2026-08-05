@@ -128,6 +128,8 @@ interface Props {
 
 export default function AccountTimeline({ accountId, flags }: Props) {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const { data: executions, isLoading: exLoading } = usePlaybookExecutions(accountId);
   const { data: notes, isLoading: notesLoading } = useAccountNotes(accountId);
 
@@ -197,12 +199,12 @@ export default function AccountTimeline({ accountId, flags }: Props) {
                 {/* MRR impact */}
                 {(event.execution.mrr_recovered_cents ?? 0) > 0 && (
                   <p className="text-[11px] text-green-600">
-                    MRR recovered: {fr.format.currency(event.execution.mrr_recovered_cents ?? 0)}
+                    MRR recovered: {fr.format.currency(event.execution.mrr_recovered_cents ?? 0, currency)}
                   </p>
                 )}
                 {(event.execution.mrr_expansion_cents ?? 0) > 0 && (
                   <p className="text-[11px] text-blue-600">
-                    MRR expansion: {fr.format.currency(event.execution.mrr_expansion_cents ?? 0)}
+                    MRR expansion: {fr.format.currency(event.execution.mrr_expansion_cents ?? 0, currency)}
                   </p>
                 )}
               </div>

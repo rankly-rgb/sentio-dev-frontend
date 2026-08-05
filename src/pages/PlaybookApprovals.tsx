@@ -26,11 +26,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useT } from '@/lib/i18n/useT';
+import { useAuth } from '@/contexts/AuthContext';
 import { usePendingApprovals, useApproveQueueItem } from '@/hooks/usePlaybookDestinations';
 import type { PlaybookApprovalQueueItem } from '@/lib/types/playbook-destination';
 
 export default function PlaybookApprovals() {
   const fr = useT();
+  const { user } = useAuth();
+  const currency = user?.currency ?? 'usd';
   const { data: items, isLoading, isError } = usePendingApprovals();
   const approveMutation = useApproveQueueItem();
 
@@ -159,7 +162,7 @@ export default function PlaybookApprovals() {
 
                   <TableCell className="text-sm">
                     {item.mrr_eur !== null
-                      ? fr.format.currency(item.mrr_eur * 100)
+                      ? fr.format.currency(item.mrr_eur * 100, currency)
                       : t.noMrr}
                   </TableCell>
 
