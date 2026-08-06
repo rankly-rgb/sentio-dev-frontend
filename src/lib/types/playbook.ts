@@ -579,7 +579,7 @@ export interface PlaybookRun {
 }
 
 // --- Outcome tracking (chantier C — manual execution mark, attribution window,
-// resolution rate, confirmation nudge) — per API_CONTRACTS.md § "Playbook Outcome
+// resolution rate, confirmation nudge) — per sentio-dev-backend API_CONTRACTS.md § "Playbook Outcome
 // Tracking" 8.1-8.4 ---
 
 export type AttributionStatusValue = 'not_executed' | 'active' | 'expired' | 'resolved';

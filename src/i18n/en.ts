@@ -113,7 +113,7 @@ export const en = {
     contractScoreTooltip: 'Based on contract tenure, subscribed plan and number of seats used',
     productUsageTooltip: 'Based on frequency and depth of product usage',
     healthScoreTooltip: 'Weighted average of sub-scores: financial, engagement, contract and product usage',
-    // Scoring Engine V2 (docs/API_CONTRACTS.md)
+    // Scoring Engine V2 (docs/SCORING_ENGINE_CONTRACT.md)
     paymentHealth: 'Payment health',
     revenueDynamics: 'Revenue dynamics',
     contractRenewal: 'Contract renewal',

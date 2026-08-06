@@ -56,7 +56,7 @@ export default function ExecutionAttributionCell({ executionId }: Props) {
       : fr.playbooks.attribution.hoursRemaining(Math.max(1, Math.floor(seconds / 3600)));
   }
 
-  // Cancel affordance gated on the same two conflict cases as API_CONTRACTS.md § 8.1.1's
+  // Cancel affordance gated on the same two conflict cases as sentio-dev-backend API_CONTRACTS.md § 8.1.1's
   // 409s (auto-resolution already detected, nudge already answered), plus the 5-minute
   // window — checked client-side so the button never appears where the backend would reject it
   const canCancel = withinCancelWindow && status !== 'resolved' && nudgeResponse === null;

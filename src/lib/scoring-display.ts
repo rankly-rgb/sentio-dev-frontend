@@ -1,5 +1,5 @@
 /**
- * Présentation des champs Scoring Engine V2 (docs/API_CONTRACTS.md).
+ * Présentation des champs Scoring Engine V2 (docs/SCORING_ENGINE_CONTRACT.md).
  * Seule source de mapping band/severity → couleur — ne pas recalculer de
  * bandes ailleurs à partir des scores bruts (le backend est la seule
  * autorité sur health_score_band / churn_risk_band).

@@ -272,7 +272,7 @@ export async function markPlaybookRunExecuted(runId: string): Promise<{ success:
   });
 }
 
-// --- Outcome tracking (chantier C) — per API_CONTRACTS.md § "Playbook Outcome Tracking" ---
+// --- Outcome tracking (chantier C) — per sentio-dev-backend API_CONTRACTS.md § "Playbook Outcome Tracking" ---
 
 export async function getAttributionStatus(executionId: string): Promise<AttributionStatus> {
   return fetchWithUserJwt<AttributionStatus>(`playbook-execute/${executionId}/attribution-status`);
