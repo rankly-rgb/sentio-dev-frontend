@@ -46,7 +46,7 @@ interface BriefingResponse {
 // mrr_cents/arr_cents/nrr_percentage/churn_rate/accounts_at_risk/
 // accounts_at_risk_unpriced/mrr_at_risk_cents/expansion_opportunities/currency
 // viennent tous de portfolio-metrics (Phase 4
-// backend, docs/API_CONTRACTS.md) — endpoint autoritaire, plus jamais recalculés
+// backend, sentio-dev-backend API_CONTRACTS.md) — endpoint autoritaire, plus jamais recalculés
 // ici (AUDIT_LOGIQUE_METIER_STRIPE.md point 22 : 3 implémentations locales
 // divergentes existaient avant ce chantier). total_accounts/active_accounts/
 // avg_health_score restent des comptages simples non concernés par ce point —

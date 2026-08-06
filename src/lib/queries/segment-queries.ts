@@ -4,7 +4,7 @@ import type { SegmentAccount } from '@/lib/types/segments';
 import type { AccountListItem } from '@/lib/types/accounts';
 
 /**
- * Source de vérité : `primary_segment` (docs/API_CONTRACTS.md §4bis), lu tel
+ * Source de vérité : `primary_segment` (docs/SCORING_ENGINE_CONTRACT.md §4bis), lu tel
  * quel depuis segment_memberships via accounts-api — la sortie persistée du
  * cron de segmentation backend, jamais recalculée côté client.
  *
@@ -30,7 +30,7 @@ export function getSegmentFilter(segment: SegmentType): (a: Pick<AccountListItem
 /**
  * Chargé via accounts-api (getAllAccountsForOrg) plutôt qu'un .select() brut
  * sur la table `accounts` : primary_segment n'est confirmé disponible que via
- * cette edge function (docs/API_CONTRACTS.md §4bis + fixtures backend), la
+ * cette edge function (docs/SCORING_ENGINE_CONTRACT.md §4bis + fixtures backend), la
  * question de savoir si c'est aussi une colonne PostgREST directe reste
  * ouverte côté backend — on ne parie pas dessus.
  *
