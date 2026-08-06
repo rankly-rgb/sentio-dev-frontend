@@ -31,6 +31,7 @@ const PlaybookNew = lazy(() => import('@/pages/PlaybookNew'));
 const PlaybookDetail = lazy(() => import('@/pages/PlaybookDetail'));
 const PlaybookApprovals = lazy(() => import('@/pages/PlaybookApprovals'));
 const PlaybookDestinations = lazy(() => import('@/pages/PlaybookDestinations'));
+const PlaybookResolutionRate = lazy(() => import('@/pages/playbooks/PlaybookResolutionRate'));
 const WorkflowDetail = lazy(() => import('@/pages/WorkflowDetail'));
 // V2 - HubSpot/Webhook : lazy imports conservés pour V2
 // const Integrations = lazy(() => import('@/pages/Integrations'));
@@ -141,6 +142,7 @@ export default function App() {
                 <Route path="/playbooks/new" element={<ProtectedRoute><AppLayout><PlaybookNew /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/destinations" element={<ProtectedRoute><AppLayout><PlaybookDestinations /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/approvals" element={<ProtectedRoute><AppLayout><PlaybookApprovals /></AppLayout></ProtectedRoute>} />
+                <Route path="/playbooks/resolution-rate" element={<ProtectedRoute><AppLayout><PlaybookResolutionRate /></AppLayout></ProtectedRoute>} />
                 <Route path="/playbooks/:id" element={<ProtectedRoute><AppLayout><PlaybookDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/workflows/:id" element={<ProtectedRoute><AppLayout><WorkflowDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
