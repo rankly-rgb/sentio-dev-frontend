@@ -33,6 +33,8 @@ export const en = {
     mrrAtRisk: 'MRR at risk',
     accountsAtRiskUnpriced: (n: number) => `${n} account${n === 1 ? '' : 's'} not billable, excluded from this total`,
     expansionOpportunities: 'Expansion opportunities',
+    /** Same wording as EXPANSION_UNAVAILABLE_REASON_LABEL.seat_data_not_configured (scoring-display.ts) — one message for the same underlying state, per-account and portfolio-wide. */
+    expansionNotConfigured: 'Plan mapping not configured yet',
     avgHealthScore: 'Avg health score',
     churnRate: 'Churn rate',
     tooltips: {
@@ -67,6 +69,7 @@ export const en = {
     nrrUnavailable: 'Available after 3 months of data',
     nrrAboveTarget: 'Above 100% = excellent',
     nrrBelowTarget: 'Below 100% = needs attention',
+    churnRateUnavailable: 'Available after 3 months of data',
     stripeStaleBanner: 'Your Stripe data hasn\'t synced in over 48 hours — the numbers below may be out of date.',
     stripeStaleBannerCta: 'Sync now',
     billingProfileNeedsReviewBanner: 'Some of your accounts use billing setups we can\'t fully price automatically (metered usage, invoice-only billing, multiple currencies, or subscription schedules) — MRR may be incomplete for those accounts.',

@@ -1,8 +1,9 @@
+import { Link } from 'react-router-dom';
 import { useT } from '@/lib/i18n/useT';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DashboardMetrics } from '@/types/dashboard';
-import { TrendingUp, TrendingDown, Users, AlertTriangle, DollarSign, Target, HelpCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, AlertTriangle, DollarSign, Target, HelpCircle, Settings } from 'lucide-react';
 
 interface KpiCardsProps {
   metrics: DashboardMetrics;
@@ -22,6 +23,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.mrr,
       caption: null as string | null,
+      configureCta: false,
     },
     {
       key: 'arr',
@@ -33,6 +35,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.arr,
       caption: null as string | null,
+      configureCta: false,
     },
     {
       key: 'nrr',
@@ -44,6 +47,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       color: metrics.nrr_percentage === null ? 'text-muted-foreground' : metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
       tooltip: fr.dashboard.tooltips.nrr,
       caption: null as string | null,
+      configureCta: false,
     },
     {
       key: 'active-accounts',
@@ -55,6 +59,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.activeAccounts,
       caption: null as string | null,
+      configureCta: false,
     },
     {
       key: 'accounts-at-risk',
@@ -66,6 +71,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.accountsAtRisk,
       caption: null as string | null,
+      configureCta: false,
     },
     {
       key: 'mrr-at-risk',
@@ -83,28 +89,39 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       // mrr_at_risk_cents bouge, et lirait ça comme "rien à risque en
       // argent" au lieu de "certains comptes ne sont pas chiffrés".
       caption: metrics.accounts_at_risk_unpriced > 0 ? fr.dashboard.accountsAtRiskUnpriced(metrics.accounts_at_risk_unpriced) : null,
+      configureCta: false,
     },
     {
       key: 'expansion-opportunities',
       label: fr.dashboard.expansionOpportunities,
-      value: fr.format.number(metrics.expansion_opportunities),
-      isUnavailable: false,
+      // Audit 2026-08-06, Priorité 2 : `expansion_opportunities = 0` était
+      // muet, indiscernable de "cette org n'a jamais configuré ses plans" —
+      // même motif que NRR/churn rate, sur un axe différent (configuration
+      // manquante, pas absence d'historique). Mirrors AccountScoreCard's
+      // per-account `seat_data_not_configured` messaging + CTA.
+      value: metrics.expansion_configured ? fr.format.number(metrics.expansion_opportunities) : fr.dashboard.expansionNotConfigured,
+      isUnavailable: !metrics.expansion_configured,
       isCurrency: false,
       icon: Target,
-      color: 'text-success',
+      color: metrics.expansion_configured ? 'text-success' : 'text-muted-foreground',
       tooltip: fr.dashboard.tooltips.expansionOpportunities,
       caption: null as string | null,
+      configureCta: !metrics.expansion_configured,
     },
     {
       key: 'churn-rate',
       label: fr.dashboard.churnRate,
-      value: metrics.churn_rate !== null ? fr.format.percentage(metrics.churn_rate) : '—',
+      // Audit 2026-08-06, Priorité 1 : même garde bootstrap que NRR — sans
+      // elle, `mrr_movements` totalement vide se lisait comme "0.0% de
+      // churn" (une mesure) au lieu de "pas encore de données" (une absence).
+      value: metrics.churn_rate !== null ? fr.format.percentage(metrics.churn_rate) : fr.dashboard.churnRateUnavailable,
       isUnavailable: metrics.churn_rate === null,
       isCurrency: false,
       icon: TrendingDown,
-      color: (metrics.churn_rate ?? 0) > 5 ? 'text-destructive' : 'text-muted-foreground',
+      color: metrics.churn_rate === null ? 'text-muted-foreground' : metrics.churn_rate > 5 ? 'text-destructive' : 'text-muted-foreground',
       tooltip: fr.dashboard.tooltips.churnRate,
       caption: null as string | null,
+      configureCta: false,
     },
   ];
 
@@ -136,6 +153,15 @@ export function KpiCards({ metrics }: KpiCardsProps) {
               </p>
               {kpi.caption && (
                 <p className="text-xs text-muted-foreground mt-1">{kpi.caption}</p>
+              )}
+              {kpi.configureCta && (
+                <Link
+                  to="/settings?tab=plans-sieges"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                >
+                  <Settings className="h-3 w-3" />
+                  {fr.scores.expansionUnlockCta}
+                </Link>
               )}
             </CardContent>
           </Card>
