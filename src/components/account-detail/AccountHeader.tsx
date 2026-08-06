@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Pencil, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
+import AccountDelinquentBadge from '@/components/accounts/AccountDelinquentBadge';
 import { useT } from '@/lib/i18n/useT';
 import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { SEGMENT_COLORS } from '@/lib/types/segments';
@@ -65,6 +66,7 @@ export default function AccountHeader({ account }: Props) {
     <div className="space-y-2">
       {/* Badges row */}
       <div className="flex flex-wrap items-center gap-1.5">
+        <AccountDelinquentBadge isDelinquent={account.is_delinquent} />
         {account.plan_tier && (
           <Badge
             variant="outline"

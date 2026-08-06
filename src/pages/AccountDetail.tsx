@@ -5,6 +5,7 @@ import { useManualSync } from '@/hooks/useManualSync';
 import { useInsights, useUpdateInsightStatus } from '@/hooks/useInsights';
 import { useRemoveAccountFlag } from '@/hooks/useAccountFlags';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
+import AccountDelinquentBadge from '@/components/accounts/AccountDelinquentBadge';
 import AccountNotesSection from '@/components/accounts/AccountNotesSection';
 import { useT } from '@/lib/i18n/useT';
 import { useAuth } from '@/contexts/AuthContext';
@@ -137,6 +138,10 @@ export default function AccountDetail() {
                   {account.subscriptions[0].status}
                 </Badge>
               )}
+              {/* Delinquency (audit 2026-08-06) — account-level aggregate, distinct
+                  from the per-subscription status badge above (subscriptions[0]
+                  only, could miss a later delinquent subscription). */}
+              <AccountDelinquentBadge isDelinquent={account.is_delinquent} />
               <p className="text-sm text-muted-foreground">
                 {fr.accountDetail.createdAt} {fr.format.date(account.created_at)}
               </p>

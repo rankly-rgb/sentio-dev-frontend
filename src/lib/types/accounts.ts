@@ -111,6 +111,8 @@ export interface AccountListItem extends ScoringV2Fields {
   billing_interval: string | null;
   mrr_cents: number;
   mrr_status: MrrStatus;
+  /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
+  is_delinquent: boolean;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -131,6 +133,8 @@ export interface AccountDetail extends ScoringV2Fields {
   billing_interval: string | null;
   mrr_cents: number;
   mrr_status: MrrStatus;
+  /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
+  is_delinquent: boolean;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;

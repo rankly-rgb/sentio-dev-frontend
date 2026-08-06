@@ -43,8 +43,9 @@ interface BriefingResponse {
   };
 }
 
-// mrr_cents/arr_cents/nrr_percentage/churn_rate/accounts_at_risk/mrr_at_risk_cents/
-// expansion_opportunities/currency viennent tous de portfolio-metrics (Phase 4
+// mrr_cents/arr_cents/nrr_percentage/churn_rate/accounts_at_risk/
+// accounts_at_risk_unpriced/mrr_at_risk_cents/expansion_opportunities/currency
+// viennent tous de portfolio-metrics (Phase 4
 // backend, docs/API_CONTRACTS.md) — endpoint autoritaire, plus jamais recalculés
 // ici (AUDIT_LOGIQUE_METIER_STRIPE.md point 22 : 3 implémentations locales
 // divergentes existaient avant ce chantier). total_accounts/active_accounts/
@@ -73,6 +74,7 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
     total_accounts: all.length,
     active_accounts: active.length,
     accounts_at_risk: portfolioMetrics.accounts_at_risk,
+    accounts_at_risk_unpriced: portfolioMetrics.accounts_at_risk_unpriced,
     mrr_at_risk_cents: portfolioMetrics.mrr_at_risk_cents,
     expansion_opportunities: portfolioMetrics.expansion_opportunities,
     avg_health_score: briefing.data.portfolio.current_avg_health,

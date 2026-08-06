@@ -7,7 +7,11 @@ export interface DashboardMetrics {
   nrr_percentage: number | null;
   total_accounts: number;
   active_accounts: number;
+  /** churn_risk_band='high' OR is_delinquent (audit délinquence 2026-08-06). */
   accounts_at_risk: number;
+  /** Subset of accounts_at_risk with mrr_status='unavailable' — excluded from mrr_at_risk_cents, never silently. */
+  accounts_at_risk_unpriced: number;
+  /** Sums only the chargeable (mrr_status != 'unavailable') subset of accounts_at_risk. */
   mrr_at_risk_cents: number;
   expansion_opportunities: number;
   /** null si aucun compte n'a de health_score honnêtement calculable (jamais rendu comme 0). */
