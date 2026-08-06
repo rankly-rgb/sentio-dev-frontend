@@ -21,6 +21,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: DollarSign,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.mrr,
+      caption: null as string | null,
     },
     {
       key: 'arr',
@@ -31,6 +32,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: TrendingUp,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.arr,
+      caption: null as string | null,
     },
     {
       key: 'nrr',
@@ -41,6 +43,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: (metrics.nrr_percentage ?? 0) >= 100 ? TrendingUp : TrendingDown,
       color: metrics.nrr_percentage === null ? 'text-muted-foreground' : metrics.nrr_percentage >= 100 ? 'text-success' : 'text-warning',
       tooltip: fr.dashboard.tooltips.nrr,
+      caption: null as string | null,
     },
     {
       key: 'active-accounts',
@@ -51,6 +54,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: Users,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.activeAccounts,
+      caption: null as string | null,
     },
     {
       key: 'accounts-at-risk',
@@ -61,6 +65,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.accountsAtRisk,
+      caption: null as string | null,
     },
     {
       key: 'mrr-at-risk',
@@ -71,6 +76,13 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.mrrAtRisk,
+      // Audit délinquence 2026-08-06 : la majorité des comptes délinquents
+      // ont mrr_status='unavailable' (mrr_cents=0 par exclusion de devise
+      // minoritaire) — mrr_at_risk_cents ne les somme pas. Sans cette
+      // légende, un lecteur verrait accounts_at_risk grimper sans que
+      // mrr_at_risk_cents bouge, et lirait ça comme "rien à risque en
+      // argent" au lieu de "certains comptes ne sont pas chiffrés".
+      caption: metrics.accounts_at_risk_unpriced > 0 ? fr.dashboard.accountsAtRiskUnpriced(metrics.accounts_at_risk_unpriced) : null,
     },
     {
       key: 'expansion-opportunities',
@@ -81,6 +93,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: Target,
       color: 'text-success',
       tooltip: fr.dashboard.tooltips.expansionOpportunities,
+      caption: null as string | null,
     },
     {
       key: 'churn-rate',
@@ -91,6 +104,7 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: TrendingDown,
       color: (metrics.churn_rate ?? 0) > 5 ? 'text-destructive' : 'text-muted-foreground',
       tooltip: fr.dashboard.tooltips.churnRate,
+      caption: null as string | null,
     },
   ];
 
@@ -120,6 +134,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
                   <span className="text-xs font-normal text-muted-foreground ml-1">{currency.toUpperCase()}</span>
                 )}
               </p>
+              {kpi.caption && (
+                <p className="text-xs text-muted-foreground mt-1">{kpi.caption}</p>
+              )}
             </CardContent>
           </Card>
         ))}

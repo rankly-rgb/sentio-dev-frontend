@@ -14,7 +14,11 @@ export interface PortfolioMetrics {
   nrr_percentage: number | null;
   /** % de MRR perdu sur les 30 derniers jours glissants ; null si le MRR de début de fenêtre est <= 0. */
   churn_rate: number | null;
+  /** churn_risk_band='high' OR is_delinquent (audit délinquence 2026-08-06). */
   accounts_at_risk: number;
+  /** Subset of accounts_at_risk with mrr_status='unavailable' — excluded from mrr_at_risk_cents, never silently. */
+  accounts_at_risk_unpriced: number;
+  /** Sums only the chargeable (mrr_status != 'unavailable') subset of accounts_at_risk. */
   mrr_at_risk_cents: number;
   expansion_opportunities: number;
   /** null si aucun sync Stripe n'a encore tourné. */
