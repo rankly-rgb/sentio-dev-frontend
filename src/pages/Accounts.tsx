@@ -16,6 +16,7 @@ import ScoreBadge from '@/components/ScoreBadge';
 import AccountName from '@/components/AccountName';
 import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import AccountPriorityBadge from '@/components/accounts/AccountPriorityBadge';
+import AccountDelinquentBadge from '@/components/accounts/AccountDelinquentBadge';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
 import { Search, Download, Flag, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -222,10 +223,13 @@ export default function Accounts() {
                     <TableCell>{account.seat_count ?? '-'} / {account.seat_limit ?? '-'}</TableCell>
                     <TableCell><ScoreBadge score={account.health_score} band={account.health_score_band} type="health" /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
-                      <AccountPriorityBadge
-                        priority={account.priority_label}
-                        onClick={setPriorityFilter}
-                      />
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <AccountPriorityBadge
+                          priority={account.priority_label}
+                          onClick={setPriorityFilter}
+                        />
+                        <AccountDelinquentBadge isDelinquent={account.is_delinquent} />
+                      </div>
                     </TableCell>
                     <TableCell><ScoreBadge score={account.churn_risk_score} band={account.churn_risk_band} type="churn" inverted /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
