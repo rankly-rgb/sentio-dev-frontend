@@ -21,6 +21,8 @@ export interface PortfolioMetrics {
   /** Sums only the chargeable (mrr_status != 'unavailable') subset of accounts_at_risk. */
   mrr_at_risk_cents: number;
   expansion_opportunities: number;
+  /** false si aucun compte n'a expansion_score_status='available' — l'org n'a jamais configuré stripe_product_mappings (audit 2026-08-06, priorité 2). */
+  expansion_configured: boolean;
   /** null si aucun sync Stripe n'a encore tourné. */
   currency: string | null;
   mrr_unavailable_accounts: number;

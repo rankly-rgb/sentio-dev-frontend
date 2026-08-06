@@ -77,6 +77,7 @@ async function fetchDashboardMetrics(organizationId: string): Promise<DashboardM
     accounts_at_risk_unpriced: portfolioMetrics.accounts_at_risk_unpriced,
     mrr_at_risk_cents: portfolioMetrics.mrr_at_risk_cents,
     expansion_opportunities: portfolioMetrics.expansion_opportunities,
+    expansion_configured: portfolioMetrics.expansion_configured,
     avg_health_score: briefing.data.portfolio.current_avg_health,
     avg_health_scored_accounts: scoredAccounts,
     churn_rate: portfolioMetrics.churn_rate,
