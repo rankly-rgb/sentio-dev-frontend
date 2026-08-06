@@ -128,6 +128,7 @@ Segments déclencheurs : `champions | expanding | stable | at_risk | critical | 
 ## Conventions Git
 - Commits en anglais, préfixés : `feat:`, `fix:`, `refactor:`, `test:`, `docs:`
 - Une branche par tâche : `feature/*`, `fix/*`, `refactor/*`
+- **Avant de démarrer un chantier substantiel** : `git branch -r` sur les deux repos (backend + frontend) et vérifier qu'aucune branche existante (mergée ou non) ne couvre déjà tout ou partie du périmètre. Deux fonctionnalités complètes ont été construites deux fois en juillet 2026 (tracking d'outcome playbook, tiers de pricing) — la seconde implémentation a divergé du nom et de la forme de la première au point de rendre la duplication invisible sans ce contrôle explicite (audit branches 2026-08-06).
 
 ## Tests
 - Vitest + @testing-library/react pour les tests unitaires
