@@ -1,3 +1,5 @@
+// STAGED FOR V2, NOT DEAD CODE — see src/hooks/useOnboardingV2.ts header.
+// Unreachable from the live signup flow today (deliberately, not a bug).
 import { useNavigate } from 'react-router-dom';
 import { getAccountLabel } from '@/lib/account-display';
 import { Loader2, AlertTriangle } from 'lucide-react';

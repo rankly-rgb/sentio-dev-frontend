@@ -169,6 +169,17 @@ GET  /hubspot-oauth-init → redirect OAuth HubSpot (via window.location.href)
 de l'ancien `useOnboardingStatus` (queryKey `['onboarding-status']`) utilisé par `AhaMomentModal`.
 Les deux appellent le même endpoint mais avec des shapes de réponse différentes — à unifier côté backend.
 
+**Système V2 en pause, ne pas confondre avec le flux ci-dessus ni supprimer sans validation produit.**
+`src/pages/onboarding/OnboardingV2.tsx` (route `/onboarding` nue), `Revelation.tsx`, `Invested.tsx`
+et le guard `useOnboardingV2.ts` (`useOnboardingGuard`, `useUpdateOnboardingStep`) forment un second
+flux, construit puis volontairement masqué (commit `c74199b`, 2026-06-06 : *« Code conservé
+intégralement, commenté pour réactivation V2 »*) — `onboarding_completed` n'est pas encore fiable
+pour les clients existants (même raison que le `SetupWidget` masqué dans `Dashboard.tsx` et la
+bannière `OnboardingProgressBar` masquée dans `AppLayout.tsx`). Inatteignable depuis le flux de
+signup réel aujourd'hui — ce n'est pas du code mort, ne pas le supprimer sans décision produit
+explicite réouvrant ce chantier. `useOnboardingV2.ts` reste cependant partiellement actif : ses
+exports `useCreateOrganization`/`useOnUserSignup` sont utilisés directement par `Signup.tsx`.
+
 ## Quand compacter
 Préserver : liste des fichiers modifiés, commandes de test, erreurs en cours de résolution
 
