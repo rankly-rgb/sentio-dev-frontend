@@ -12,7 +12,14 @@ export default function StripeCallback() {
   useEffect(() => {
     const code = searchParams.get('code');
     if (!code) {
-      navigate('/onboarding', { replace: true });
+      // No OAuth code (e.g. browser back-button after the redirect, or a
+      // malformed callback URL) — send the user back into the live wizard
+      // flow (Promise re-derives the correct step from backend state), not
+      // '/onboarding' (OnboardingWizard, a disconnected legacy single-page
+      // implementation that never advanced past 2026-05 and shares no
+      // state with this flow — a user landing there would restart from
+      // scratch instead of resuming).
+      navigate('/onboarding/promise', { replace: true });
       return;
     }
 
