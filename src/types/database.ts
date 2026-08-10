@@ -43,7 +43,7 @@ export interface Account {
   seat_limit: number | null;
   contract_start_date: string | null;
   contract_end_date: string | null;
-  // Scoring Engine V2 (model_version='v3') — docs/API_CONTRACTS.md §2
+  // Scoring Engine V2 (model_version='v3') — docs/SCORING_ENGINE_CONTRACT.md §2
   payment_health_score: number | null;
   revenue_dynamics_score: number | null;
   contract_renewal_score: number | null;
@@ -59,7 +59,7 @@ export interface Account {
   expansion_unavailable_reason: string | null;
   trend_30d: 'up' | 'flat' | 'down';
   /**
-   * ⚠️ UNVERIFIED (docs/API_CONTRACTS.md §4bis) : décrit comme "exposé par
+   * ⚠️ UNVERIFIED (docs/SCORING_ENGINE_CONTRACT.md §4bis) : décrit comme "exposé par
    * accounts-api", pas confirmé comme colonne PostgREST directe sur `accounts`
    * — voir l'avertissement dans segment-queries.ts. `null` = pas encore
    * segmenté par le cron (donnée honnête, pas un défaut fabriqué).

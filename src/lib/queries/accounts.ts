@@ -56,7 +56,7 @@ interface AccountsListResponse {
  * les couvre) — non repris ici. `risk_signals_triggered`/`risk_signals_evaluated`
  * sont sourcés depuis `score_history` à la place (voir getAccountDetail),
  * dont la forme plate EST confirmée par un exemple JSON complet dans
- * docs/API_CONTRACTS.md §7.
+ * docs/SCORING_ENGINE_CONTRACT.md §7.
  *
  * `usage_frozen_v2`/`engagement_frozen_v2` retirés : absents des fixtures,
  * non consommés par l'UI (cartes "Coming in V2" statiques, F3) — surface
@@ -226,7 +226,7 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
       .order('event_date', { ascending: false })
       .limit(500),
     // risk_signals_triggered/evaluated colonnes plates confirmées par
-    // l'exemple JSON complet de docs/API_CONTRACTS.md §7 (contrairement à
+    // l'exemple JSON complet de docs/SCORING_ENGINE_CONTRACT.md §7 (contrairement à
     // leur placement dans accounts-api?id=, non couvert par une assertion
     // des fixtures) — la ligne la plus récente sert de valeur "actuelle".
     supabase

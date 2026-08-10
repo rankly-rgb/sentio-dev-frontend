@@ -15,7 +15,7 @@ export type SegmentType =
   | 'nouveaux'
   | 'donnees_insuffisantes';
 
-// ── Scoring Engine V2 (model_version='v3') — docs/API_CONTRACTS.md §2 ──
+// ── Scoring Engine V2 (model_version='v3') — docs/SCORING_ENGINE_CONTRACT.md §2 ──
 
 export type HealthScoreStatus = 'complete' | 'partial' | 'insufficient';
 export type HealthScoreBand = 'healthy' | 'watch' | 'at_risk';
@@ -80,7 +80,7 @@ export interface ScoringV2Fields {
   expansion_unavailable_reason: ExpansionUnavailableReason | null;
   trend_30d: TrendDirection;
   /**
-   * Lu tel quel depuis segment_memberships (docs/API_CONTRACTS.md §4bis) —
+   * Lu tel quel depuis segment_memberships (docs/SCORING_ENGINE_CONTRACT.md §4bis) —
    * jamais recalculé côté frontend. `null` = compte pas encore segmenté par
    * le cron, pas un défaut fabriqué. `en_expansion`/`nouveaux` n'apparaissent
    * jamais ici (voir §4bis).

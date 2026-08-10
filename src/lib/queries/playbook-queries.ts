@@ -18,6 +18,11 @@ import type {
   RejectExecutionResponse,
   PlaybookExportPreview,
   PlaybookRun,
+  AttributionStatus,
+  ExecutionMarkResult,
+  PlaybookOutcomeStats,
+  NudgeResponseValue,
+  NudgeResponseResult,
 } from '@/lib/types/playbook';
 
 // --- CRUD ---
@@ -264,5 +269,41 @@ export async function markPlaybookRunExecuted(runId: string): Promise<{ success:
   return fetchWithUserJwt<{ success: boolean; updated: boolean }>('export-playbook-csv', {
     method: 'PATCH',
     body: { run_id: runId },
+  });
+}
+
+// --- Outcome tracking (chantier C) — per sentio-dev-backend API_CONTRACTS.md § "Playbook Outcome Tracking" ---
+
+export async function getAttributionStatus(executionId: string): Promise<AttributionStatus> {
+  return fetchWithUserJwt<AttributionStatus>(`playbook-execute/${executionId}/attribution-status`);
+}
+
+// § 8.1 — dedicated sub-route on playbook-execute, distinct from POST /playbook-execute
+// (which dispatches automated actions). Never reuse execution_source: "manual" for this.
+export async function markExecuted(executionId: string): Promise<ExecutionMarkResult> {
+  return fetchWithUserJwt<ExecutionMarkResult>(`playbook-execute/${executionId}/mark-executed`, {
+    method: 'POST',
+  });
+}
+
+// § 8.1.1 — only accepted within 5 minutes of executed_at; backend returns 409 once that
+// window elapses or once a resolution/nudge-response conflict (per contract) already exists
+export async function unmarkExecuted(executionId: string): Promise<ExecutionMarkResult> {
+  return fetchWithUserJwt<ExecutionMarkResult>(`playbook-execute/${executionId}/unmark-executed`, {
+    method: 'POST',
+  });
+}
+
+export async function getPlaybookOutcomeStats(playbookId: string): Promise<PlaybookOutcomeStats> {
+  return fetchWithUserJwt<PlaybookOutcomeStats>(`playbook-outcome-stats?playbook_id=${playbookId}`);
+}
+
+export async function postNudgeResponse(
+  executionId: string,
+  response: NudgeResponseValue,
+): Promise<NudgeResponseResult> {
+  return fetchWithUserJwt<NudgeResponseResult>(`playbook-execute/${executionId}/nudge-response`, {
+    method: 'POST',
+    body: { response },
   });
 }

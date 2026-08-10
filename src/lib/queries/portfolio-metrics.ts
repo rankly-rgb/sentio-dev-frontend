@@ -1,7 +1,7 @@
 import { fetchWithUserJwt } from '@/lib/fetchWithUserJwt';
 
 /**
- * Contrat `GET /dashboard-api/portfolio-metrics` (docs/API_CONTRACTS.md,
+ * Contrat `GET /dashboard-api/portfolio-metrics` (sentio-dev-backend API_CONTRACTS.md,
  * backend Phase 4) — endpoint métriques autoritaire du portefeuille. Chaque
  * champ est précalculé côté serveur ; le frontend ne doit jamais recalculer
  * un total de portefeuille lui-même (AUDIT_LOGIQUE_METIER_STRIPE.md point 22).

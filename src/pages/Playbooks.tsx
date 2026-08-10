@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Plus } from 'lucide-react';
+import { BookOpen, Plus, LineChart } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -99,10 +99,16 @@ export default function Playbooks() {
           <BookOpen className="h-7 w-7 text-primary/60" />
           <h1 className="text-2xl font-bold">{fr.playbooks.title}</h1>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          {activeTab === 'workflows' ? fr.workflows.create : fr.playbooks.create}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate('/playbooks/resolution-rate')}>
+            <LineChart className="h-4 w-4 mr-2" />
+            {fr.playbooks.attribution.resolutionRateLink}
+          </Button>
+          <Button onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            {activeTab === 'workflows' ? fr.workflows.create : fr.playbooks.create}
+          </Button>
+        </div>
       </div>
 
       {/* Suggested playbook */}
