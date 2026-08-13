@@ -1,5 +1,5 @@
 /** Types et constantes pour les segments clients */
-import type { SegmentType, ChurnRiskBand, ExpansionScoreStatus, ExpansionUnavailableReason, HealthScoreBand, HealthScoreStatus, TrendDirection } from './accounts';
+import type { SegmentType, ChurnRiskBand, ExpansionScoreStatus, ExpansionUnavailableReason, HealthScoreBand, HealthScoreStatus, TrendDirection, MrrStatus } from './accounts';
 
 export { type SegmentType };
 
@@ -48,6 +48,7 @@ export interface SegmentAccount {
   plan_tier: string | null;
   billing_interval: string | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;

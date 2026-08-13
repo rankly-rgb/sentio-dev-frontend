@@ -7,13 +7,14 @@ import { getAllAccountsForOrg } from '@/lib/queries/accounts';
 import type { AccountListItem } from '@/lib/types/accounts';
 import { getPortfolioMetrics } from '@/lib/queries/portfolio-metrics';
 import type { DashboardMetrics, HealthDistribution } from '@/types/dashboard';
-import type { ChurnRiskBand, ExpansionScoreStatus, HealthScoreBand, HealthScoreStatus } from '@/lib/types/accounts';
+import type { ChurnRiskBand, ExpansionScoreStatus, HealthScoreBand, HealthScoreStatus, MrrStatus } from '@/lib/types/accounts';
 
 export interface TopAccount {
   id: string;
   stripe_customer_id: string;
   display_name?: string | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   churn_risk_score: number;
   churn_risk_band: ChurnRiskBand;
   expansion_score: number | null;

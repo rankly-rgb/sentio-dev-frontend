@@ -54,7 +54,7 @@ export default function TodayActionRow({ action, onAccountClick }: TodayActionRo
 
       {/* MRR */}
       <td className="px-3 py-2.5 text-xs font-medium">
-        {fr.format.currency(action.mrr_cents, currency)}
+        {fr.format.mrrOrUnavailable(action.mrr_cents, currency, action.mrr_status === 'unavailable')}
       </td>
 
       {/* Health */}

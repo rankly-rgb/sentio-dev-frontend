@@ -281,7 +281,7 @@ export default function SegmentDetailView({ segment, accounts, totalFetched, onA
                     '—'
                   )}
                 </td>
-                <td className="px-3 py-2 font-medium">{fr.format.currency(a.mrr_cents, currency)}</td>
+                <td className="px-3 py-2 font-medium">{fr.format.mrrOrUnavailable(a.mrr_cents, currency, a.mrr_status === 'unavailable')}</td>
                 <td className="px-3 py-2 text-muted-foreground">
                   {a.seat_count !== null && a.seat_limit !== null
                     ? `${a.seat_count} / ${a.seat_limit}`

@@ -545,7 +545,7 @@ function TopAccountsCard({
                   {getAccountLabel(a)}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.mrrOrUnavailable(a.mrr_cents, currency, a.mrr_status === 'unavailable')}</span>
                   <ScoreBadge
                     score={a[scoreField]}
                     band={scoreField === 'churn_risk_score' ? a.churn_risk_band : undefined}
@@ -639,7 +639,7 @@ function ExpansionCard({
                     </Badge>
                   )}
                   {/* MRR */}
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.mrrOrUnavailable(a.mrr_cents, currency, a.mrr_status === 'unavailable')}</span>
                   {/* Score */}
                   <ScoreBadge score={a.expansion_score} type="expansion" />
                 </div>
