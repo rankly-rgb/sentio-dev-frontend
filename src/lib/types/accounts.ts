@@ -19,7 +19,9 @@ export type SegmentType =
 
 export type HealthScoreStatus = 'complete' | 'partial' | 'insufficient';
 export type HealthScoreBand = 'healthy' | 'watch' | 'at_risk';
-export type ChurnRiskBand = 'low' | 'watch' | 'high' | 'churned';
+// 'critical' (Lot 5, 2026-08-13, #35) : plancher de bande par durée de
+// délinquence — strictement au-dessus de 'high', jamais un synonyme.
+export type ChurnRiskBand = 'low' | 'watch' | 'high' | 'critical' | 'churned';
 export type ExpansionScoreStatus = 'available' | 'unavailable';
 export type ExpansionUnavailableReason = 'seat_data_not_configured' | 'unlimited_plan_no_ceiling';
 export type TrendDirection = 'up' | 'flat' | 'down';
@@ -113,6 +115,8 @@ export interface AccountListItem extends ScoringV2Fields {
   mrr_status: MrrStatus;
   /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
   is_delinquent: boolean;
+  /** DATE brute (jamais une durée précalculée) — null tant qu'aucune date n'est connue, jamais "today" par défaut (S1, Lot 5 2026-08-13 #35). Convertir en durée côté client avec delinquentDurationDays(). */
+  delinquent_since: string | null;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -135,6 +139,8 @@ export interface AccountDetail extends ScoringV2Fields {
   mrr_status: MrrStatus;
   /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
   is_delinquent: boolean;
+  /** DATE brute (jamais une durée précalculée) — null tant qu'aucune date n'est connue, jamais "today" par défaut (S1, Lot 5 2026-08-13 #35). Convertir en durée côté client avec delinquentDurationDays(). */
+  delinquent_since: string | null;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;

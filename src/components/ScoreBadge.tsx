@@ -37,6 +37,7 @@ function healthPulseClass(band: HealthScoreBand): string {
 }
 
 function churnPulseClass(band: string | null | undefined): string {
+  if (band === 'critical') return 'animate-pulse-ring ring-destructive/50';
   if (band === 'high') return 'animate-pulse-ring ring-destructive/30';
   if (band === 'watch') return 'animate-pulse-ring ring-warning/30';
   if (band === 'churned' || !band) return 'animate-pulse-ring ring-muted/30';

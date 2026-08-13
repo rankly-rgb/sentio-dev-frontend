@@ -33,6 +33,10 @@ export const CHURN_BAND_STYLE: Record<string, { color: string; label: string } |
   low: { color: 'bg-success/15 text-success', label: 'Low' },
   watch: { color: 'bg-warning/15 text-warning', label: 'Watch' },
   high: { color: 'bg-destructive/15 text-destructive', label: 'High' },
+  // Lot 5 (2026-08-13, #35) — plancher de bande par durée de délinquence,
+  // strictement au-dessus de 'high' : solid background (pas /15) pour rester
+  // visuellement distinct, jamais un synonyme de 'high'.
+  critical: { color: 'bg-destructive text-destructive-foreground', label: 'Critical' },
   churned: { color: 'bg-muted text-muted-foreground', label: 'Churned' },
 };
 
@@ -85,4 +89,23 @@ export const EXPANSION_UNAVAILABLE_REASON_LABEL: Record<string, string> = {
 /** Score entier arrondi pour affichage — jamais de décimales à l'écran. */
 export function roundScore(score: number): number {
   return Math.round(score);
+}
+
+/**
+ * Durée de délinquence en jours entiers, à partir de `accounts.delinquent_since`
+ * (Lot 5, 2026-08-13, #35). `null` en entrée (date inconnue — S1) doit
+ * produire `null` en sortie, jamais `0` — "0 days" se lirait comme "started
+ * today", une date fabriquée que le backend n'a justement jamais écrite.
+ * `now` injectable pour les tests (jamais un Date.now() implicite non testable).
+ */
+export function delinquentDurationDays(delinquentSince: string | null, now: number = Date.now()): number | null {
+  if (!delinquentSince) return null;
+  return Math.floor((now - new Date(delinquentSince).getTime()) / 86400000);
+}
+
+/** Affichage textuel de la durée — `—` (jamais "0 days") quand la date est inconnue. */
+export function formatDelinquentDuration(delinquentSince: string | null, now: number = Date.now()): string {
+  const days = delinquentDurationDays(delinquentSince, now);
+  if (days === null) return '—';
+  return days === 1 ? '1 day' : `${days} days`;
 }

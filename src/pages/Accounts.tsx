@@ -228,7 +228,7 @@ export default function Accounts() {
                           priority={account.priority_label}
                           onClick={setPriorityFilter}
                         />
-                        <AccountDelinquentBadge isDelinquent={account.is_delinquent} />
+                        <AccountDelinquentBadge isDelinquent={account.is_delinquent} delinquentSince={account.delinquent_since} />
                       </div>
                     </TableCell>
                     <TableCell><ScoreBadge score={account.churn_risk_score} band={account.churn_risk_band} type="churn" inverted /></TableCell>
