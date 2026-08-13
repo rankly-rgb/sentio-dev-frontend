@@ -66,7 +66,7 @@ export default function AccountHeader({ account }: Props) {
     <div className="space-y-2">
       {/* Badges row */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <AccountDelinquentBadge isDelinquent={account.is_delinquent} />
+        <AccountDelinquentBadge isDelinquent={account.is_delinquent} delinquentSince={account.delinquent_since} />
         {account.plan_tier && (
           <Badge
             variant="outline"

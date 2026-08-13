@@ -133,6 +133,9 @@ export const en = {
     noActiveRiskSignals: 'No active risk signals',
     expansionUnlockCta: 'Configure your plan mapping',
     trendLabel: 'Trend (30d)',
+    // Lot 5 (2026-08-13, #35) — churn risk band floor grid.
+    delinquentFloorHigh: (days: number) => `Delinquent ${days} days or more raises the churn risk band to at least "High".`,
+    delinquentFloorCritical: (days: number) => `Delinquent ${days} days or more raises the churn risk band to "Critical", regardless of other signals.`,
   },
 
   segments: {
@@ -189,6 +192,8 @@ export const en = {
     plansBannerText: 'Plan and Seats columns are empty.',
     plansBannerLink: 'Configure your plans',
     priorityColumn: 'Priority',
+    // Lot 5 (2026-08-13, #35) — AccountDelinquentBadge tooltip.
+    delinquentTooltip: 'A delinquent subscription stays counted in MRR until Stripe marks it canceled — this is expected, not a bug.',
   },
 
   accountPriority: {

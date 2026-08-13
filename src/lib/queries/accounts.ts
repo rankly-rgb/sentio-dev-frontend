@@ -28,6 +28,7 @@ interface AccountsApiItem extends ScoringV2Fields {
   mrr_cents: number;
   mrr_status: MrrStatus;
   is_delinquent: boolean;
+  delinquent_since: string | null;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -105,6 +106,7 @@ interface AccountsApiDetailItem {
   mrr_cents: number;
   mrr_status: MrrStatus;
   is_delinquent: boolean;
+  delinquent_since: string | null;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
@@ -271,6 +273,7 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     mrr_cents: account.mrr_cents,
     mrr_status: account.mrr_status,
     is_delinquent: account.is_delinquent,
+    delinquent_since: account.delinquent_since,
     arr_cents: account.arr_cents,
     seat_count: account.seat_count,
     seat_limit: account.seat_limit,
