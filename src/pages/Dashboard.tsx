@@ -22,6 +22,8 @@ import { MrrChart } from '@/components/dashboard/mrr-chart';
 import { SyncProgressPanel } from '@/components/dashboard/sync-progress-panel';
 import ScoreBadge from '@/components/ScoreBadge';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
+import TrialExpiredState from '@/components/layout/TrialExpiredState';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 import {
   RefreshCw,
   Calculator,
@@ -215,6 +217,10 @@ export default function Dashboard() {
         </div>
       </div>
     );
+  }
+
+  if (error instanceof TrialExpiredError) {
+    return <TrialExpiredState />;
   }
 
   if (error) {

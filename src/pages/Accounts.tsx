@@ -18,8 +18,10 @@ import AccountFlagsBadges from '@/components/accounts/AccountFlagsBadges';
 import AccountPriorityBadge from '@/components/accounts/AccountPriorityBadge';
 import AccountDelinquentBadge from '@/components/accounts/AccountDelinquentBadge';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
+import TrialExpiredState from '@/components/layout/TrialExpiredState';
 import { Search, Download, Flag, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 import type { AccountPriorityLabel } from '@/lib/types/accounts';
 
 export default function Accounts() {
@@ -60,6 +62,10 @@ export default function Accounts() {
   const filteredAccounts = accounts
     .filter(a => !flagsOnly || a.flags.length > 0)
     .filter(a => !priorityFilter || a.priority_label === priorityFilter);
+
+  if (error instanceof TrialExpiredError) {
+    return <TrialExpiredState />;
+  }
 
   return (
     <div className="space-y-6 p-6">

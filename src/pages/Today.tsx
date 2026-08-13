@@ -16,6 +16,8 @@ import TodayPriorityGroup from '@/components/today/TodayPriorityGroup';
 import TodayHeroCard from '@/components/today/TodayHeroCard';
 import WeeklyWins from '@/components/today/WeeklyWins';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
+import TrialExpiredState from '@/components/layout/TrialExpiredState';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 
@@ -105,6 +107,10 @@ export default function Today() {
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
+  }
+
+  if (error instanceof TrialExpiredError) {
+    return <TrialExpiredState />;
   }
 
   if (error) {
