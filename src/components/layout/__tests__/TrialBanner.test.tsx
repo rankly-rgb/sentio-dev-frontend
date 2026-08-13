@@ -50,7 +50,7 @@ describe('TrialBanner', () => {
 
   it('renders nothing for paid plans', () => {
     const { container } = render(
-      <TrialBanner trial={makeTrialStatus({ plan_type: 'starter' })} />,
+      <TrialBanner trial={makeTrialStatus({ plan_type: 'growth' })} />,
     );
     expect(container.firstChild).toBeNull();
   });
