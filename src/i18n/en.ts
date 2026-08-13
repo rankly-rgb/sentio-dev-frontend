@@ -229,6 +229,7 @@ export const en = {
     noSegments: 'No active segments',
     notes: 'Notes',
     noNotes: 'No notes for this account',
+    notesError: 'Unable to load notes',
     moreNotes: 'View more',
     hubspotLifecycle: 'Lifecycle stage',
     hubspotDeals: 'Open deals',

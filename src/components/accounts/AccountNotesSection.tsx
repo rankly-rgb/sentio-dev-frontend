@@ -44,7 +44,7 @@ interface Props {
 export default function AccountNotesSection({ accountId }: Props) {
   const fr = useT();
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useAccountNotes(accountId, page);
+  const { data, isLoading, error, refetch } = useAccountNotes(accountId, page);
 
   if (isLoading) {
     return (
@@ -54,6 +54,20 @@ export default function AccountNotesSection({ accountId }: Props) {
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full" />
           ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardHeader><CardTitle>{fr.accountDetail.notes}</CardTitle></CardHeader>
+        <CardContent className="text-center py-4">
+          <p className="text-destructive mb-3">{fr.accountDetail.notesError}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            {fr.common.retry}
+          </Button>
         </CardContent>
       </Card>
     );
