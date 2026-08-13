@@ -13,6 +13,7 @@ import type { PriorityCode } from '@/lib/priority-labels';
 import type { TemplateCategory } from '@/lib/types/playbook';
 import { getSegmentFilter } from '@/lib/queries/segment-queries';
 import { isValidSegmentKey, type SegmentType } from '@/lib/types/segments';
+import type { MrrStatus } from '@/lib/types/accounts';
 
 // --- Types (miroir de la réponse GET /get-today-actions) ---
 
@@ -33,6 +34,7 @@ export interface TodayAction {
   churn_risk_score: number | null;
   expansion_score: number | null;
   mrr_cents: number;
+  mrr_status: MrrStatus;
   plan_tier: string | null;
   days_to_renewal: number | null;
   trigger_reasons: string[];

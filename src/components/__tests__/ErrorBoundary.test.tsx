@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import ErrorBoundary from '../ErrorBoundary';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 
 // Suppress console.error from React's error boundary logging
 beforeEach(() => {
@@ -55,6 +56,28 @@ describe('ErrorBoundary', () => {
     );
     expect(screen.getByText('Retry')).toBeInTheDocument();
     expect(screen.getByText('Refresh page')).toBeInTheDocument();
+  });
+
+  it('shows a correlation ID on error', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowError message="Something broke" />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByText(/Error ID:/)).toBeInTheDocument();
+  });
+
+  it('does not treat TrialExpiredError as a session error, even though its message contains "expired"', () => {
+    function ThrowTrialExpired(): ReactNode {
+      throw new TrialExpiredError();
+    }
+    render(
+      <ErrorBoundary>
+        <ThrowTrialExpired />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByText('An error occurred')).toBeInTheDocument();
+    expect(screen.queryByText('Session expired')).not.toBeInTheDocument();
   });
 
   it('resets error state when clicking Retry', () => {

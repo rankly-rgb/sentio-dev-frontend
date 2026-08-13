@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { logger } from '@/utils/productionLogger';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 
 interface Props {
   children: ReactNode;
@@ -8,6 +9,14 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  correlationId: string | null;
+}
+
+function generateCorrelationId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID().slice(0, 8);
+  }
+  return Math.random().toString(36).slice(2, 10);
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
@@ -15,15 +24,23 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, correlationId: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error, correlationId: generateCorrelationId() };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logger.error('ErrorBoundary', 'Caught render error', { error: error.message, componentStack: errorInfo.componentStack });
+    // Incident 2026-08-13: a render error here previously left the user with
+    // "An error occurred" and nothing else — no trace, no context, no way to
+    // report it. correlationId ties what the user sees to this exact log line.
+    logger.error('ErrorBoundary', 'Caught render error', {
+      correlationId: this.state.correlationId,
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
 
     if (this.isSessionError(error)) {
       this.redirectTimeout = setTimeout(() => {
@@ -40,13 +57,18 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   private isSessionError(error: Error | null): boolean {
     if (!error) return false;
+    // TrialExpiredError's message contains "expired" too — a real trial
+    // expiry must never be misdiagnosed as a session expiry and silently
+    // redirect to /login (see TrialExpiredState for the correct handling,
+    // which normally intercepts this before it ever reaches the boundary).
+    if (error instanceof TrialExpiredError) return false;
     const msg = error.message.toLowerCase();
     return msg.includes('session') || msg.includes('jwt') ||
            msg.includes('expired') || msg.includes('token');
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, correlationId: null });
   };
 
   private handleReload = () => {
@@ -72,6 +94,12 @@ export default class ErrorBoundary extends Component<Props, State> {
               <pre className="text-xs text-left bg-muted p-3 rounded overflow-auto max-h-48 mb-4">
                 {this.state.error.message}
               </pre>
+            )}
+            {this.state.correlationId && (
+              <p className="text-xs text-muted-foreground mb-4">
+                Error ID: <code className="font-mono">{this.state.correlationId}</code>
+                {' — include this if you report the issue.'}
+              </p>
             )}
             {isSession ? (
               <p className="text-sm text-muted-foreground">

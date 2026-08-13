@@ -189,6 +189,7 @@ export const en = {
     plansBannerText: 'Plan and Seats columns are empty.',
     plansBannerLink: 'Configure your plans',
     priorityColumn: 'Priority',
+    delinquentTooltip: "Payment failed but the subscription hasn't been cancelled by Stripe. Sentio keeps it counted in MRR — and flags it here — until Stripe marks it cancelled. A payment issue isn't the same as leaving.",
   },
 
   accountPriority: {
@@ -228,6 +229,7 @@ export const en = {
     noSegments: 'No active segments',
     notes: 'Notes',
     noNotes: 'No notes for this account',
+    notesError: 'Unable to load notes',
     moreNotes: 'View more',
     hubspotLifecycle: 'Lifecycle stage',
     hubspotDeals: 'Open deals',

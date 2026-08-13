@@ -1,3 +1,14 @@
+// STAGED FOR V2, NOT DEAD CODE — see commit c74199b ("feat(v1): nettoyer
+// sidebar et bannière setup", 2026-06-06): "Code conservé intégralement,
+// commenté pour réactivation V2." useOnboardingGuard/useUpdateOnboardingStep
+// and the 'revelation'/'invested' steps below back Revelation.tsx/Invested.tsx
+// — currently unreachable from the live signup chain (Signup -> Promise ->
+// StripeConnect -> ... -> Done, which runs entirely on useOnboardingWizard.ts,
+// a separate, newer hook file — don't confuse the two) because
+// onboarding_completed isn't reliable yet for existing customers (see
+// Dashboard.tsx's commented-out SetupWidget for the same reason). Two exports
+// here ARE live today regardless: useCreateOrganization and useOnUserSignup,
+// used directly by Signup.tsx.
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

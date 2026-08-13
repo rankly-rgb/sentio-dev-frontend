@@ -1,3 +1,5 @@
+// STAGED FOR V2, NOT DEAD CODE — see src/hooks/useOnboardingV2.ts header.
+// Unreachable from the live signup flow today (deliberately, not a bug).
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';

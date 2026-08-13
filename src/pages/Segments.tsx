@@ -7,6 +7,8 @@ import { useSegmentLabels } from '@/lib/i18n/useSegmentLabels';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScoreBadge from '@/components/ScoreBadge';
+import TrialExpiredState from '@/components/layout/TrialExpiredState';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 
 export default function Segments() {
   const fr = useT();
@@ -14,6 +16,10 @@ export default function Segments() {
   const currency = user?.currency ?? 'usd';
   const segmentLabels = useSegmentLabels();
   const { data: segments, isLoading, error } = useSegments();
+
+  if (error instanceof TrialExpiredError) {
+    return <TrialExpiredState />;
+  }
 
   return (
     <div className="space-y-6 p-6">

@@ -22,6 +22,8 @@ import { MrrChart } from '@/components/dashboard/mrr-chart';
 import { SyncProgressPanel } from '@/components/dashboard/sync-progress-panel';
 import ScoreBadge from '@/components/ScoreBadge';
 import AccountDetailPanel from '@/components/account-detail/AccountDetailPanel';
+import TrialExpiredState from '@/components/layout/TrialExpiredState';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 import {
   RefreshCw,
   Calculator,
@@ -215,6 +217,10 @@ export default function Dashboard() {
         </div>
       </div>
     );
+  }
+
+  if (error instanceof TrialExpiredError) {
+    return <TrialExpiredState />;
   }
 
   if (error) {
@@ -545,7 +551,7 @@ function TopAccountsCard({
                   {getAccountLabel(a)}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.mrrOrUnavailable(a.mrr_cents, currency, a.mrr_status === 'unavailable')}</span>
                   <ScoreBadge
                     score={a[scoreField]}
                     band={scoreField === 'churn_risk_score' ? a.churn_risk_band : undefined}
@@ -639,7 +645,7 @@ function ExpansionCard({
                     </Badge>
                   )}
                   {/* MRR */}
-                  <span className="text-xs text-muted-foreground">{fr.format.currency(a.mrr_cents, currency)}</span>
+                  <span className="text-xs text-muted-foreground">{fr.format.mrrOrUnavailable(a.mrr_cents, currency, a.mrr_status === 'unavailable')}</span>
                   {/* Score */}
                   <ScoreBadge score={a.expansion_score} type="expansion" />
                 </div>

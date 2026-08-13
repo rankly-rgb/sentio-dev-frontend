@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/select';
 import { useT } from '@/lib/i18n/useT';
 import { usePlaybooks, useWorkflows } from '@/hooks/usePlaybooks';
+import TrialExpiredState from '@/components/layout/TrialExpiredState';
+import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
 import PlaybookCard from '@/components/playbooks/PlaybookCard';
 import WorkflowCard from '@/components/workflows/WorkflowCard';
 import SuggestedPlaybook from '@/components/playbooks/SuggestedPlaybook';
@@ -90,6 +92,10 @@ export default function Playbooks() {
     pbQuery.refetch();
     navigate(`/playbooks/${id}`);
   };
+
+  if (pbQuery.error instanceof TrialExpiredError || wfQuery.error instanceof TrialExpiredError) {
+    return <TrialExpiredState />;
+  }
 
   return (
     <div className="space-y-6 p-6">
