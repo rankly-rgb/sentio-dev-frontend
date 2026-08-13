@@ -92,7 +92,10 @@ export default function Accounts() {
           <Card data-testid="kpi-mrr">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{fr.dashboard.mrr}</p>
-              <p className="text-2xl font-bold">{fr.format.currency(summary.total_mrr_cents, currency)}</p>
+              <p className="text-2xl font-bold">
+                {fr.format.currency(summary.total_mrr_cents, currency)}
+                <span className="text-xs font-normal text-muted-foreground ml-1">{currency.toUpperCase()}</span>
+              </p>
             </CardContent>
           </Card>
           <Card>
