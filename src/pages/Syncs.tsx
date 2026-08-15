@@ -168,7 +168,7 @@ export default function Syncs() {
       {/* Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Historique des synchronisations</CardTitle>
+          <CardTitle className="text-base">{fr.syncs.history}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
