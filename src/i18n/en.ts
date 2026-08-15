@@ -709,6 +709,7 @@ export const en = {
 
   syncs: {
     title: 'Syncs',
+    history: 'Sync history',
     syncStripeIncremental: 'Stripe incremental sync',
     syncStripeFull: 'Stripe full sync',
     recalculateScores: 'Recalculate scores',
