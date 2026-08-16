@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { logger } from '@/utils/productionLogger';
 import { TrialExpiredError } from '@/lib/fetchWithUserJwt';
+import { captureRenderError } from '@/lib/sentry';
 
 interface Props {
   children: ReactNode;
@@ -41,6 +42,11 @@ export default class ErrorBoundary extends Component<Props, State> {
       stack: error.stack,
       componentStack: errorInfo.componentStack,
     });
+
+    // Même erreur, même correlationId : la ligne de log ci-dessus, le code
+    // affiché à l'utilisateur et l'événement Sentry se rejoignent. No-op
+    // sans DSN configuré.
+    captureRenderError(error, errorInfo.componentStack, this.state.correlationId);
 
     if (this.isSessionError(error)) {
       this.redirectTimeout = setTimeout(() => {
