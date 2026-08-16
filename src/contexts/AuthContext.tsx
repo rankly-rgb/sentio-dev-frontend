@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { visibilityMonitor } from '@/utils/visibilityMonitor';
 import { logger } from '@/utils/productionLogger';
+import { setSentryOrganization } from '@/lib/sentry';
 
 interface AuthUser {
   id: string;
@@ -96,6 +97,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     profilePromiseRef.current = p;
   }, [loadProfile]);
+
+  // Le tag Sentry `org_id` suit l'utilisateur courant. Un seul effet plutôt
+  // qu'un appel greffé sur chaque `setUser` : il y a trois chemins qui
+  // remettent l'utilisateur à null (logout explicite, session perdue,
+  // échec de chargement du profil), et un tag oublié sur l'un d'eux
+  // attribuerait les erreurs suivantes à l'organisation précédente.
+  useEffect(() => {
+    setSentryOrganization(user?.organization_id ?? null);
+  }, [user?.organization_id]);
 
   // Redirect vers login quand la session est irrémédiablement perdue
   const handleSessionLost = useCallback(() => {

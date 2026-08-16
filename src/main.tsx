@@ -6,6 +6,11 @@ import '@/utils/visibilityMonitor'; // side-effect: initialise le singleton
 import '@/utils/longTaskObserver'; // TEMP DEBUG — détecte les freezes UI
 import { logger } from '@/utils/productionLogger';
 import { toast } from 'sonner';
+import { initSentry } from '@/lib/sentry';
+
+// Avant tout le reste : une erreur levée pendant l'initialisation de l'app
+// doit déjà pouvoir être capturée.
+initSentry();
 
 // ─── Global error handlers (production + dev) ────────────────────────────
 window.addEventListener('unhandledrejection', (event) => {
