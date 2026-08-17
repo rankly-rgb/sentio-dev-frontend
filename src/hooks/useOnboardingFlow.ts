@@ -10,7 +10,11 @@ export function useOnboardingFlowStatus() {
 
   return useQuery<OnboardingFlowStatus>({
     queryKey: [QUERY_KEY, user?.organization_id],
-    queryFn: () => fetchWithUserJwt<OnboardingFlowStatus>('onboarding-status'),
+    // Backend wraps every response as {data: ...} (see jsonResponse,
+    // _shared/supabase-client.ts) — same pattern already unwrapped correctly
+    // by useIntegrationsConfig below and benchmark-queries.ts. Left flat here
+    // previously, so every field read off this hook was silently `undefined`.
+    queryFn: () => fetchWithUserJwt<{ data: OnboardingFlowStatus }>('onboarding-status').then((res) => res.data),
     enabled: !!user?.organization_id,
     staleTime: 0,
     retry: false,
@@ -22,7 +26,7 @@ export function useOnboardingFirstWin() {
 
   return useQuery<OnboardingFirstWin>({
     queryKey: ['onboarding-first-win', user?.organization_id],
-    queryFn: () => fetchWithUserJwt<OnboardingFirstWin>('onboarding-first-win'),
+    queryFn: () => fetchWithUserJwt<{ data: OnboardingFirstWin }>('onboarding-first-win').then((res) => res.data),
     enabled: !!user?.organization_id,
     staleTime: 5 * 60_000,
     retry: false,

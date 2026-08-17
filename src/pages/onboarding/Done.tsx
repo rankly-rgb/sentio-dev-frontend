@@ -96,6 +96,8 @@ export default function Done() {
 
   const topAccounts = firstWin?.at_risk_accounts?.slice(0, 3) ?? [];
   const atRiskCount = topAccounts.length;
+  const atRiskAccountsCount = firstWin?.at_risk_accounts?.length ?? 0;
+  const mrrAtRisk = firstWin?.mrr_at_risk ?? 0;
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
@@ -125,14 +127,14 @@ export default function Done() {
               <p className="text-xs text-[#6b7280] mt-1">{fr.onboarding.done.totalAccounts}</p>
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 text-center">
-              <p className={`text-2xl font-bold ${firstWin.at_risk_accounts.length > 0 ? 'text-[#ef4444]' : 'text-[#111827]'}`}>
-                {firstWin.at_risk_accounts.length}
+              <p className={`text-2xl font-bold ${atRiskAccountsCount > 0 ? 'text-[#ef4444]' : 'text-[#111827]'}`}>
+                {atRiskAccountsCount}
               </p>
               <p className="text-xs text-[#6b7280] mt-1">{fr.onboarding.done.atRisk}</p>
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 text-center">
-              <p className={`text-2xl font-bold ${firstWin.mrr_at_risk > 0 ? 'text-[#ef4444]' : 'text-[#111827]'}`}>
-                {firstWin.mrr_at_risk.toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: 0 })}
+              <p className={`text-2xl font-bold ${mrrAtRisk > 0 ? 'text-[#ef4444]' : 'text-[#111827]'}`}>
+                {mrrAtRisk.toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: 0 })}
               </p>
               <p className="text-xs text-[#6b7280] mt-1">{fr.onboarding.done.mrrAtRisk}</p>
             </div>
