@@ -11,8 +11,16 @@ import type { WizardStep } from '@/lib/types/onboarding-wizard';
 
 const VALID_PREFIXES = ['rk_live_', 'rk_test_', 'sk_live_', 'sk_test_'];
 
+// Beta cohort (script testeur bêta, 2026-08-17, §2): only the API key path is
+// offered — StripeCallback.tsx silently swallows a 409 account-collision on the
+// OAuth path (parked, to fix before opening OAuth to a future cohort). Flip back
+// to true once that's fixed and OAuth is ready to reopen.
+const OAUTH_CONNECT_ENABLED = false;
+
 type Tab = 'key' | 'oauth';
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
+
+const VISIBLE_TABS: Tab[] = OAUTH_CONNECT_ENABLED ? ['key', 'oauth'] : ['key'];
 
 export default function StripeConnect() {
   const t = useT();
@@ -95,7 +103,7 @@ export default function StripeConnect() {
 
         {/* Mode tabs */}
         <div className="flex rounded-lg border border-[#334155] overflow-hidden">
-          {(['key', 'oauth'] as Tab[]).map((t) => (
+          {VISIBLE_TABS.map((t) => (
             <button
               key={t}
               type="button"
@@ -170,7 +178,7 @@ export default function StripeConnect() {
           </div>
         )}
 
-        {tab === 'oauth' && (
+        {OAUTH_CONNECT_ENABLED && tab === 'oauth' && (
           <div className="space-y-4">
             <p className="text-sm text-[#94a3b8]">{w.oauthLabel}</p>
             {error && <p className="text-xs text-red-400">{error}</p>}
