@@ -10,7 +10,6 @@ export interface OnboardingStatusV2 {
   organization_id: string;
   onboarding_step: OnboardingStep;
   onboarding_completed: boolean;
-  has_demo_data: boolean;
   promise_seen: boolean;
   first_revelation_done: boolean;
 }
@@ -55,7 +54,6 @@ export interface SaveOrgPreferencesResponse {
 export interface CreateOrganizationResponse {
   organization_id: string;
   onboarding_step: string;
-  has_demo_data: boolean;
 }
 
 export interface UpdateOnboardingStepResponse {

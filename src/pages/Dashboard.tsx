@@ -47,25 +47,18 @@ import type { TopAccount, TopAccountsResult } from '@/hooks/useDashboardData';
 
 const QUICK_SEGMENTS = ['champions', 'en_expansion', 'stables', 'a_risque_leger'] as const;
 
+// 2026-08-17 : DemoBanner (V2 "révélation progressive") retiré — has_demo_data
+// n'a jamais été vrai en pratique, la requête accounts.is_demo derrière lui
+// ciblait une colonne qui n'a jamais existé côté V1 (vérifié en direct).
+// Même chantier que create-organization-with-invitation/
+// get-onboarding-status-v2 (sentio-dev-backend), qui portaient le même bug.
+
 /* V2 - setup widget : masqué en V1 (onboarding_completed non fiable pour les clients existants)
 const STEP_ORDER = ['promise', 'stripe', 'revelation', 'invested', 'hubspot', 'completed'] as const;
 function stepIndex(step: string): number {
   return STEP_ORDER.indexOf(step as (typeof STEP_ORDER)[number]);
 }
 */
-
-// ── Demo banner ───────────────────────────────────────────────────
-function DemoBanner() {
-  const fr = useT();
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm text-amber-800">
-      <span>{fr.onboardingV2.dashboard.demoBanner}</span>
-      <Link to="/onboarding?resume=stripe" className="font-medium underline underline-offset-2 whitespace-nowrap">
-        {fr.onboardingV2.dashboard.demoConnectStripe}
-      </Link>
-    </div>
-  );
-}
 
 /* V2 - setup widget (suite)
 function SetupWidget({ onboardingStep }: { onboardingStep: string }) {
@@ -241,15 +234,11 @@ export default function Dashboard() {
 
   const recentSyncs = (syncs || []).slice(0, 3);
 
-  const showDemoBanner = v2Status?.has_demo_data === true && v2Status?.onboarding_completed === false;
   // V2 - setup widget masqué en V1 : const showSetupWidget = v2Status?.onboarding_completed === false;
   const showRevisitTooltip = v2Status?.first_revelation_done === true;
 
   return (
     <div className="space-y-6 p-6">
-      {/* V2 demo banner */}
-      {showDemoBanner && <DemoBanner />}
-
       {/* Tracker banner */}
       {!trackerConnected && <TrackerBanner />}
 
