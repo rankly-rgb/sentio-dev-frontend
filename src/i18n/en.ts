@@ -1042,8 +1042,6 @@ export const en = {
       completing: 'Finalising...',
     },
     dashboard: {
-      demoBanner: 'You are viewing demo data.',
-      demoConnectStripe: 'Connect Stripe →',
       setupTitle: 'Setup',
       setupStep1: 'Account created',
       setupStep2Done: 'Stripe connected',
