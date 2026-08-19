@@ -74,6 +74,21 @@ export const en = {
     stripeStaleBannerCta: 'Sync now',
     billingProfileNeedsReviewBanner: 'Some of your accounts use billing setups we can\'t fully price automatically (metered usage, invoice-only billing, multiple currencies, or subscription schedules) — MRR may be incomplete for those accounts.',
     mrrUnavailableNote: (count: number) => `${count} account${count > 1 ? 's' : ''} excluded from MRR — not billable`,
+    // O10 (2026-08-19) : même principe que nrrUnavailable/churnRateUnavailable —
+    // un chiffre qui ne reflète qu'une partie du portefeuille doit le dire,
+    // jamais se lire comme un total complet. Cause générique ("invoice-only
+    // billing or an unpriced currency") plutôt qu'une seule cause affirmée :
+    // mrr_status='unavailable' a deux origines réelles distinctes
+    // (docs/openspec.md §8.2 et §9), et sur le portefeuille existant la
+    // devise minoritaire est en pratique la cause la plus fréquente, pas
+    // l'invoice-only — nommer une seule cause aurait été trompeur pour
+    // l'autre.
+    mrrPartiallyUnavailable: (unpriced: number, total: number) =>
+      `${unpriced} of ${total} account${total === 1 ? '' : 's'} have no computable MRR (invoice-only billing or an unpriced currency) — the total above reflects only the rest.`,
+    activeAccountsUnpricedNote: (count: number) =>
+      `${count} account${count === 1 ? '' : 's'} not counted here — no computable MRR (invoice-only billing or an unpriced currency).`,
+    accountsAtRiskIncludesUnpriced: (count: number) =>
+      `${count} of these have no computable MRR (invoice-only billing or an unpriced currency) — included here, not in MRR at risk.`,
   },
 
   benchmark: {
