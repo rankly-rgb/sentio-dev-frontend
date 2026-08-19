@@ -12,6 +12,15 @@ interface KpiCardsProps {
 export function KpiCards({ metrics }: KpiCardsProps) {
   const fr = useT();
   const currency = metrics.currency ?? 'usd';
+  // O10 (2026-08-19) : un compte invoice-only ou en devise minoritaire paie
+  // parfois normalement mais n'a jamais de MRR calculable (docs/openspec.md
+  // §8.2/§9, décision actée — on ne recalcule rien ici, on explique
+  // seulement pourquoi les tuiles ci-dessous ne reflètent pas 100% du
+  // portefeuille). "Majorité" = >= 50%, seuil au-delà duquel le nombre
+  // affiché risque de sembler franchement faux plutôt que légèrement
+  // incomplet — un seul compte exclu sur 40 ne justifie pas une légende.
+  const isMajorityUnpriced = metrics.total_accounts > 0
+    && metrics.mrr_unavailable_accounts / metrics.total_accounts >= 0.5;
   const kpis = [
     {
       key: 'mrr',
@@ -22,7 +31,9 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: DollarSign,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.mrr,
-      caption: null as string | null,
+      caption: isMajorityUnpriced
+        ? fr.dashboard.mrrPartiallyUnavailable(metrics.mrr_unavailable_accounts, metrics.total_accounts)
+        : null as string | null,
       configureCta: false,
     },
     {
@@ -58,7 +69,14 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: Users,
       color: 'text-primary',
       tooltip: fr.dashboard.tooltips.activeAccounts,
-      caption: null as string | null,
+      // "Active" = mrr_cents > 0 (voir tooltip) — un compte invoice-only ou
+      // en devise minoritaire n'a jamais mrr_cents > 0 par construction,
+      // qu'il paie ou non. Le calcul n'est pas touché ici (décision produit
+      // 2026-08-19) ; la légende dit seulement pourquoi ce nombre peut
+      // sembler bas malgré des comptes réellement payants.
+      caption: isMajorityUnpriced
+        ? fr.dashboard.activeAccountsUnpricedNote(metrics.mrr_unavailable_accounts)
+        : null as string | null,
       configureCta: false,
     },
     {
@@ -70,7 +88,14 @@ export function KpiCards({ metrics }: KpiCardsProps) {
       icon: AlertTriangle,
       color: 'text-destructive',
       tooltip: fr.dashboard.tooltips.accountsAtRisk,
-      caption: null as string | null,
+      // Contrairement à MRR/Active accounts, accounts_at_risk INCLUT déjà
+      // les comptes non chiffrables (is_delinquent/churn_risk_band OR direct,
+      // audit délinquence 2026-08-06) — ce n'est jamais un total tronqué.
+      // La légende ici rassure sur la complétude du compte et explique
+      // pourquoi il ne correspond pas au MRR affiché sur la tuile voisine.
+      caption: metrics.accounts_at_risk_unpriced > 0
+        ? fr.dashboard.accountsAtRiskIncludesUnpriced(metrics.accounts_at_risk_unpriced)
+        : null as string | null,
       configureCta: false,
     },
     {
