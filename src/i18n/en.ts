@@ -1905,8 +1905,18 @@ export const en = {
     // isn't a real $0 -- it's a non-billable subscription (metered, missing
     // unit_amount, minority currency) or an account never yet synced. Never
     // render it as a plain currency figure (S1: no data ≠ neutral data).
+    //
+    // O10 (2026-08-19) : "Not billable" seul se lit comme "ce client ne paie
+    // pas", relevé sur un compte payant 17 mois d'affilée (invoice-only,
+    // aucune Subscription Stripe). Cause volontairement non nommée -- même
+    // décision et même registre que mrrPartiallyUnavailable/
+    // activeAccountsUnpricedNote (dashboard/kpi-cards.tsx) : nommer
+    // "invoice-only" serait faux pour l'autre cause réelle (devise
+    // minoritaire, historiquement plus fréquente sur le portefeuille) sans
+    // exposer accounts.billing_model côté frontend -- fan-out volontairement
+    // hors périmètre bêta.
     mrrOrUnavailable: (cents: number, currency: string, isUnavailable: boolean) =>
-      isUnavailable ? 'Not billable' : (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
+      isUnavailable ? 'Not billable (known billing limitation)' : (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
     percentage: (value: number) => `${value.toFixed(1)}%`,
     date: (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US'),
     dateTime: (dateStr: string) => new Date(dateStr).toLocaleString('en-US'),
