@@ -1926,6 +1926,14 @@ export const en = {
     // survenir en pratique (mrr_unavailable_reason est toujours renseigné
     // quand mrr_status='unavailable', voir accounts.mrr_unavailable_reason
     // CHECK constraint) -- filet générique conservé au cas où.
+    // Mission réconciliation Stripe, point 4 (2026-08-20) : un compte
+    // billing_model='invoice_only' avec mrr_status='ok' ne peut arriver que
+    // par le MRR de repli estimé depuis les factures payées
+    // (estimateInvoiceOnlyMrr, _shared/mrr-engine.ts) -- avant ce chantier,
+    // invoice_only impliquait toujours mrr_status='unavailable'. Ce
+    // croisement de champs suffit à distinguer un montant estimé d'un
+    // montant confirmé par une Subscription Stripe, sans nouveau champ
+    // backend dédié.
     mrrUnavailableReason: (
       cents: number,
       currency: string,
@@ -1933,7 +1941,10 @@ export const en = {
       reason: MrrUnavailableReason | null,
       billingModel: BillingModel,
     ) => {
-      if (!isUnavailable) return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() });
+      if (!isUnavailable) {
+        const formatted = (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() });
+        return billingModel === 'invoice_only' ? `${formatted} (estimated from invoices)` : formatted;
+      }
       switch (reason) {
         case 'no_subscription_data':
           return billingModel === 'invoice_only'
