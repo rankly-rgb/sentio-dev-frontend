@@ -22,6 +22,24 @@ const KEYS = {
   status: ['integration-status'] as const,
 };
 
+// Mission réconciliation Stripe, point 3 (2026-08-20) : sync-stripe est
+// déclenché fire-and-forget côté backend pour ce chemin aussi (jamais
+// attendu avant la réponse) — la réussite de cette mutation ne garantit
+// pas que le sync soit terminé. Invalidation immédiate + une de rattrapage
+// à 10s (même raisonnement complet dans useStripeConnection.ts) pour que
+// le Dashboard ne reste pas figé sur un état "stale" déjà obsolète en
+// pratique. Dupliqué plutôt que partagé — pas d'abstraction pour 4 lignes
+// utilisées dans 2 fichiers de concerns différents (connexion Stripe
+// Settings vs Integrations).
+const DASHBOARD_STALE_CATCHUP_DELAY_MS = 10_000;
+
+function invalidateDashboardWithCatchup(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: ['dashboard'] });
+  setTimeout(() => {
+    qc.invalidateQueries({ queryKey: ['dashboard'] });
+  }, DASHBOARD_STALE_CATCHUP_DELAY_MS);
+}
+
 export function useIntegrationStatus() {
   const { user } = useAuth();
 
@@ -70,6 +88,7 @@ export function useConnectStripeApiKey() {
     mutationFn: (apiKey) => connectStripeApiKey(apiKey),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: KEYS.status });
+      invalidateDashboardWithCatchup(qc);
       toast.success(
         data.account_name
           ? `Stripe connected (${data.account_name}) — syncing...`
