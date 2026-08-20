@@ -76,4 +76,21 @@ describe('fr.format.mrrUnavailableReason — mission réconciliation Stripe, poi
     // what a real call site passes for it, verified here for the $0 case.
     expect(en.format.mrrUnavailableReason(0, 'usd', false, null, 'subscription')).toBe('$0.00');
   });
+
+  // ── Mission réconciliation Stripe, point 4 (2026-08-20) ──
+  // billing_model='invoice_only' + mrr_status='ok' can only occur via the
+  // new invoice-derived MRR fallback (estimateInvoiceOnlyMrr) — before this
+  // point, invoice_only always meant mrr_status='unavailable'.
+
+  it('REGRESSION: an invoice-only account with an available MRR estimate is visually marked "(estimated from invoices)"', () => {
+    const result = en.format.mrrUnavailableReason(29900, 'usd', false, null, 'invoice_only');
+    expect(result).toContain('$299.00');
+    expect(result).toContain('estimated from invoices');
+  });
+
+  it('a subscription-backed account with an available MRR is never marked as estimated', () => {
+    const result = en.format.mrrUnavailableReason(29900, 'usd', false, null, 'subscription');
+    expect(result).toBe('$299.00');
+    expect(result).not.toContain('estimated');
+  });
 });
