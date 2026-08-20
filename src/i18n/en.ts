@@ -1,3 +1,5 @@
+import type { MrrUnavailableReason, BillingModel } from '@/lib/types/accounts';
+
 export const en = {
   nav: {
     today: 'Today',
@@ -1906,17 +1908,45 @@ export const en = {
     // unit_amount, minority currency) or an account never yet synced. Never
     // render it as a plain currency figure (S1: no data ≠ neutral data).
     //
-    // O10 (2026-08-19) : "Not billable" seul se lit comme "ce client ne paie
-    // pas", relevé sur un compte payant 17 mois d'affilée (invoice-only,
-    // aucune Subscription Stripe). Cause volontairement non nommée -- même
-    // décision et même registre que mrrPartiallyUnavailable/
-    // activeAccountsUnpricedNote (dashboard/kpi-cards.tsx) : nommer
-    // "invoice-only" serait faux pour l'autre cause réelle (devise
-    // minoritaire, historiquement plus fréquente sur le portefeuille) sans
-    // exposer accounts.billing_model côté frontend -- fan-out volontairement
-    // hors périmètre bêta.
+    // O10 (2026-08-19) had named the reason but deliberately deferred
+    // exposing accounts.billing_model/a structured reason field ("fan-out
+    // volontairement hors périmètre bêta") -- reversed here (mission
+    // réconciliation Stripe, point 2, 2026-08-20): mrr_unavailable_reason is
+    // now on the wire (API_CONTRACTS.md), so the generic text below is only
+    // the fallback for a reason that predates this field or wasn't passed by
+    // a call site. Prefer mrrUnavailableReason() at every call site that has
+    // the account's mrr_unavailable_reason/billing_model available.
     mrrOrUnavailable: (cents: number, currency: string, isUnavailable: boolean) =>
       isUnavailable ? 'Not billable (known billing limitation)' : (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() }),
+    // Mission réconciliation Stripe, point 2 (2026-08-20) : remplace le texte
+    // générique unique ci-dessus par un message par cause réelle -- un
+    // compte churné à $0 confirmé n'atteint jamais cette fonction (mrr_status
+    // reste 'ok' pour lui, voir _shared/mrr-engine.ts, affiché comme un
+    // montant normal). `reason=null` avec `isUnavailable=true` ne devrait pas
+    // survenir en pratique (mrr_unavailable_reason est toujours renseigné
+    // quand mrr_status='unavailable', voir accounts.mrr_unavailable_reason
+    // CHECK constraint) -- filet générique conservé au cas où.
+    mrrUnavailableReason: (
+      cents: number,
+      currency: string,
+      isUnavailable: boolean,
+      reason: MrrUnavailableReason | null,
+      billingModel: BillingModel,
+    ) => {
+      if (!isUnavailable) return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: currency.toUpperCase() });
+      switch (reason) {
+        case 'no_subscription_data':
+          return billingModel === 'invoice_only'
+            ? 'Not billable — invoice-only billing (no Stripe subscription)'
+            : 'Not billable — no billing data yet';
+        case 'unsupported_pricing':
+          return 'Not billable — usage-based pricing (not automatically calculable)';
+        case 'currency_mismatch':
+          return 'Not billable — billed in a different currency';
+        default:
+          return 'Not billable (known billing limitation)';
+      }
+    },
     percentage: (value: number) => `${value.toFixed(1)}%`,
     date: (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US'),
     dateTime: (dateStr: string) => new Date(dateStr).toLocaleString('en-US'),

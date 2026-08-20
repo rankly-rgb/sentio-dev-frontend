@@ -50,6 +50,8 @@ export async function getSegmentAccounts(segment: SegmentType, _organizationId: 
     billing_interval: a.billing_interval,
     mrr_cents: a.mrr_cents,
     mrr_status: a.mrr_status,
+    mrr_unavailable_reason: a.mrr_unavailable_reason,
+    billing_model: a.billing_model,
     seat_count: a.seat_count,
     seat_limit: a.seat_limit,
     contract_end_date: a.contract_end_date,

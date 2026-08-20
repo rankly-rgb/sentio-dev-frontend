@@ -103,6 +103,18 @@ export interface SegmentMembership {
 /** 'unavailable' = compte non-chiffrable (metered, devise minoritaire...) ou jamais eu de subscription connue — mrr_cents peut être un total partiel, pas un vrai $0 (docs/openspec.md §1/§8, API_CONTRACTS.md accounts-api). */
 export type MrrStatus = 'ok' | 'unavailable';
 
+/**
+ * Cause structurée de mrr_status='unavailable' (mission réconciliation
+ * Stripe, point 2, 2026-08-20) — remplace le texte générique unique "Not
+ * billable (known billing limitation)" par un message par cause. null quand
+ * mrr_status='ok' (un compte churné à $0 confirmé n'est PAS concerné par ce
+ * champ — voir API_CONTRACTS.md). Croiser 'no_subscription_data' avec
+ * BillingModel pour distinguer invoice-only d'un compte jamais synchronisé.
+ */
+export type MrrUnavailableReason = 'no_subscription_data' | 'unsupported_pricing' | 'currency_mismatch';
+
+export type BillingModel = 'subscription' | 'invoice_only';
+
 export interface AccountListItem extends ScoringV2Fields {
   id: string;
   stripe_customer_id: string;
@@ -111,6 +123,8 @@ export interface AccountListItem extends ScoringV2Fields {
   billing_interval: string | null;
   mrr_cents: number;
   mrr_status: MrrStatus;
+  mrr_unavailable_reason: MrrUnavailableReason | null;
+  billing_model: BillingModel;
   /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
   is_delinquent: boolean;
   seat_count: number | null;
@@ -133,6 +147,8 @@ export interface AccountDetail extends ScoringV2Fields {
   billing_interval: string | null;
   mrr_cents: number;
   mrr_status: MrrStatus;
+  mrr_unavailable_reason: MrrUnavailableReason | null;
+  billing_model: BillingModel;
   /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
   is_delinquent: boolean;
   arr_cents: number;
