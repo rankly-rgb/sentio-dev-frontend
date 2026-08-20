@@ -112,13 +112,13 @@ export default function AccountFinancials({ account }: Props) {
         <div>
           <p className="text-xs text-muted-foreground">MRR</p>
           <p className="text-sm font-bold">
-            {fr.format.mrrOrUnavailable(account.mrr_cents, currency, account.mrr_status === 'unavailable')}
+            {fr.format.mrrUnavailableReason(account.mrr_cents, currency, account.mrr_status === 'unavailable', account.mrr_unavailable_reason, account.billing_model)}
           </p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">ARR</p>
           <p className="text-sm font-bold">
-            {fr.format.mrrOrUnavailable(account.arr_cents, currency, account.mrr_status === 'unavailable')}
+            {fr.format.mrrUnavailableReason(account.arr_cents, currency, account.mrr_status === 'unavailable', account.mrr_unavailable_reason, account.billing_model)}
           </p>
         </div>
         <div>

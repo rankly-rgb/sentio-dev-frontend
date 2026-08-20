@@ -16,6 +16,8 @@ import type {
   ExpansionUnavailableReason,
   TrendDirection,
   MrrStatus,
+  MrrUnavailableReason,
+  BillingModel,
 } from '@/lib/types/accounts';
 import type { AccountFlag } from '@/types/database';
 
@@ -27,6 +29,8 @@ interface AccountsApiItem extends ScoringV2Fields {
   billing_interval: string | null;
   mrr_cents: number;
   mrr_status: MrrStatus;
+  mrr_unavailable_reason: MrrUnavailableReason | null;
+  billing_model: BillingModel;
   is_delinquent: boolean;
   seat_count: number | null;
   seat_limit: number | null;
@@ -104,6 +108,8 @@ interface AccountsApiDetailItem {
   billing_interval: string | null;
   mrr_cents: number;
   mrr_status: MrrStatus;
+  mrr_unavailable_reason: MrrUnavailableReason | null;
+  billing_model: BillingModel;
   is_delinquent: boolean;
   arr_cents: number;
   seat_count: number | null;
@@ -270,6 +276,8 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     billing_interval: account.billing_interval,
     mrr_cents: account.mrr_cents,
     mrr_status: account.mrr_status,
+    mrr_unavailable_reason: account.mrr_unavailable_reason,
+    billing_model: account.billing_model,
     is_delinquent: account.is_delinquent,
     arr_cents: account.arr_cents,
     seat_count: account.seat_count,

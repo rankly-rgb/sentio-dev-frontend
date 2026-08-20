@@ -227,7 +227,7 @@ export default function Accounts() {
                       {account.plan_tier && <Badge variant="outline">{account.plan_tier}</Badge>}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {fr.format.mrrOrUnavailable(account.mrr_cents, currency, account.mrr_status === 'unavailable')}
+                      {fr.format.mrrUnavailableReason(account.mrr_cents, currency, account.mrr_status === 'unavailable', account.mrr_unavailable_reason, account.billing_model)}
                     </TableCell>
                     <TableCell>{account.seat_count ?? '-'} / {account.seat_limit ?? '-'}</TableCell>
                     <TableCell><ScoreBadge score={account.health_score} band={account.health_score_band} type="health" /></TableCell>

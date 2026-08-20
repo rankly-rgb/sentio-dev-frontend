@@ -54,7 +54,7 @@ export default function TodayActionRow({ action, onAccountClick }: TodayActionRo
 
       {/* MRR */}
       <td className="px-3 py-2.5 text-xs font-medium">
-        {fr.format.mrrOrUnavailable(action.mrr_cents, currency, action.mrr_status === 'unavailable')}
+        {fr.format.mrrUnavailableReason(action.mrr_cents, currency, action.mrr_status === 'unavailable', action.mrr_unavailable_reason, action.billing_model)}
       </td>
 
       {/* Health */}
