@@ -207,6 +207,8 @@ export const en = {
     plansBannerLink: 'Configure your plans',
     priorityColumn: 'Priority',
     delinquentTooltip: "Payment failed but the subscription hasn't been cancelled by Stripe. Sentio keeps it counted in MRR — and flags it here — until Stripe marks it cancelled. A payment issue isn't the same as leaving.",
+    delinquentFloorHigh: 'Past due 15+ days — churn risk is floored at High regardless of other signals.',
+    delinquentFloorCritical: 'Past due 45+ days — churn risk is floored at Critical regardless of other signals.',
   },
 
   accountPriority: {

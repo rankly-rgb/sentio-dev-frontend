@@ -141,7 +141,7 @@ export default function AccountDetail() {
               {/* Delinquency (audit 2026-08-06) — account-level aggregate, distinct
                   from the per-subscription status badge above (subscriptions[0]
                   only, could miss a later delinquent subscription). */}
-              <AccountDelinquentBadge isDelinquent={account.is_delinquent} />
+              <AccountDelinquentBadge isDelinquent={account.is_delinquent} delinquentSince={account.delinquent_since} />
               <p className="text-sm text-muted-foreground">
                 {fr.accountDetail.createdAt} {fr.format.date(account.created_at)}
               </p>

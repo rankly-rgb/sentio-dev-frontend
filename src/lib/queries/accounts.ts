@@ -32,6 +32,7 @@ interface AccountsApiItem extends ScoringV2Fields {
   mrr_unavailable_reason: MrrUnavailableReason | null;
   billing_model: BillingModel;
   is_delinquent: boolean;
+  delinquent_since: string | null;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -111,6 +112,7 @@ interface AccountsApiDetailItem {
   mrr_unavailable_reason: MrrUnavailableReason | null;
   billing_model: BillingModel;
   is_delinquent: boolean;
+  delinquent_since: string | null;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
@@ -279,6 +281,7 @@ export async function getAccountDetail(accountId: string): Promise<AccountDetail
     mrr_unavailable_reason: account.mrr_unavailable_reason,
     billing_model: account.billing_model,
     is_delinquent: account.is_delinquent,
+    delinquent_since: account.delinquent_since,
     arr_cents: account.arr_cents,
     seat_count: account.seat_count,
     seat_limit: account.seat_limit,

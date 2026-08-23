@@ -53,7 +53,7 @@ export interface Account {
   health_score_band: 'healthy' | 'watch' | 'at_risk' | null;
   /** Additif, indépendant de health_score — jamais null (S5). */
   churn_risk_score: number;
-  churn_risk_band: 'low' | 'watch' | 'high';
+  churn_risk_band: 'low' | 'watch' | 'high' | 'critical' | 'churned';
   expansion_score: number | null;
   expansion_score_status: 'available' | 'unavailable';
   expansion_unavailable_reason: string | null;

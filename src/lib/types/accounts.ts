@@ -19,7 +19,7 @@ export type SegmentType =
 
 export type HealthScoreStatus = 'complete' | 'partial' | 'insufficient';
 export type HealthScoreBand = 'healthy' | 'watch' | 'at_risk';
-export type ChurnRiskBand = 'low' | 'watch' | 'high' | 'churned';
+export type ChurnRiskBand = 'low' | 'watch' | 'high' | 'critical' | 'churned';
 export type ExpansionScoreStatus = 'available' | 'unavailable';
 export type ExpansionUnavailableReason = 'seat_data_not_configured' | 'unlimited_plan_no_ceiling';
 export type TrendDirection = 'up' | 'flat' | 'down';
@@ -127,6 +127,8 @@ export interface AccountListItem extends ScoringV2Fields {
   billing_model: BillingModel;
   /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
   is_delinquent: boolean;
+  /** Date de début de la délinquence en cours (Lot 5, 2026-08-13) — `null` si `is_delinquent=false` ou si aucune subscription délinquente n'a de date de contrat connue (jamais de date fabriquée, S1). */
+  delinquent_since: string | null;
   seat_count: number | null;
   seat_limit: number | null;
   contract_end_date: string | null;
@@ -151,6 +153,8 @@ export interface AccountDetail extends ScoringV2Fields {
   billing_model: BillingModel;
   /** Statut d'abonnement Stripe `past_due`/`unpaid` — indépendant de mrr_status/churn_risk_band (audit délinquence 2026-08-06). */
   is_delinquent: boolean;
+  /** Date de début de la délinquence en cours (Lot 5, 2026-08-13) — `null` si `is_delinquent=false` ou si aucune subscription délinquente n'a de date de contrat connue (jamais de date fabriquée, S1). */
+  delinquent_since: string | null;
   arr_cents: number;
   seat_count: number | null;
   seat_limit: number | null;
