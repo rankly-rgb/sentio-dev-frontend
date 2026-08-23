@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { E2E_EMAIL, E2E_PASSWORD } from './e2e-credentials';
 
 /**
  * a16 (incident 2026-08-13, tour 5): a13 on the backend proves the Edge
@@ -27,12 +28,11 @@ import { test, expect, type Page } from '@playwright/test';
  * login credentials` for `admin@sentio.ai`/`SentioAI2026!`, consistently —
  * not a network issue (CI reaches Supabase fine), not MFA, not a
  * ban/deletion/unconfirmed-email (all checked directly, none apply). This
- * credential pair predates this file's authorship and is shared by every
- * e2e spec that logs in — the actual screen-rendering assertions below have
- * still never been exercised against a real session. See
- * full-journey.spec.ts's header for the full diagnosis. Needs someone with
- * the actual current credentials (or Supabase dashboard access to reset
- * this account's password) to unblock, not a code change.
+ * credential pair predated this file's authorship and was shared by every
+ * e2e spec that logs in. The account's password has since been reset —
+ * credentials now come from E2E_TEST_EMAIL/E2E_TEST_PASSWORD (see
+ * e2e-credentials.ts), never hardcoded. See full-journey.spec.ts's header
+ * for the full diagnosis.
  */
 
 const SCREENS = [
@@ -80,8 +80,8 @@ async function assertScreenHealthy(page: Page, path: string, label: string) {
 test.describe('a16 — five main screens render without error, real session', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@sentio.ai');
-    await page.fill('input[type="password"]', 'SentioAI2026!');
+    await page.fill('input[type="email"]', E2E_EMAIL);
+    await page.fill('input[type="password"]', E2E_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
   });

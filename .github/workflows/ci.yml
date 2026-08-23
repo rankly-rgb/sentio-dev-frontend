@@ -65,19 +65,24 @@ jobs:
   e2e:
     name: Playwright e2e (against the real dev backend)
     runs-on: ubuntu-latest
-    # First-ever CI run of this suite (Étape 6 QA, 2026-08-23) — and it
-    # found something real on that first run (PR #31, run 32652774497): every
-    # spec that logs in failed, because the 'admin@sentio.ai'/'SentioAI2026!'
-    # credentials baked into every one of them don't authenticate against the
-    # live dev project — confirmed directly against GoTrue's own auth logs
-    # (`400: Invalid login credentials` on every attempt), not a network or
+    # First-ever CI run of this suite (Étape 6 QA, 2026-08-23) found
+    # something real (PR #31, run 32652774497): every spec that logs in
+    # failed, because the 'admin@sentio.ai'/'SentioAI2026!' credentials
+    # baked into every one of them didn't authenticate against the live dev
+    # project — confirmed directly against GoTrue's own auth logs (`400:
+    # Invalid login credentials` on every attempt), not a network or
     # CI-environment issue. Full diagnosis in e2e/login.spec.ts's and
-    # e2e/five-screens-smoke.spec.ts's headers. This is exactly why the job
-    # is non-blocking rather than a design placeholder: a credential fix
-    # lives outside this repo (someone with the real credentials, or
-    # Supabase dashboard access to reset this account), not in a workflow
-    # edit. Promote by deleting this `continue-on-error` line once that's
-    # resolved and a full green run is observed, per the project's own
+    # e2e/five-screens-smoke.spec.ts's headers.
+    #
+    # Fixed (2026-08-23): admin@sentio.ai's password was reset directly
+    # against the Supabase project, and every spec now reads credentials
+    # from E2E_TEST_EMAIL/E2E_TEST_PASSWORD (see e2e/e2e-credentials.ts)
+    # instead of a hardcoded literal. This job still needs the E2E_TEST_EMAIL
+    # and E2E_TEST_PASSWORD repo secrets added (Settings → Secrets and
+    # variables → Actions) before it can actually go green — without them,
+    # e2e-credentials.ts throws at import time and every spec fails fast.
+    # Promote by deleting this `continue-on-error` line once those secrets
+    # are set and a full green run is observed, per the project's own
     # soft→hard gating convention (sentio-dev-backend CLAUDE.md, CI
     # assertions a1-a9).
     continue-on-error: true
@@ -103,6 +108,11 @@ jobs:
           # repo secret added, never a workflow edit.
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://upqakxuatlshhqiagbqw.supabase.co' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcWFreHVhdGxzaGhxaWFnYnF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDg3NzEsImV4cCI6MjA4Nzg4NDc3MX0.aGLfPA0d-KgBvM-qt9YKhSreSjndaRvtEbGy0x3mpYQ' }}
+          # Real e2e login credentials — repo secrets, never hardcoded (see
+          # e2e/e2e-credentials.ts). Must be added under Settings → Secrets
+          # and variables → Actions before this job can go green.
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
         run: npx playwright test
 
       - name: Upload Playwright report
