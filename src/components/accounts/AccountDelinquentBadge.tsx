@@ -2,9 +2,18 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CreditCard } from 'lucide-react';
 import { useT } from '@/lib/i18n/useT';
+import { delinquentDurationDays, formatDelinquentDuration } from '@/lib/scoring-display';
+
+// Mirrors the backend churn-risk floor thresholds (Lot 5, applyDelinquencyBandFloor,
+// DELINQUENCY_FLOOR_HIGH_MIN_DAYS/DELINQUENCY_FLOOR_CRITICAL_MIN_DAYS) — this
+// badge doesn't decide the floor, it only explains one already applied by
+// churn_risk_band elsewhere on the same account.
+const FLOOR_HIGH_MIN_DAYS = 15;
+const FLOOR_CRITICAL_MIN_DAYS = 45;
 
 interface Props {
   isDelinquent: boolean;
+  delinquentSince: string | null;
 }
 
 /**
@@ -21,20 +30,33 @@ interface Props {
  * it cancelled — a deliberate, already-decided convention, not a bug. Making
  * it visible here is the fix; the convention itself doesn't change.
  */
-export default function AccountDelinquentBadge({ isDelinquent }: Props) {
+export default function AccountDelinquentBadge({ isDelinquent, delinquentSince }: Props) {
   const fr = useT();
   if (!isDelinquent) return null;
+
+  const days = delinquentDurationDays(delinquentSince);
+  const durationLabel = formatDelinquentDuration(days);
+  // Escalation note appended only once a floor threshold is actually met —
+  // unknown duration (days === null) never claims a floor, same S1 rule as
+  // formatDelinquentDuration itself.
+  const escalationNote =
+    days !== null && days >= FLOOR_CRITICAL_MIN_DAYS
+      ? fr.accounts.delinquentFloorCritical
+      : days !== null && days >= FLOOR_HIGH_MIN_DAYS
+        ? fr.accounts.delinquentFloorHigh
+        : null;
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 font-medium gap-1 cursor-help">
           <CreditCard className="h-3 w-3" />
-          Past due
+          {days === null ? 'Past due' : `Past due · ${durationLabel}`}
         </Badge>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-[240px] text-xs">
         {fr.accounts.delinquentTooltip}
+        {escalationNote ? <><br /><br />{escalationNote}</> : null}
       </TooltipContent>
     </Tooltip>
   );

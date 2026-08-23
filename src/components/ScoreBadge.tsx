@@ -37,6 +37,10 @@ function healthPulseClass(band: HealthScoreBand): string {
 }
 
 function churnPulseClass(band: string | null | undefined): string {
+  // Stronger ring than 'high' (0.6 vs 0.3 opacity) — without this branch
+  // 'critical' fell through to the final `success` return below, a green
+  // pulse ring on the most urgent band there is.
+  if (band === 'critical') return 'animate-pulse-ring ring-destructive/60'
   if (band === 'high') return 'animate-pulse-ring ring-destructive/30';
   if (band === 'watch') return 'animate-pulse-ring ring-warning/30';
   if (band === 'churned' || !band) return 'animate-pulse-ring ring-muted/30';

@@ -33,6 +33,12 @@ export const CHURN_BAND_STYLE: Record<string, { color: string; label: string } |
   low: { color: 'bg-success/15 text-success', label: 'Low' },
   watch: { color: 'bg-warning/15 text-warning', label: 'Watch' },
   high: { color: 'bg-destructive/15 text-destructive', label: 'High' },
+  // Full-strength fill (not /15) — deliberately distinct from 'high', not a
+  // shade of it: 'critical' is the delinquency-duration floor (Lot 5,
+  // backend 2026-08-13, applyDelinquencyBandFloor), reserved for accounts
+  // past due 45+ days. It must read as more urgent than 'high' at a glance,
+  // not as a slightly-darker variant of it.
+  critical: { color: 'bg-destructive text-destructive-foreground', label: 'Critical' },
   churned: { color: 'bg-muted text-muted-foreground', label: 'Churned' },
 };
 
@@ -85,4 +91,26 @@ export const EXPANSION_UNAVAILABLE_REASON_LABEL: Record<string, string> = {
 /** Score entier arrondi pour affichage — jamais de décimales à l'écran. */
 export function roundScore(score: number): number {
   return Math.round(score);
+}
+
+/**
+ * Durée de délinquence en jours entiers depuis `accounts.delinquent_since`
+ * (Lot 5, backend 2026-08-13). `null` in → `null` out — jamais `0`, qui se
+ * lirait comme "délinquence démarrée aujourd'hui" plutôt que "durée
+ * inconnue" (S1, même convention que le backend `delinquentDurationDays`).
+ * `now` injectable pour les tests, sinon l'heure réelle.
+ */
+export function delinquentDurationDays(delinquentSince: string | null, now: Date = new Date()): number | null {
+  if (!delinquentSince) return null;
+  const since = new Date(delinquentSince);
+  const days = Math.floor((now.getTime() - since.getTime()) / 86_400_000);
+  return Math.max(0, days);
+}
+
+/** `null` → '—', jamais '0 days' (S1 — voir delinquentDurationDays). */
+export function formatDelinquentDuration(days: number | null): string {
+  if (days === null) return '—';
+  if (days === 0) return 'Past due today';
+  if (days === 1) return '1 day';
+  return `${days} days`;
 }
