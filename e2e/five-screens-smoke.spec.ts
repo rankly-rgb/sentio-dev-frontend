@@ -17,7 +17,22 @@ import { test, expect, type Page } from '@playwright/test';
  * the sandbox this was authored in (confirmed blocked outbound to
  * *.supabase.co and app.sentioapp.io from that sandbox — see the incident
  * report). This test could not be executed end-to-end from that sandbox
- * for that reason; it must be verified on its first real CI run.
+ * for that reason.
+ *
+ * VERIFIED ON ITS FIRST REAL CI RUN (Étape 6 QA, 2026-08-23, PR #31, run
+ * 32652774497) — and it did surface something, just not a rendering bug:
+ * all 5 screens failed at the login step itself (`beforeEach`), before ever
+ * reaching a screen to check. Confirmed directly against the live project's
+ * GoTrue auth logs: every login attempt in that run got `400: Invalid
+ * login credentials` for `admin@sentio.ai`/`SentioAI2026!`, consistently —
+ * not a network issue (CI reaches Supabase fine), not MFA, not a
+ * ban/deletion/unconfirmed-email (all checked directly, none apply). This
+ * credential pair predates this file's authorship and is shared by every
+ * e2e spec that logs in — the actual screen-rendering assertions below have
+ * still never been exercised against a real session. See
+ * full-journey.spec.ts's header for the full diagnosis. Needs someone with
+ * the actual current credentials (or Supabase dashboard access to reset
+ * this account's password) to unblock, not a code change.
  */
 
 const SCREENS = [

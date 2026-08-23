@@ -1,5 +1,18 @@
 import { test, expect } from '@playwright/test';
 
+// The 'admin@sentio.ai' / 'SentioAI2026!' pair used below and by every
+// other e2e spec that logs in currently does NOT authenticate against the
+// live dev project — confirmed directly against its GoTrue auth logs on
+// this file's first real CI run (Étape 6 QA, 2026-08-23, PR #31, run
+// 32652774497): every attempt got `400: Invalid login credentials`,
+// including the very first attempt of that run, while the sibling "shows
+// error on invalid credentials" test below (deliberately wrong creds) got
+// its error UI back normally — so this is a real credential problem, not a
+// network/timeout/MFA/ban issue (all checked and ruled out; see
+// e2e/five-screens-smoke.spec.ts's header for the full diagnosis). Needs
+// the actual current credentials or a password reset on this account, not
+// a code change — flagging here since this file established the pattern
+// every other login-dependent spec still copies.
 test.describe('Login page', () => {
   test('displays the login form', async ({ page }) => {
     await page.goto('/login');

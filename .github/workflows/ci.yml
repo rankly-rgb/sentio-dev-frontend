@@ -1,0 +1,114 @@
+name: CI
+
+# There was no GitHub Actions workflow in this repo at all before this file
+# (checked every branch in the remote, none had a .github/workflows
+# directory — Étape 6 QA, 2026-08-23). That's the root cause behind
+# e2e/five-screens-smoke.spec.ts never having actually run anywhere: not a
+# bad glob or a misconfigured step, there was simply no CI to run it.
+#
+# `npx playwright test` (the e2e job below) is invoked with no path/glob
+# argument, so it picks up every *.spec.ts file playwright.config.ts's
+# testDir (./e2e) resolves — five-screens-smoke.spec.ts, full-journey.spec.ts,
+# login.spec.ts, cross-screen-consistency.spec.ts and
+# playbook-outcome-tracking.spec.ts are all included by construction, not by
+# name.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # `npm run lint` (`eslint .`, no --max-warnings) currently exits 1 on
+      # main itself — 3 pre-existing errors in generated shadcn/ui files
+      # (components/ui/command.tsx, components/ui/textarea.tsx) and
+      # tailwind.config.ts, none touched by this workflow's own PR (Étape 6
+      # QA, 2026-08-23 — confirmed via `git stash` against main: identical
+      # 14 problems, 3 errors + 11 warnings, before this workflow existed to
+      # ever surface them). Fixing unrelated generated-component/config
+      # lint debt is out of scope for a QA-coverage pass, but blocking every
+      # future PR on debt nobody introduced is worse than surfacing it
+      # loudly and moving on — so this step is visible-but-non-blocking
+      # (shows failed with a warning icon, doesn't fail the job) until
+      # someone fixes those 3 errors or the rule config, at which point
+      # delete `continue-on-error` here so lint gates for real.
+      - name: Lint
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: Playwright e2e (against the real dev backend)
+    runs-on: ubuntu-latest
+    # First-ever CI run of this suite (Étape 6 QA, 2026-08-23) — and it
+    # found something real on that first run (PR #31, run 32652774497): every
+    # spec that logs in failed, because the 'admin@sentio.ai'/'SentioAI2026!'
+    # credentials baked into every one of them don't authenticate against the
+    # live dev project — confirmed directly against GoTrue's own auth logs
+    # (`400: Invalid login credentials` on every attempt), not a network or
+    # CI-environment issue. Full diagnosis in e2e/login.spec.ts's and
+    # e2e/five-screens-smoke.spec.ts's headers. This is exactly why the job
+    # is non-blocking rather than a design placeholder: a credential fix
+    # lives outside this repo (someone with the real credentials, or
+    # Supabase dashboard access to reset this account), not in a workflow
+    # edit. Promote by deleting this `continue-on-error` line once that's
+    # resolved and a full green run is observed, per the project's own
+    # soft→hard gating convention (sentio-dev-backend CLAUDE.md, CI
+    # assertions a1-a9).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright e2e suite
+        env:
+          # The anon key is public by design (RLS-protected, already shipped
+          # in every built frontend bundle in production) — committing it
+          # here is not a secret leak. secrets.* takes precedence when set,
+          # so a future project swap or credential rotation only needs the
+          # repo secret added, never a workflow edit.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://upqakxuatlshhqiagbqw.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcWFreHVhdGxzaGhxaWFnYnF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDg3NzEsImV4cCI6MjA4Nzg4NDc3MX0.aGLfPA0d-KgBvM-qt9YKhSreSjndaRvtEbGy0x3mpYQ' }}
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

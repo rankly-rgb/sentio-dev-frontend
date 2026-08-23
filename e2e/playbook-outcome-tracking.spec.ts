@@ -5,6 +5,14 @@ import { test, expect } from '@playwright/test';
 // nudge-response, and GET playbook-outcome-stats) plus at least one workflow playbook
 // with executions on the seeded test account. Not runnable in this sandbox (no browser,
 // no live backend) — written to the spec's acceptance scenarios per T007/T014/T020.
+//
+// Confirmed still blocked on its first real CI run (Étape 6 QA, 2026-08-23,
+// PR #31, run 32652774497) — all 4 tests here failed at the shared
+// beforeEach login, not on anything specific to outcome tracking: the
+// 'admin@sentio.ai'/'SentioAI2026!' credentials don't authenticate against
+// the live dev project (GoTrue logs show `400: Invalid login credentials`
+// on every attempt). See e2e/login.spec.ts's header for the full
+// diagnosis — same root cause, not specific to this file.
 test.describe('Playbook outcome tracking', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
