@@ -65,13 +65,21 @@ jobs:
   e2e:
     name: Playwright e2e (against the real dev backend)
     runs-on: ubuntu-latest
-    # First-ever CI run of this suite (Étape 6 QA, 2026-08-23) — none of
-    # these specs have ever executed against a real backend from CI before,
-    # only individually against a live dev server by hand. Kept
-    # non-blocking until a human has watched at least one full green run:
-    # promote by deleting the `continue-on-error` line once that's
-    # confirmed, per the project's own soft→hard gating convention
-    # (sentio-dev-backend CLAUDE.md, CI assertions a1-a9).
+    # First-ever CI run of this suite (Étape 6 QA, 2026-08-23) — and it
+    # found something real on that first run (PR #31, run 32652774497): every
+    # spec that logs in failed, because the 'admin@sentio.ai'/'SentioAI2026!'
+    # credentials baked into every one of them don't authenticate against the
+    # live dev project — confirmed directly against GoTrue's own auth logs
+    # (`400: Invalid login credentials` on every attempt), not a network or
+    # CI-environment issue. Full diagnosis in e2e/login.spec.ts's and
+    # e2e/five-screens-smoke.spec.ts's headers. This is exactly why the job
+    # is non-blocking rather than a design placeholder: a credential fix
+    # lives outside this repo (someone with the real credentials, or
+    # Supabase dashboard access to reset this account), not in a workflow
+    # edit. Promote by deleting this `continue-on-error` line once that's
+    # resolved and a full green run is observed, per the project's own
+    # soft→hard gating convention (sentio-dev-backend CLAUDE.md, CI
+    # assertions a1-a9).
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4

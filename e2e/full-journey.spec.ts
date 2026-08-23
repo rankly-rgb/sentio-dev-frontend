@@ -20,12 +20,30 @@ import { test, expect, type Page } from '@playwright/test';
  * panel from Accounts, then the full page via the account link
  * SegmentDetailView renders once inside a segment.
  *
- * Like five-screens-smoke.spec.ts, this could not be executed against live
- * data from the authoring sandbox: outbound HTTPS to *.supabase.co is
- * denied by this session's egress policy (confirmed via the agent proxy's
- * /__agentproxy/status — recorded as a policy denial ("gateway answered 403
- * to CONNECT"), not a transient failure). Must be verified on its first
- * real CI run, same as that spec.
+ * Could not be executed against live data from the authoring sandbox:
+ * outbound HTTPS to *.supabase.co is denied by this session's egress policy
+ * (confirmed via the agent proxy's /__agentproxy/status — recorded as a
+ * policy denial ("gateway answered 403 to CONNECT"), not a transient
+ * failure).
+ *
+ * VERIFIED ON ITS FIRST REAL CI RUN (2026-08-23, PR #31, run 32652774497):
+ * every spec here that logs in with these credentials — including
+ * login.spec.ts, which predates this PR — failed identically at
+ * `page.waitForURL('**\/dashboard**')` right after submitting the login
+ * form. Root cause confirmed directly against the live project's own
+ * GoTrue auth logs (not guessed): every attempt in that CI run got
+ * `400: Invalid login credentials`, consistently, including the very first
+ * attempt of the run. Not a network issue (CI reached Supabase fine — the
+ * sibling "shows error on invalid credentials" test, which submits
+ * deliberately wrong creds, got its error UI back quickly), not MFA (0
+ * verified factors on this account), not a ban/deletion/unconfirmed-email
+ * (checked directly — none apply). The password `SentioAI2026!` for
+ * `admin@sentio.ai` simply does not authenticate against this project as
+ * currently configured — a pre-existing gap in every e2e spec that used
+ * this credential pair, not something introduced by this journey or fixable
+ * from this repo. Needs someone with access to the actual current
+ * credentials (or Supabase dashboard access to reset this account's
+ * password) to unblock — not a code change.
  */
 
 const ERROR_TEXT_PATTERN = /An error occurred|Unable to load|Your trial has ended/i;

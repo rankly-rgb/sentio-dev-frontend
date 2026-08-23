@@ -3,6 +3,13 @@ import { test, expect } from '@playwright/test';
 // Overview (Dashboard) and Accounts both derive active-account count and total MRR
 // from the same get_portfolio_snapshot RPC (accounts-api total_count/total_mrr_cents).
 // This guards against the two screens drifting apart again.
+//
+// Blocked on its first real CI run (Étape 6 QA, 2026-08-23, PR #31, run
+// 32652774497): the shared beforeEach login fails before either KPI can be
+// compared — 'admin@sentio.ai'/'SentioAI2026!' doesn't authenticate against
+// the live dev project (GoTrue: `400: Invalid login credentials` on every
+// attempt in that run). See e2e/login.spec.ts's header for the full
+// diagnosis; unrelated to the /mrr-specific skip below.
 test.describe('Cross-screen KPI consistency', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
