@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { churnBandStyle, CHURN_BAND_STYLE, delinquentDurationDays, formatDelinquentDuration } from '../scoring-display';
+import {
+  churnBandStyle,
+  CHURN_BAND_STYLE,
+  delinquentDurationDays,
+  formatDelinquentDuration,
+  healthScoreTrendColor,
+  roundScore,
+} from '../scoring-display';
 
 // Lot 5 (backend, 2026-08-13) added a 'critical' churn_risk_band for accounts
 // past due 45+ days — the backend changelog described the frontend port as
@@ -68,5 +75,38 @@ describe('formatDelinquentDuration', () => {
   it('plural for 2+', () => {
     expect(formatDelinquentDuration(14)).toBe('14 days');
     expect(formatDelinquentDuration(45)).toBe('45 days');
+  });
+});
+
+// Previously untested pure functions in this module (Étape 6 QA pass,
+// 2026-08-23) — no logic change, just closing the coverage gap.
+describe('healthScoreTrendColor', () => {
+  it('up → success color', () => {
+    expect(healthScoreTrendColor('up')).toBe('text-success');
+  });
+
+  it('down → destructive color', () => {
+    expect(healthScoreTrendColor('down')).toBe('text-destructive');
+  });
+
+  it('flat → muted color', () => {
+    expect(healthScoreTrendColor('flat')).toBe('text-muted-foreground');
+  });
+});
+
+describe('roundScore', () => {
+  it('rounds to the nearest integer, never shows decimals', () => {
+    expect(roundScore(72.4)).toBe(72);
+    expect(roundScore(72.5)).toBe(73);
+    expect(roundScore(72.6)).toBe(73);
+  });
+
+  it('leaves an already-integer score unchanged', () => {
+    expect(roundScore(80)).toBe(80);
+  });
+
+  it('rounds negative values toward the nearest integer (Math.round semantics)', () => {
+    expect(roundScore(-0.4)).toBe(-0);
+    expect(roundScore(-0.6)).toBe(-1);
   });
 });

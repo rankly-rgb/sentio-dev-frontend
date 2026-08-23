@@ -1,0 +1,92 @@
+name: CI
+
+# There was no GitHub Actions workflow in this repo at all before this file
+# (checked every branch in the remote, none had a .github/workflows
+# directory — Étape 6 QA, 2026-08-23). That's the root cause behind
+# e2e/five-screens-smoke.spec.ts never having actually run anywhere: not a
+# bad glob or a misconfigured step, there was simply no CI to run it.
+#
+# `npx playwright test` (the e2e job below) is invoked with no path/glob
+# argument, so it picks up every *.spec.ts file playwright.config.ts's
+# testDir (./e2e) resolves — five-screens-smoke.spec.ts, full-journey.spec.ts,
+# login.spec.ts, cross-screen-consistency.spec.ts and
+# playbook-outcome-tracking.spec.ts are all included by construction, not by
+# name.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: Playwright e2e (against the real dev backend)
+    runs-on: ubuntu-latest
+    # First-ever CI run of this suite (Étape 6 QA, 2026-08-23) — none of
+    # these specs have ever executed against a real backend from CI before,
+    # only individually against a live dev server by hand. Kept
+    # non-blocking until a human has watched at least one full green run:
+    # promote by deleting the `continue-on-error` line once that's
+    # confirmed, per the project's own soft→hard gating convention
+    # (sentio-dev-backend CLAUDE.md, CI assertions a1-a9).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright e2e suite
+        env:
+          # The anon key is public by design (RLS-protected, already shipped
+          # in every built frontend bundle in production) — committing it
+          # here is not a secret leak. secrets.* takes precedence when set,
+          # so a future project swap or credential rotation only needs the
+          # repo secret added, never a workflow edit.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://upqakxuatlshhqiagbqw.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcWFreHVhdGxzaGhxaWFnYnF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDg3NzEsImV4cCI6MjA4Nzg4NDc3MX0.aGLfPA0d-KgBvM-qt9YKhSreSjndaRvtEbGy0x3mpYQ' }}
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
