@@ -55,9 +55,19 @@ export async function getCurrentProfile(userId: string): Promise<UserProfile | n
 }
 
 export async function getOrganizationDetails(orgId: string): Promise<OrganizationDetail | null> {
+  // stripe_customer_id, usage_tracker_connected et usage_tracker_last_event_at
+  // n'ont jamais existé sur `organizations` (aucune migration ne les a créées —
+  // vérifié 2026-08-25 contre le schéma live). Ce SELECT échouait donc en 400
+  // sur CHAQUE appel depuis toujours (Dashboard, AccountDetailPanel), jamais
+  // remarqué faute d'e2e sous session réelle avant full-journey.spec.ts
+  // (PR #33). Les 3 champs restent sur OrganizationDetail — UsageTrackerCard
+  // (Integrations.tsx) les consomme déjà en mode dégradé (`?? false`/
+  // `?? 'cus_xxx'`) — mais sont désormais toujours renvoyés à leur valeur
+  // neutre plutôt que sélectionnés : la fonctionnalité "usage tracker"
+  // elle-même reste à construire (colonnes + câblage), hors scope de ce fix.
   const { data, error } = await supabase
     .from('organizations')
-    .select('id, name, created_at, stripe_account_id, stripe_customer_id, hubspot_api_key, usage_tracker_connected, usage_tracker_last_event_at, notification_email, churn_alert_enabled, weekly_digest_enabled')
+    .select('id, name, created_at, stripe_account_id, hubspot_api_key, notification_email, churn_alert_enabled, weekly_digest_enabled')
     .eq('id', orgId)
     .single();
 
@@ -77,12 +87,12 @@ export async function getOrganizationDetails(orgId: string): Promise<Organizatio
     id: d.id,
     name: d.name || '',
     stripe_account_id: d.stripe_account_id || null,
-    stripe_customer_id: d.stripe_customer_id || null,
+    stripe_customer_id: null,
     hubspot_api_key: d.hubspot_api_key || null,
     stripe_connected: !!d.stripe_account_id,
     hubspot_connected: !!d.hubspot_api_key,
-    usage_tracker_connected: !!d.usage_tracker_connected,
-    usage_tracker_last_event_at: d.usage_tracker_last_event_at || null,
+    usage_tracker_connected: false,
+    usage_tracker_last_event_at: null,
     last_stripe_sync_at: null,
     last_hubspot_sync_at: null,
     created_at: d.created_at || '',
