@@ -84,7 +84,16 @@ test.describe('Full user journey — Login → Overview → Accounts → Account
 
     // 4a. AccountDetail (panel) — the real interaction an Accounts-list user
     // has: click a row, a slide-over opens in place rather than navigating.
-    const firstRow = page.locator('table tbody tr').first();
+    //
+    // `table tbody tr` alone is not enough: Accounts.tsx renders a real <tr>
+    // for the loading skeleton too (5 rows, no onClick), and the table check
+    // above passes the instant the <Table> wrapper mounts — before the
+    // accounts query resolves. Under real latency the old locator could grab
+    // a skeleton row, click it, and get silent nothing (no handler, no
+    // error) — exactly the "dialog never opens, zero console errors"
+    // signature this test hit in CI. Only real data rows carry
+    // `cursor-pointer` (the onClick is on the same element).
+    const firstRow = page.locator('table tbody tr.cursor-pointer').first();
     await expect(firstRow).toBeVisible({ timeout: 10000 });
     await firstRow.click();
     const panel = page.getByRole('dialog');
