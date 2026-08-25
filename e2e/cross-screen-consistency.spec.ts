@@ -1,20 +1,22 @@
 import { test, expect } from '@playwright/test';
+import { E2E_EMAIL, E2E_PASSWORD } from './e2e-credentials';
 
 // Overview (Dashboard) and Accounts both derive active-account count and total MRR
 // from the same get_portfolio_snapshot RPC (accounts-api total_count/total_mrr_cents).
 // This guards against the two screens drifting apart again.
 //
-// Blocked on its first real CI run (Étape 6 QA, 2026-08-23, PR #31, run
-// 32652774497): the shared beforeEach login fails before either KPI can be
-// compared — 'admin@sentio.ai'/'SentioAI2026!' doesn't authenticate against
-// the live dev project (GoTrue: `400: Invalid login credentials` on every
-// attempt in that run). See e2e/login.spec.ts's header for the full
-// diagnosis; unrelated to the /mrr-specific skip below.
+// Was blocked on its first real CI run (Étape 6 QA, 2026-08-23, PR #31, run
+// 32652774497): the shared beforeEach login failed before either KPI could
+// be compared — the hardcoded 'admin@sentio.ai'/'SentioAI2026!' pair did
+// not authenticate against the live dev project. See e2e/login.spec.ts's
+// header for the full diagnosis; unrelated to the /mrr-specific skip below.
+// The account's password has since been reset — credentials now come from
+// E2E_TEST_EMAIL/E2E_TEST_PASSWORD (see e2e-credentials.ts).
 test.describe('Cross-screen KPI consistency', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@sentio.ai');
-    await page.fill('input[type="password"]', 'SentioAI2026!');
+    await page.fill('input[type="email"]', E2E_EMAIL);
+    await page.fill('input[type="password"]', E2E_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
   });

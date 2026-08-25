@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { E2E_EMAIL, E2E_PASSWORD } from './e2e-credentials';
 
 /**
  * Étape 6 (QA) — replays "Login → Overview → Accounts → AccountDetail →
@@ -37,13 +38,13 @@ import { test, expect, type Page } from '@playwright/test';
  * sibling "shows error on invalid credentials" test, which submits
  * deliberately wrong creds, got its error UI back quickly), not MFA (0
  * verified factors on this account), not a ban/deletion/unconfirmed-email
- * (checked directly — none apply). The password `SentioAI2026!` for
- * `admin@sentio.ai` simply does not authenticate against this project as
- * currently configured — a pre-existing gap in every e2e spec that used
- * this credential pair, not something introduced by this journey or fixable
- * from this repo. Needs someone with access to the actual current
- * credentials (or Supabase dashboard access to reset this account's
- * password) to unblock — not a code change.
+ * (checked directly — none apply). The hardcoded `SentioAI2026!` password
+ * for `admin@sentio.ai` simply did not authenticate against this project as
+ * configured at the time — a pre-existing gap in every e2e spec that used
+ * this credential pair, not something introduced by this journey. The
+ * account's password has since been reset — credentials now come from
+ * E2E_TEST_EMAIL/E2E_TEST_PASSWORD (see e2e-credentials.ts), never
+ * hardcoded.
  */
 
 const ERROR_TEXT_PATTERN = /An error occurred|Unable to load|Your trial has ended/i;
@@ -63,16 +64,20 @@ test.describe('Full user journey — Login → Overview → Accounts → Account
 
     // 1. Login
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@sentio.ai');
-    await page.fill('input[type="password"]', 'SentioAI2026!');
+    await page.fill('input[type="email"]', E2E_EMAIL);
+    await page.fill('input[type="password"]', E2E_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
 
     // 2. Overview
     await assertNoBrokenState(page, 'Overview');
 
-    // 3. Accounts — via the sidebar nav link, not page.goto
-    await page.getByRole('link', { name: 'Accounts' }).click();
+    // 3. Accounts — via the sidebar nav link, not page.goto. `exact: true` is
+    // required: the sidebar's per-segment links ("Stable 1 accounts", "At risk
+    // 0 accounts"...) all contain "accounts" in their accessible name, so a
+    // non-exact match resolves to 5 elements (strict-mode violation) instead
+    // of the one nav link intended.
+    await page.getByRole('link', { name: 'Accounts', exact: true }).click();
     await page.waitForURL('**/accounts**');
     await assertNoBrokenState(page, 'Accounts');
     await expect(page.locator('table')).toBeVisible({ timeout: 10000 });

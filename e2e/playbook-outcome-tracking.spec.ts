@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { E2E_EMAIL, E2E_PASSWORD } from './e2e-credentials';
 
 // Requires a live backend with the "Playbook Outcome Tracking" contract deployed
 // (POST/GET playbook-execute/{id}/mark-executed, unmark-executed, attribution-status,
@@ -6,18 +7,19 @@ import { test, expect } from '@playwright/test';
 // with executions on the seeded test account. Not runnable in this sandbox (no browser,
 // no live backend) — written to the spec's acceptance scenarios per T007/T014/T020.
 //
-// Confirmed still blocked on its first real CI run (Étape 6 QA, 2026-08-23,
+// Was still blocked on its first real CI run (Étape 6 QA, 2026-08-23,
 // PR #31, run 32652774497) — all 4 tests here failed at the shared
 // beforeEach login, not on anything specific to outcome tracking: the
-// 'admin@sentio.ai'/'SentioAI2026!' credentials don't authenticate against
-// the live dev project (GoTrue logs show `400: Invalid login credentials`
-// on every attempt). See e2e/login.spec.ts's header for the full
-// diagnosis — same root cause, not specific to this file.
+// hardcoded 'admin@sentio.ai'/'SentioAI2026!' credentials did not
+// authenticate against the live dev project. See e2e/login.spec.ts's
+// header for the full diagnosis — same root cause, not specific to this
+// file. The account's password has since been reset — credentials now
+// come from E2E_TEST_EMAIL/E2E_TEST_PASSWORD (see e2e-credentials.ts).
 test.describe('Playbook outcome tracking', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@sentio.ai');
-    await page.fill('input[type="password"]', 'SentioAI2026!');
+    await page.fill('input[type="email"]', E2E_EMAIL);
+    await page.fill('input[type="password"]', E2E_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
   });

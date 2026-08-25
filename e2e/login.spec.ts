@@ -1,18 +1,19 @@
 import { test, expect } from '@playwright/test';
+import { E2E_EMAIL, E2E_PASSWORD } from './e2e-credentials';
 
-// The 'admin@sentio.ai' / 'SentioAI2026!' pair used below and by every
-// other e2e spec that logs in currently does NOT authenticate against the
-// live dev project — confirmed directly against its GoTrue auth logs on
-// this file's first real CI run (Étape 6 QA, 2026-08-23, PR #31, run
-// 32652774497): every attempt got `400: Invalid login credentials`,
-// including the very first attempt of that run, while the sibling "shows
-// error on invalid credentials" test below (deliberately wrong creds) got
-// its error UI back normally — so this is a real credential problem, not a
-// network/timeout/MFA/ban issue (all checked and ruled out; see
-// e2e/five-screens-smoke.spec.ts's header for the full diagnosis). Needs
-// the actual current credentials or a password reset on this account, not
-// a code change — flagging here since this file established the pattern
-// every other login-dependent spec still copies.
+// The hardcoded 'admin@sentio.ai' / 'SentioAI2026!' pair previously used
+// here and copied into every other login-dependent e2e spec did NOT
+// authenticate against the live dev project — confirmed directly against
+// its GoTrue auth logs on this file's first real CI run (Étape 6 QA,
+// 2026-08-23, PR #31, run 32652774497): every attempt got `400: Invalid
+// login credentials`, including the very first attempt of that run, while
+// the sibling "shows error on invalid credentials" test below (deliberately
+// wrong creds) got its error UI back normally — a real credential problem,
+// not network/timeout/MFA/ban (all ruled out; see
+// e2e/five-screens-smoke.spec.ts's header for the full diagnosis). The
+// account's password has since been reset — credentials now come from
+// E2E_TEST_EMAIL/E2E_TEST_PASSWORD (see e2e-credentials.ts), never
+// hardcoded.
 test.describe('Login page', () => {
   test('displays the login form', async ({ page }) => {
     await page.goto('/login');
@@ -39,8 +40,8 @@ test.describe('Login page', () => {
 
   test('navigates to dashboard on successful login', async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@sentio.ai');
-    await page.fill('input[type="password"]', 'SentioAI2026!');
+    await page.fill('input[type="email"]', E2E_EMAIL);
+    await page.fill('input[type="password"]', E2E_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
     expect(page.url()).toContain('/dashboard');
@@ -50,8 +51,8 @@ test.describe('Login page', () => {
 test.describe('Navigation (authenticated)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@sentio.ai');
-    await page.fill('input[type="password"]', 'SentioAI2026!');
+    await page.fill('input[type="email"]', E2E_EMAIL);
+    await page.fill('input[type="password"]', E2E_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL('**/dashboard**', { timeout: 15000 });
   });
