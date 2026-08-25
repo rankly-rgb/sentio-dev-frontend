@@ -72,8 +72,12 @@ test.describe('Full user journey — Login → Overview → Accounts → Account
     // 2. Overview
     await assertNoBrokenState(page, 'Overview');
 
-    // 3. Accounts — via the sidebar nav link, not page.goto
-    await page.getByRole('link', { name: 'Accounts' }).click();
+    // 3. Accounts — via the sidebar nav link, not page.goto. `exact: true` is
+    // required: the sidebar's per-segment links ("Stable 1 accounts", "At risk
+    // 0 accounts"...) all contain "accounts" in their accessible name, so a
+    // non-exact match resolves to 5 elements (strict-mode violation) instead
+    // of the one nav link intended.
+    await page.getByRole('link', { name: 'Accounts', exact: true }).click();
     await page.waitForURL('**/accounts**');
     await assertNoBrokenState(page, 'Accounts');
     await expect(page.locator('table')).toBeVisible({ timeout: 10000 });
